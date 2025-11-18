@@ -297,6 +297,55 @@ Simply:
 
 ## Advanced Usage
 
+### Custom Colors via Tailwind Config
+
+You can extend the default color palette by creating a `tailwind.config.js` (or `.mjs`, `.cjs`) file in your project root:
+
+```javascript
+// tailwind.config.mjs
+export default {
+  theme: {
+    extend: {
+      colors: {
+        primary: '#1d4ed8',
+        secondary: '#9333ea',
+        brand: {
+          light: '#f0f9ff',
+          DEFAULT: '#0284c7',
+          dark: '#0c4a6e',
+        },
+      },
+    },
+  },
+};
+```
+
+Then use your custom colors in className:
+
+```tsx
+<View className="bg-primary p-4">
+  <Text className="text-brand">Custom branded text</Text>
+  <View className="bg-brand-light rounded-lg">
+    {/* Nested colors become brand-light, brand-dark */}
+  </View>
+</View>
+```
+
+**How it works:**
+- The Babel plugin automatically discovers `tailwind.config.*` files by traversing up from your source files
+- Custom colors are merged with defaults at build time (custom colors take precedence)
+- Nested color objects are flattened using dash notation (e.g., `brand.light` → `brand-light`)
+- **Zero runtime overhead** - All config loading happens during compilation
+
+**Supported config formats:**
+- `tailwind.config.js` (CommonJS)
+- `tailwind.config.mjs` (ES modules)
+- `tailwind.config.cjs` (CommonJS explicit)
+- `tailwind.config.ts` (TypeScript - experimental)
+
+**Best practice:**
+Use `theme.extend.colors` to add custom colors while keeping all default Tailwind colors. Using `theme.colors` directly will override all defaults.
+
 ### Accessing the Parser Programmatically
 
 ```typescript
@@ -347,6 +396,41 @@ If you see TypeScript errors about `className` not being a valid prop:
    ```
 
 3. Check that the plugin is installed in your `node_modules`
+
+### Custom Colors Not Working
+
+If your custom colors from `tailwind.config.*` aren't being recognized:
+
+1. **Check config file location**: The config must be in your project root or a parent directory. The Babel plugin searches upward from each source file.
+
+2. **Verify config format**: Make sure your config exports the theme correctly:
+   ```javascript
+   // ✅ Correct (CommonJS)
+   module.exports = {
+     theme: { extend: { colors: { ... } } }
+   };
+
+   // ✅ Correct (ESM)
+   export default {
+     theme: { extend: { colors: { ... } } }
+   };
+   ```
+
+3. **Clear Metro cache**: Config changes require cache reset:
+   ```bash
+   npx react-native start --reset-cache
+   ```
+
+4. **Check build output**: The Babel plugin logs warnings about config loading in development. Check Metro logs for `[react-native-tailwind]` messages.
+
+5. **Use theme.extend.colors**: Don't use `theme.colors` directly as it will override all defaults:
+   ```javascript
+   // ❌ Overrides all defaults
+   theme: { colors: { primary: '#000' } }
+
+   // ✅ Extends defaults
+   theme: { extend: { colors: { primary: '#000' } } }
+   ```
 
 ## Contributing
 
