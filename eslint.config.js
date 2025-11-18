@@ -4,6 +4,7 @@ const config = [
   ...baseConfig,
   {
     rules: {
+      "@typescript-eslint/prefer-regexp-exec": "off",
     },
   },
   {
