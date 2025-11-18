@@ -4,6 +4,60 @@
 
 import type { StyleObject } from "../types";
 
+/**
+ * Parse arbitrary inset value: [123px], [123], [50%], [-10px]
+ * Returns number for px values, string for % values, null for unsupported units
+ */
+function parseArbitraryInset(value: string): number | string | null {
+  // Match: [123px], [123], [-123px], [-123] (pixels)
+  const pxMatch = value.match(/^\[(-?\d+)(?:px)?\]$/);
+  if (pxMatch) {
+    return parseInt(pxMatch[1], 10);
+  }
+
+  // Match: [50%], [-50%] (percentage)
+  const percentMatch = value.match(/^\[(-?\d+(?:\.\d+)?)%\]$/);
+  if (percentMatch) {
+    return `${percentMatch[1]}%`;
+  }
+
+  // Unsupported units (rem, em, vh, vw, etc.) - warn and reject
+  if (value.startsWith("[") && value.endsWith("]")) {
+    if (process.env.NODE_ENV !== "production") {
+      console.warn(
+        `[react-native-tailwind] Unsupported arbitrary inset unit: ${value}. Only px and % are supported.`,
+      );
+    }
+    return null;
+  }
+
+  return null;
+}
+
+/**
+ * Parse arbitrary z-index value: [123], [-10]
+ * Returns number for valid z-index, null otherwise
+ */
+function parseArbitraryZIndex(value: string): number | null {
+  // Match: [123], [-123] (integers only)
+  const zMatch = value.match(/^\[(-?\d+)\]$/);
+  if (zMatch) {
+    return parseInt(zMatch[1], 10);
+  }
+
+  // Unsupported format - warn and reject
+  if (value.startsWith("[") && value.endsWith("]")) {
+    if (process.env.NODE_ENV !== "production") {
+      console.warn(
+        `[react-native-tailwind] Invalid arbitrary z-index: ${value}. Only integers are supported.`,
+      );
+    }
+    return null;
+  }
+
+  return null;
+}
+
 // Display utilities
 const DISPLAY_MAP: Record<string, StyleObject> = {
   flex: { display: "flex" },
@@ -128,16 +182,23 @@ export const INSET_SCALE: Record<string, number> = {
  * Parse layout classes
  */
 export function parseLayout(cls: string): StyleObject | null {
-  // Z-index: z-0, z-10, z-20, etc.
+  // Z-index: z-0, z-10, z-20, z-[999], etc.
   if (cls.startsWith("z-")) {
     const zKey = cls.substring(2);
+
+    // Arbitrary values: z-[123], z-[-10]
+    const arbitraryZ = parseArbitraryZIndex(zKey);
+    if (arbitraryZ !== null) {
+      return { zIndex: arbitraryZ };
+    }
+
     const zValue = Z_INDEX_SCALE[zKey];
     if (zValue !== undefined) {
       return { zIndex: zValue };
     }
   }
 
-  // Top positioning: top-0, top-4, etc.
+  // Top positioning: top-0, top-4, top-[10px], top-[50%], etc.
   if (cls.startsWith("top-")) {
     const topKey = cls.substring(4);
 
@@ -146,13 +207,19 @@ export function parseLayout(cls: string): StyleObject | null {
       return {};
     }
 
+    // Arbitrary values: top-[123px], top-[50%], top-[-10px]
+    const arbitraryTop = parseArbitraryInset(topKey);
+    if (arbitraryTop !== null) {
+      return { top: arbitraryTop };
+    }
+
     const topValue = INSET_SCALE[topKey];
     if (topValue !== undefined) {
       return { top: topValue };
     }
   }
 
-  // Right positioning: right-0, right-4, etc.
+  // Right positioning: right-0, right-4, right-[10px], right-[50%], etc.
   if (cls.startsWith("right-")) {
     const rightKey = cls.substring(6);
 
@@ -161,13 +228,19 @@ export function parseLayout(cls: string): StyleObject | null {
       return {};
     }
 
+    // Arbitrary values: right-[123px], right-[50%], right-[-10px]
+    const arbitraryRight = parseArbitraryInset(rightKey);
+    if (arbitraryRight !== null) {
+      return { right: arbitraryRight };
+    }
+
     const rightValue = INSET_SCALE[rightKey];
     if (rightValue !== undefined) {
       return { right: rightValue };
     }
   }
 
-  // Bottom positioning: bottom-0, bottom-4, etc.
+  // Bottom positioning: bottom-0, bottom-4, bottom-[10px], bottom-[50%], etc.
   if (cls.startsWith("bottom-")) {
     const bottomKey = cls.substring(7);
 
@@ -176,13 +249,19 @@ export function parseLayout(cls: string): StyleObject | null {
       return {};
     }
 
+    // Arbitrary values: bottom-[123px], bottom-[50%], bottom-[-10px]
+    const arbitraryBottom = parseArbitraryInset(bottomKey);
+    if (arbitraryBottom !== null) {
+      return { bottom: arbitraryBottom };
+    }
+
     const bottomValue = INSET_SCALE[bottomKey];
     if (bottomValue !== undefined) {
       return { bottom: bottomValue };
     }
   }
 
-  // Left positioning: left-0, left-4, etc.
+  // Left positioning: left-0, left-4, left-[10px], left-[50%], etc.
   if (cls.startsWith("left-")) {
     const leftKey = cls.substring(5);
 
@@ -191,36 +270,63 @@ export function parseLayout(cls: string): StyleObject | null {
       return {};
     }
 
+    // Arbitrary values: left-[123px], left-[50%], left-[-10px]
+    const arbitraryLeft = parseArbitraryInset(leftKey);
+    if (arbitraryLeft !== null) {
+      return { left: arbitraryLeft };
+    }
+
     const leftValue = INSET_SCALE[leftKey];
     if (leftValue !== undefined) {
       return { left: leftValue };
     }
   }
 
-  // Inset (all sides): inset-0, inset-4, etc.
-  if (cls.startsWith("inset-")) {
-    const insetKey = cls.substring(6);
-    const insetValue = INSET_SCALE[insetKey];
-    if (insetValue !== undefined) {
-      return { top: insetValue, right: insetValue, bottom: insetValue, left: insetValue };
-    }
-  }
-
-  // Inset X (left and right): inset-x-0, inset-x-4, etc.
+  // Inset X (left and right): inset-x-0, inset-x-4, inset-x-[10px], etc.
   if (cls.startsWith("inset-x-")) {
     const insetKey = cls.substring(8);
+
+    // Arbitrary values: inset-x-[123px], inset-x-[50%]
+    const arbitraryInset = parseArbitraryInset(insetKey);
+    if (arbitraryInset !== null) {
+      return { left: arbitraryInset, right: arbitraryInset };
+    }
+
     const insetValue = INSET_SCALE[insetKey];
     if (insetValue !== undefined) {
       return { left: insetValue, right: insetValue };
     }
   }
 
-  // Inset Y (top and bottom): inset-y-0, inset-y-4, etc.
+  // Inset Y (top and bottom): inset-y-0, inset-y-4, inset-y-[10px], etc.
   if (cls.startsWith("inset-y-")) {
     const insetKey = cls.substring(8);
+
+    // Arbitrary values: inset-y-[123px], inset-y-[50%]
+    const arbitraryInset = parseArbitraryInset(insetKey);
+    if (arbitraryInset !== null) {
+      return { top: arbitraryInset, bottom: arbitraryInset };
+    }
+
     const insetValue = INSET_SCALE[insetKey];
     if (insetValue !== undefined) {
       return { top: insetValue, bottom: insetValue };
+    }
+  }
+
+  // Inset (all sides): inset-0, inset-4, inset-[10px], etc.
+  if (cls.startsWith("inset-")) {
+    const insetKey = cls.substring(6);
+
+    // Arbitrary values: inset-[123px], inset-[50%]
+    const arbitraryInset = parseArbitraryInset(insetKey);
+    if (arbitraryInset !== null) {
+      return { top: arbitraryInset, right: arbitraryInset, bottom: arbitraryInset, left: arbitraryInset };
+    }
+
+    const insetValue = INSET_SCALE[insetKey];
+    if (insetValue !== undefined) {
+      return { top: insetValue, right: insetValue, bottom: insetValue, left: insetValue };
     }
   }
 
