@@ -248,3 +248,88 @@ describe("parseColor - comprehensive coverage", () => {
     expect(parseColor("border-[#ff0000aa]")).toEqual({ borderColor: "#ff0000aa" });
   });
 });
+
+describe("parseColor - opacity modifiers", () => {
+  it("should parse background colors with opacity modifiers", () => {
+    expect(parseColor("bg-black/50")).toEqual({ backgroundColor: "#00000080" });
+    expect(parseColor("bg-white/50")).toEqual({ backgroundColor: "#FFFFFF80" });
+    expect(parseColor("bg-blue-500/80")).toEqual({ backgroundColor: "#3B82F6CC" });
+    expect(parseColor("bg-red-500/30")).toEqual({ backgroundColor: "#EF44444D" });
+  });
+
+  it("should parse text colors with opacity modifiers", () => {
+    expect(parseColor("text-black/80")).toEqual({ color: "#000000CC" });
+    expect(parseColor("text-white/90")).toEqual({ color: "#FFFFFFE6" });
+    expect(parseColor("text-gray-900/70")).toEqual({ color: "#111827B3" });
+    expect(parseColor("text-blue-500/50")).toEqual({ color: "#3B82F680" });
+  });
+
+  it("should parse border colors with opacity modifiers", () => {
+    expect(parseColor("border-black/25")).toEqual({ borderColor: "#00000040" });
+    expect(parseColor("border-red-500/60")).toEqual({ borderColor: "#EF444499" });
+    expect(parseColor("border-gray-200/40")).toEqual({ borderColor: "#E5E7EB66" });
+  });
+
+  it("should handle opacity modifier with arbitrary hex colors", () => {
+    expect(parseColor("bg-[#ff0000]/50")).toEqual({ backgroundColor: "#FF000080" });
+    expect(parseColor("text-[#3B82F6]/80")).toEqual({ color: "#3B82F6CC" });
+    expect(parseColor("border-[#abc]/60")).toEqual({ borderColor: "#AABBCC99" });
+  });
+
+  it("should handle opacity modifier with custom colors", () => {
+    const customColors = { "brand-primary": "#FF6B6B" };
+    expect(parseColor("bg-brand-primary/50", customColors)).toEqual({ backgroundColor: "#FF6B6B80" });
+    expect(parseColor("text-brand-primary/75", customColors)).toEqual({ color: "#FF6B6BBF" });
+  });
+
+  it("should handle opacity 0 (fully transparent)", () => {
+    expect(parseColor("bg-black/0")).toEqual({ backgroundColor: "#00000000" });
+    expect(parseColor("text-red-500/0")).toEqual({ color: "#EF444400" });
+  });
+
+  it("should handle opacity 100 (fully opaque)", () => {
+    expect(parseColor("bg-black/100")).toEqual({ backgroundColor: "#000000FF" });
+    expect(parseColor("text-blue-500/100")).toEqual({ color: "#3B82F6FF" });
+  });
+
+  it("should handle transparent color with opacity modifier", () => {
+    // Transparent with opacity should remain transparent
+    expect(parseColor("bg-transparent/50")).toEqual({ backgroundColor: "transparent" });
+  });
+
+  it("should convert opacity percentage to correct hex values", () => {
+    // Test key opacity values
+    expect(parseColor("bg-black/0")).toEqual({ backgroundColor: "#00000000" }); // 0%
+    expect(parseColor("bg-black/10")).toEqual({ backgroundColor: "#0000001A" }); // ~10%
+    expect(parseColor("bg-black/25")).toEqual({ backgroundColor: "#00000040" }); // 25%
+    expect(parseColor("bg-black/50")).toEqual({ backgroundColor: "#00000080" }); // 50%
+    expect(parseColor("bg-black/75")).toEqual({ backgroundColor: "#000000BF" }); // 75%
+    expect(parseColor("bg-black/100")).toEqual({ backgroundColor: "#000000FF" }); // 100%
+  });
+
+  it("should return null for invalid opacity values", () => {
+    expect(parseColor("bg-black/101")).toBeNull(); // > 100
+    expect(parseColor("bg-black/-1")).toBeNull(); // < 0
+    expect(parseColor("bg-black/150")).toBeNull(); // Way over 100
+  });
+
+  it("should return null for malformed opacity syntax", () => {
+    expect(parseColor("bg-black/")).toBeNull(); // Missing opacity value
+    expect(parseColor("bg-black/abc")).toBeNull(); // Non-numeric opacity
+    expect(parseColor("bg-black/50/")).toBeNull(); // Extra slash
+  });
+
+  it("should handle opacity with 3-digit hex expansion", () => {
+    expect(parseColor("bg-[#f00]/50")).toEqual({ backgroundColor: "#FF000080" });
+    expect(parseColor("text-[#abc]/75")).toEqual({ color: "#AABBCCBF" });
+  });
+
+  it("should work with all color families", () => {
+    const families = ["gray", "red", "blue", "green", "yellow", "purple", "pink", "orange", "indigo"];
+    families.forEach((family) => {
+      expect(parseColor(`bg-${family}-500/50`)).toBeTruthy();
+      expect(parseColor(`text-${family}-500/50`)).toBeTruthy();
+      expect(parseColor(`border-${family}-500/50`)).toBeTruthy();
+    });
+  });
+});

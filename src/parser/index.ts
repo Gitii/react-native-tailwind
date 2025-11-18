@@ -4,9 +4,11 @@
  */
 
 import type { StyleObject } from "../types";
+import { parseAspectRatio } from "./aspectRatio";
 import { parseBorder } from "./borders";
 import { parseColor } from "./colors";
 import { parseLayout } from "./layout";
+import { parseShadow } from "./shadows";
 import { parseSizing } from "./sizing";
 import { parseSpacing } from "./spacing";
 import { parseTypography } from "./typography";
@@ -46,6 +48,8 @@ export function parseClass(cls: string, customColors?: Record<string, string>): 
     parseLayout,
     parseTypography,
     parseSizing,
+    parseShadow,
+    parseAspectRatio,
   ];
 
   for (const parser of parsers) {
@@ -64,9 +68,11 @@ export function parseClass(cls: string, customColors?: Record<string, string>): 
 }
 
 // Re-export parsers for testing/advanced usage
+export { parseAspectRatio } from "./aspectRatio";
 export { parseBorder } from "./borders";
 export { parseColor } from "./colors";
 export { parseLayout } from "./layout";
+export { parseShadow } from "./shadows";
 export { parseSizing } from "./sizing";
 export { parseSpacing } from "./spacing";
 export { parseTypography } from "./typography";

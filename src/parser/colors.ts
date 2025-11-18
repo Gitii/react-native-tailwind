@@ -121,6 +121,38 @@ export const COLORS: Record<string, string> = {
 };
 
 /**
+ * Apply opacity to hex color by appending alpha channel
+ * @param hex - Hex color string (e.g., "#ff0000", "#f00", or "transparent")
+ * @param opacity - Opacity value 0-100 (e.g., 50 for 50%)
+ * @returns 8-digit hex with alpha (e.g., "#FF000080") or rgba for special colors
+ */
+function applyOpacity(hex: string, opacity: number): string {
+  // Handle transparent specially
+  if (hex === "transparent") {
+    return "transparent";
+  }
+
+  // Remove # if present
+  const cleanHex = hex.replace(/^#/, "");
+
+  // Expand 3-digit hex to 6-digit: #abc -> #aabbcc
+  const fullHex =
+    cleanHex.length === 3
+      ? cleanHex
+          .split("")
+          .map((char) => char + char)
+          .join("")
+      : cleanHex;
+
+  // Convert opacity percentage (0-100) to hex (00-FF)
+  const alpha = Math.round((opacity / 100) * 255);
+  const alphaHex = alpha.toString(16).padStart(2, "0").toUpperCase();
+
+  // Return 8-digit hex: #RRGGBBAA
+  return `#${fullHex.toUpperCase()}${alphaHex}`;
+}
+
+/**
  * Parse arbitrary color value: [#ff0000], [#f00], [#FF0000AA]
  * Supports 3-digit, 6-digit, and 8-digit (with alpha) hex colors
  * Returns hex string if valid, null otherwise
@@ -156,6 +188,7 @@ function parseArbitraryColor(value: string): string | null {
 
 /**
  * Parse color classes (background, text, border)
+ * Supports opacity modifier: bg-blue-500/50, text-black/80, border-red-500/30
  */
 export function parseColor(cls: string, customColors?: Record<string, string>): StyleObject | null {
   // Helper to get color with custom override (custom colors take precedence)
@@ -163,52 +196,72 @@ export function parseColor(cls: string, customColors?: Record<string, string>): 
     return customColors?.[key] ?? COLORS[key];
   };
 
-  // Background color: bg-blue-500, bg-[#ff0000]
-  if (cls.startsWith("bg-")) {
-    const colorKey = cls.substring(3);
+  // Helper to parse color with optional opacity modifier
+  const parseColorWithOpacity = (colorKey: string): string | null => {
+    // Check for opacity modifier: blue-500/50
+    const opacityMatch = colorKey.match(/^(.+)\/(\d+)$/);
+    if (opacityMatch) {
+      const baseColorKey = opacityMatch[1];
+      const opacity = Number.parseInt(opacityMatch[2], 10);
 
+      // Validate opacity range (0-100)
+      if (opacity < 0 || opacity > 100) {
+        if (process.env.NODE_ENV !== "production") {
+          console.warn(
+            `[react-native-tailwind] Invalid opacity value: ${opacity}. Opacity must be between 0 and 100.`,
+          );
+        }
+        return null;
+      }
+
+      // Try arbitrary color first: bg-[#ff0000]/50
+      const arbitraryColor = parseArbitraryColor(baseColorKey);
+      if (arbitraryColor !== null) {
+        return applyOpacity(arbitraryColor, opacity);
+      }
+
+      // Try preset/custom colors: bg-blue-500/50
+      const color = getColor(baseColorKey);
+      if (color) {
+        return applyOpacity(color, opacity);
+      }
+
+      return null;
+    }
+
+    // No opacity modifier - try normal color parsing
     // Try arbitrary value first
     const arbitraryColor = parseArbitraryColor(colorKey);
     if (arbitraryColor !== null) {
-      return { backgroundColor: arbitraryColor };
+      return arbitraryColor;
     }
 
     // Try preset/custom colors
-    const color = getColor(colorKey);
+    return getColor(colorKey) ?? null;
+  };
+
+  // Background color: bg-blue-500, bg-blue-500/50, bg-[#ff0000]/80
+  if (cls.startsWith("bg-")) {
+    const colorKey = cls.substring(3);
+    const color = parseColorWithOpacity(colorKey);
     if (color) {
       return { backgroundColor: color };
     }
   }
 
-  // Text color: text-blue-500, text-[#ff0000]
+  // Text color: text-blue-500, text-blue-500/50, text-[#ff0000]/80
   if (cls.startsWith("text-")) {
     const colorKey = cls.substring(5);
-
-    // Try arbitrary value first
-    const arbitraryColor = parseArbitraryColor(colorKey);
-    if (arbitraryColor !== null) {
-      return { color: arbitraryColor };
-    }
-
-    // Try preset/custom colors
-    const color = getColor(colorKey);
+    const color = parseColorWithOpacity(colorKey);
     if (color) {
       return { color: color };
     }
   }
 
-  // Border color: border-blue-500, border-[#ff0000]
+  // Border color: border-blue-500, border-blue-500/50, border-[#ff0000]/80
   if (cls.startsWith("border-") && !cls.match(/^border-[0-9]/)) {
     const colorKey = cls.substring(7);
-
-    // Try arbitrary value first
-    const arbitraryColor = parseArbitraryColor(colorKey);
-    if (arbitraryColor !== null) {
-      return { borderColor: arbitraryColor };
-    }
-
-    // Try preset/custom colors
-    const color = getColor(colorKey);
+    const color = parseColorWithOpacity(colorKey);
     if (color) {
       return { borderColor: color };
     }

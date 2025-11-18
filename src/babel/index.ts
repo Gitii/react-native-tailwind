@@ -11,13 +11,14 @@
 
 import type { NodePath, PluginObj, PluginPass } from "@babel/core";
 import * as BabelTypes from "@babel/types";
+import { StyleObject } from "src/types.js";
 import type { ModifierType, ParsedModifier } from "../parser/index.js";
 import { parseClassName as parseClassNameFn, splitModifierClasses } from "../parser/index.js";
 import { generateStyleKey as generateStyleKeyFn } from "../utils/styleKey.js";
 import { extractCustomColors } from "./config-loader.js";
 
 type PluginState = PluginPass & {
-  styleRegistry: Map<string, Record<string, string | number>>;
+  styleRegistry: Map<string, StyleObject>;
   hasClassNames: boolean;
   hasStyleSheetImport: boolean;
   customColors: Record<string, string>;
@@ -816,11 +817,7 @@ function mergeStyleFunctionAttribute(
 /**
  * Inject StyleSheet.create with all collected styles
  */
-function injectStyles(
-  path: NodePath,
-  styleRegistry: Map<string, Record<string, string | number>>,
-  t: typeof BabelTypes,
-) {
+function injectStyles(path: NodePath, styleRegistry: Map<string, StyleObject>, t: typeof BabelTypes) {
   // Build style object properties
   const styleProperties: any[] = [];
 
@@ -858,10 +855,7 @@ function injectStyles(
 }
 
 // Helper functions that use the imported parser
-function parseClassName(
-  className: string,
-  customColors: Record<string, string>,
-): Record<string, string | number> {
+function parseClassName(className: string, customColors: Record<string, string>): StyleObject {
   return parseClassNameFn(className, customColors);
 }
 
