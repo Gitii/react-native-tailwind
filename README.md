@@ -873,48 +873,6 @@ Use `aspect-[width/height]` for custom ratios:
 
 > **Note:** Arbitrary sizing supports pixel values (`[123px]` or `[123]`) and percentages (`[50%]`). Other units (`rem`, `em`, `vh`, `vw`) are not supported in React Native.
 
-## Architecture
-
-### Compile-Time Transformation
-
-The Babel plugin performs all transformations during build time, ensuring zero runtime overhead:
-
-1. **AST Transformation** — Visits JSX elements and finds `className` attributes
-2. **Static Analysis** — Only processes string literals (dynamic values produce warnings)
-3. **Style Registry** — Collects all className → style mappings per file
-4. **Code Generation** — Injects `StyleSheet.create()` at end of file
-5. **Import Management** — Adds `StyleSheet` import if needed
-
-### Performance Characteristics
-
-| Metric           | Value              |
-| ---------------- | ------------------ |
-| Runtime Overhead | 0ms (compile-time) |
-| Bundle Size      | ~4KB typical       |
-| Build Time       | +50-200ms          |
-
-**Why it's fast:**
-
-- ⚡ All className parsing happens at build time
-- 🎯 Uses React Native's optimized `StyleSheet.create` API
-- 📦 Tree shaking — only includes styles actually used
-- 🔄 Deduplication — identical styles reused across components
-
-## Limitations
-
-**Dynamic class names are not supported** — The Babel plugin can only transform static string literals:
-
-```tsx
-// ❌ This will NOT work
-const spacing = 4;
-<View className={`m-${spacing} p-2`} />
-
-// ✅ Use inline styles for dynamic values
-<View className="p-2" style={{ margin: spacing * 4 }} />
-```
-
-For dynamic styling, use the `style` prop alongside `className`.
-
 ## Advanced
 
 ### Arbitrary Values
