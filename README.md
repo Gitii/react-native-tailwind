@@ -22,6 +22,7 @@ Compile-time Tailwind CSS for React Native with zero runtime overhead. Transform
 - 🔧 **No dependencies** — Direct-to-React-Native style generation without tailwindcss package
 - 🎨 **Custom colors** — Extend the default palette via `tailwind.config.*`
 - 📐 **Arbitrary values** — Use custom sizes and borders: `w-[123px]`, `rounded-[20px]`
+- 📜 **Special style props** — Support for `contentContainerClassName`, `columnWrapperClassName`, and more
 
 ## Installation
 
@@ -84,6 +85,8 @@ The Babel plugin transforms your code at compile time:
 
 ```tsx
 <View className="m-4 p-2 bg-blue-500 rounded-lg" />
+<ScrollView contentContainerClassName="items-center gap-4" />
+<FlatList columnWrapperClassName="gap-4" ListHeaderComponentClassName="p-4 bg-gray-100" />
 ```
 
 **Output** (what Babel generates):
@@ -92,6 +95,8 @@ The Babel plugin transforms your code at compile time:
 import { StyleSheet } from "react-native";
 
 <View style={styles._bg_blue_500_m_4_p_2_rounded_lg} />;
+<ScrollView contentContainerStyle={styles._gap_4_items_center} />;
+<FlatList columnWrapperStyle={styles._gap_4} ListHeaderComponentStyle={styles._bg_gray_100_p_4} />;
 
 const styles = StyleSheet.create({
   _bg_blue_500_m_4_p_2_rounded_lg: {
@@ -99,6 +104,17 @@ const styles = StyleSheet.create({
     padding: 8,
     backgroundColor: "#3B82F6",
     borderRadius: 8,
+  },
+  _gap_4_items_center: {
+    gap: 16,
+    alignItems: "center",
+  },
+  _gap_4: {
+    gap: 16,
+  },
+  _bg_gray_100_p_4: {
+    backgroundColor: "#F3F4F6",
+    padding: 16,
   },
 });
 ```
@@ -249,6 +265,79 @@ The Babel plugin will merge them:
 <View style={[styles._className_styles, { paddingTop: safeAreaInsets.top }]}>
   <Text>Content</Text>
 </View>
+```
+
+### ScrollView Content Container
+
+Use `contentContainerClassName` to style the ScrollView's content container:
+
+```tsx
+import { ScrollView, View, Text } from "react-native";
+
+export function MyScrollView() {
+  return (
+    <ScrollView className="flex-1 bg-gray-100" contentContainerClassName="items-center p-4 gap-4">
+      <View className="bg-white rounded-lg p-4">
+        <Text className="text-lg">Item 1</Text>
+      </View>
+      <View className="bg-white rounded-lg p-4">
+        <Text className="text-lg">Item 2</Text>
+      </View>
+    </ScrollView>
+  );
+}
+```
+
+### FlatList with Column Wrapper
+
+Use `columnWrapperClassName` for multi-column FlatLists:
+
+```tsx
+import { FlatList, View, Text } from "react-native";
+
+export function GridList({ items }) {
+  return (
+    <FlatList
+      className="flex-1 bg-gray-100"
+      contentContainerClassName="p-4"
+      columnWrapperClassName="gap-4 mb-4"
+      numColumns={2}
+      data={items}
+      renderItem={({ item }) => (
+        <View className="flex-1 bg-white rounded-lg p-4">
+          <Text className="text-lg">{item.name}</Text>
+        </View>
+      )}
+    />
+  );
+}
+```
+
+### FlatList with Header and Footer
+
+Use `ListHeaderComponentClassName` and `ListFooterComponentClassName`:
+
+```tsx
+import { FlatList, View, Text } from "react-native";
+
+export function ListWithHeaderFooter({ items }) {
+  return (
+    <FlatList
+      className="flex-1"
+      contentContainerClassName="p-4"
+      ListHeaderComponentClassName="p-4 bg-blue-500 mb-4 rounded-lg"
+      ListFooterComponentClassName="p-4 bg-gray-200 mt-4 rounded-lg"
+      data={items}
+      ListHeaderComponent={<Text className="text-white font-bold">Header</Text>}
+      ListFooterComponent={<Text className="text-gray-600">End of list</Text>}
+      renderItem={({ item }) => (
+        <View className="bg-white rounded-lg p-4 mb-2">
+          <Text>{item.name}</Text>
+        </View>
+      )}
+    />
+  );
+}
 ```
 
 ## Architecture
