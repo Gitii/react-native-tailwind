@@ -62,12 +62,48 @@ export const SIZE_PERCENTAGES: Record<string, string> = {
 };
 
 /**
+ * Parse arbitrary size value: [123px], [50%], [10rem]
+ * Returns number for px values, string for % values, null for unsupported units
+ */
+function parseArbitrarySize(value: string): number | string | null {
+  // Match: [123px] or [123] (pixels)
+  const pxMatch = value.match(/^\[(\d+)(?:px)?\]$/);
+  if (pxMatch) {
+    return parseInt(pxMatch[1], 10);
+  }
+
+  // Match: [50%] (percentage)
+  const percentMatch = value.match(/^\[(\d+(?:\.\d+)?)%\]$/);
+  if (percentMatch) {
+    return `${percentMatch[1]}%`;
+  }
+
+  // Unsupported units (rem, em, vh, vw, etc.) - warn and reject
+  if (value.startsWith("[") && value.endsWith("]")) {
+    if (process.env.NODE_ENV !== "production") {
+      console.warn(
+        `[react-native-tailwind] Unsupported arbitrary size unit: ${value}. Only px and % are supported.`,
+      );
+    }
+    return null;
+  }
+
+  return null;
+}
+
+/**
  * Parse sizing classes
  */
 export function parseSizing(cls: string): StyleObject | null {
   // Width
   if (cls.startsWith("w-")) {
     const sizeKey = cls.substring(2);
+
+    // Arbitrary values: w-[123px], w-[50%]
+    const arbitrarySize = parseArbitrarySize(sizeKey);
+    if (arbitrarySize !== null) {
+      return { width: arbitrarySize };
+    }
 
     // Percentage widths: w-full, w-1/2, etc.
     const percentage = SIZE_PERCENTAGES[sizeKey];
@@ -91,6 +127,12 @@ export function parseSizing(cls: string): StyleObject | null {
   if (cls.startsWith("h-")) {
     const sizeKey = cls.substring(2);
 
+    // Arbitrary values: h-[123px], h-[50%]
+    const arbitrarySize = parseArbitrarySize(sizeKey);
+    if (arbitrarySize !== null) {
+      return { height: arbitrarySize };
+    }
+
     // Percentage heights: h-full, h-1/2, etc.
     const percentage = SIZE_PERCENTAGES[sizeKey];
     if (percentage) {
@@ -113,6 +155,12 @@ export function parseSizing(cls: string): StyleObject | null {
   if (cls.startsWith("min-w-")) {
     const sizeKey = cls.substring(6);
 
+    // Arbitrary values: min-w-[123px], min-w-[50%]
+    const arbitrarySize = parseArbitrarySize(sizeKey);
+    if (arbitrarySize !== null) {
+      return { minWidth: arbitrarySize };
+    }
+
     const percentage = SIZE_PERCENTAGES[sizeKey];
     if (percentage) {
       return { minWidth: percentage };
@@ -127,6 +175,12 @@ export function parseSizing(cls: string): StyleObject | null {
   // Min height
   if (cls.startsWith("min-h-")) {
     const sizeKey = cls.substring(6);
+
+    // Arbitrary values: min-h-[123px], min-h-[50%]
+    const arbitrarySize = parseArbitrarySize(sizeKey);
+    if (arbitrarySize !== null) {
+      return { minHeight: arbitrarySize };
+    }
 
     const percentage = SIZE_PERCENTAGES[sizeKey];
     if (percentage) {
@@ -143,6 +197,12 @@ export function parseSizing(cls: string): StyleObject | null {
   if (cls.startsWith("max-w-")) {
     const sizeKey = cls.substring(6);
 
+    // Arbitrary values: max-w-[123px], max-w-[50%]
+    const arbitrarySize = parseArbitrarySize(sizeKey);
+    if (arbitrarySize !== null) {
+      return { maxWidth: arbitrarySize };
+    }
+
     const percentage = SIZE_PERCENTAGES[sizeKey];
     if (percentage) {
       return { maxWidth: percentage };
@@ -157,6 +217,12 @@ export function parseSizing(cls: string): StyleObject | null {
   // Max height
   if (cls.startsWith("max-h-")) {
     const sizeKey = cls.substring(6);
+
+    // Arbitrary values: max-h-[123px], max-h-[50%]
+    const arbitrarySize = parseArbitrarySize(sizeKey);
+    if (arbitrarySize !== null) {
+      return { maxHeight: arbitrarySize };
+    }
 
     const percentage = SIZE_PERCENTAGES[sizeKey];
     if (percentage) {
