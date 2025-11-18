@@ -167,6 +167,48 @@ const _twStyles = StyleSheet.create({
 
 > **Note:** You can extend the color palette with custom colors via `tailwind.config.*` — see [Custom Colors](#custom-colors)
 
+**Opacity Modifiers:**
+
+Apply transparency to any color using the `/` operator with a percentage value (0-100):
+
+```tsx
+<View className="bg-black/50 p-4">         {/* 50% opacity black background */}
+  <Text className="text-gray-900/80">     {/* 80% opacity gray text */}
+    Semi-transparent content
+  </Text>
+  <View className="border-2 border-red-500/30" /> {/* 30% opacity red border */}
+</View>
+```
+
+- Works with all color types: `bg-*`, `text-*`, `border-*`
+- Supports preset colors: `bg-blue-500/75`, `text-red-600/50`
+- Supports arbitrary colors: `bg-[#ff0000]/40`, `text-[#3B82F6]/90`
+- Supports custom colors: `bg-primary/60`, `text-brand/80`
+- Uses React Native's 8-digit hex format: `#RRGGBBAA`
+
+**Examples:**
+
+```tsx
+// Background opacity
+<View className="bg-white/90" />          // #FFFFFFE6
+<View className="bg-blue-500/50" />       // #3B82F680
+
+// Text opacity
+<Text className="text-black/70" />        // #000000B3
+<Text className="text-gray-900/60" />     // #11182799
+
+// Border opacity
+<View className="border-2 border-purple-500/40" /> // #A855F766
+
+// Arbitrary colors with opacity
+<View className="bg-[#ff6b6b]/25" />      // #FF6B6B40
+
+// Edge cases
+<View className="bg-black/0" />           // Fully transparent
+<View className="bg-blue-500/100" />      // Fully opaque
+<View className="bg-transparent/50" />    // Remains transparent
+```
+
 ### Typography
 
 **Font Size:**
@@ -203,6 +245,152 @@ const _twStyles = StyleSheet.create({
 **Style:**
 
 `border-solid`, `border-dotted`, `border-dashed`
+
+### Shadows & Elevation
+
+Apply platform-specific shadows and elevation to create depth and visual hierarchy. Automatically uses iOS shadow properties or Android elevation based on the platform:
+
+**Available shadow sizes:**
+
+- `shadow-sm` — Subtle shadow
+- `shadow` — Default shadow
+- `shadow-md` — Medium shadow
+- `shadow-lg` — Large shadow
+- `shadow-xl` — Extra large shadow
+- `shadow-2xl` — Extra extra large shadow
+- `shadow-none` — Remove shadow
+
+**Platform Differences:**
+
+| Platform | Properties Used | Example Output |
+|----------|----------------|----------------|
+| **iOS** | `shadowColor`, `shadowOffset`, `shadowOpacity`, `shadowRadius` | Native iOS shadow rendering |
+| **Android** | `elevation` | Native Android elevation (Material Design) |
+
+**Examples:**
+
+```tsx
+// Card with shadow
+<View className="bg-white rounded-lg shadow-lg p-6 m-4">
+  <Text className="text-xl font-bold">Card Title</Text>
+  <Text className="text-gray-600">Card with large shadow</Text>
+</View>
+
+// Button with subtle shadow
+<Pressable className="bg-blue-500 shadow-sm rounded-lg px-6 py-3">
+  <Text className="text-white">Press Me</Text>
+</Pressable>
+
+// Different shadow sizes
+<View className="shadow-sm p-4">Subtle</View>
+<View className="shadow p-4">Default</View>
+<View className="shadow-md p-4">Medium</View>
+<View className="shadow-lg p-4">Large</View>
+<View className="shadow-xl p-4">Extra Large</View>
+<View className="shadow-2xl p-4">2X Large</View>
+
+// Remove shadow
+<View className="shadow-lg md:shadow-none p-4">
+  Conditional shadow removal
+</View>
+```
+
+**iOS Shadow Values:**
+
+| Class | shadowOpacity | shadowRadius | shadowOffset |
+|-------|---------------|--------------|--------------|
+| `shadow-sm` | 0.05 | 1 | { width: 0, height: 1 } |
+| `shadow` | 0.1 | 2 | { width: 0, height: 1 } |
+| `shadow-md` | 0.15 | 4 | { width: 0, height: 3 } |
+| `shadow-lg` | 0.2 | 8 | { width: 0, height: 6 } |
+| `shadow-xl` | 0.25 | 12 | { width: 0, height: 10 } |
+| `shadow-2xl` | 0.3 | 24 | { width: 0, height: 20 } |
+
+**Android Elevation Values:**
+
+| Class | elevation |
+|-------|-----------|
+| `shadow-sm` | 1 |
+| `shadow` | 2 |
+| `shadow-md` | 4 |
+| `shadow-lg` | 8 |
+| `shadow-xl` | 12 |
+| `shadow-2xl` | 16 |
+
+> **Note:** All shadow parsing happens at compile-time with zero runtime overhead. The platform detection uses React Native's `Platform.select()` API.
+
+### Aspect Ratio
+
+Control the aspect ratio of views using preset or arbitrary values. Requires React Native 0.71+:
+
+**Preset values:**
+
+- `aspect-auto` — Remove aspect ratio constraint
+- `aspect-square` — 1:1 aspect ratio
+- `aspect-video` — 16:9 aspect ratio
+
+**Arbitrary values:**
+
+Use `aspect-[width/height]` for custom ratios:
+
+```tsx
+<View className="aspect-[4/3]" />    // 4:3 ratio (1.333...)
+<View className="aspect-[16/9]" />   // 16:9 ratio (1.778...)
+<View className="aspect-[21/9]" />   // 21:9 ultrawide
+<View className="aspect-[9/16]" />   // 9:16 portrait
+<View className="aspect-[3/2]" />    // 3:2 ratio (1.5)
+```
+
+**Examples:**
+
+```tsx
+// Square image container
+<View className="w-full aspect-square bg-gray-200">
+  <Image source={avatar} className="w-full h-full" />
+</View>
+
+// Video player container (16:9)
+<View className="w-full aspect-video bg-black">
+  <VideoPlayer />
+</View>
+
+// Instagram-style square grid
+<View className="flex-row flex-wrap gap-2">
+  {photos.map((photo) => (
+    <View key={photo.id} className="w-[32%] aspect-square">
+      <Image source={photo.uri} className="w-full h-full rounded" />
+    </View>
+  ))}
+</View>
+
+// Custom aspect ratio for wide images
+<View className="w-full aspect-[21/9] rounded-lg overflow-hidden">
+  <Image source={banner} className="w-full h-full" resizeMode="cover" />
+</View>
+
+// Portrait orientation
+<View className="h-full aspect-[9/16]">
+  <Story />
+</View>
+
+// Remove aspect ratio constraint
+<View className="aspect-square md:aspect-auto">
+  Responsive aspect ratio
+</View>
+```
+
+**Common Aspect Ratios:**
+
+| Ratio | Class | Decimal | Use Case |
+|-------|-------|---------|----------|
+| 1:1 | `aspect-square` | 1.0 | Profile pictures, thumbnails |
+| 16:9 | `aspect-video` | 1.778 | Videos, landscape photos |
+| 4:3 | `aspect-[4/3]` | 1.333 | Standard photos |
+| 3:2 | `aspect-[3/2]` | 1.5 | Classic photography |
+| 21:9 | `aspect-[21/9]` | 2.333 | Ultrawide/cinematic |
+| 9:16 | `aspect-[9/16]` | 0.5625 | Stories, vertical video |
+
+> **Note:** The aspect ratio is calculated as `width / height`. When combined with `w-full`, the height will be automatically calculated to maintain the ratio.
 
 ### Sizing
 
