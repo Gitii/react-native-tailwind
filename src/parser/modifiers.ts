@@ -4,10 +4,10 @@
 
 export type ModifierType = "active" | "hover" | "focus";
 
-export interface ParsedModifier {
+export type ParsedModifier = {
   modifier: ModifierType;
   baseClass: string;
-}
+};
 
 /**
  * Supported modifiers that map to component states
