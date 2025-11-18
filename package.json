@@ -1,0 +1,61 @@
+{
+  "name": "@mgcrea/react-native-tailwind",
+  "version": "0.1.0",
+  "description": "React Native utility-first CSS framework based on Tailwind CSS principles",
+  "author": "Olivier Louvignes <olivier@mgcrea.io> (https://github.com/mgcrea)",
+  "homepage": "https://github.com/mgcrea/react-native-tailwind#readme",
+  "repository": "github:mgcrea/react-native-tailwind",
+  "license": "MIT",
+  "type": "module",
+  "main": "./dist/index.js",
+  "types": "./dist/index.d.ts",
+  "files": [
+    "*.podspec",
+    "src",
+    "dist",
+    "ios"
+  ],
+  "scripts": {
+    "dev": "cd example; npm run dev",
+    "build": "npm run build:babel && npm run build:types; npm run codegen:ios",
+    "build:babel": "babel src --out-dir dist --extensions \".ts,.tsx,.js,.jsx\" --copy-files",
+    "build:types": "tsc --emitDeclarationOnly",
+    "install:ios": "cd example; npm run install:ios",
+    "open:ios": "cd example; npm run open:ios",
+    "lint": "eslint .",
+    "check": "tsc --noEmit",
+    "spec": "NODE_OPTIONS=--experimental-require-module jest",
+    "test": "npm run lint && npm run check && npm run spec",
+    "prepare": "npm run build"
+  },
+  "peerDependencies": {
+    "react": "*",
+    "react-native": "*"
+  },
+  "devDependencies": {
+    "@babel/cli": "^7.28.3",
+    "@babel/core": "^7.28.5",
+    "@babel/runtime": "^7.28.4",
+    "@mgcrea/eslint-config-react-native": "^0.14.0",
+    "@react-native-community/cli": "^20.0.2",
+    "@react-native/babel-preset": "0.82.1",
+    "@react-native/typescript-config": "0.82.1",
+    "@testing-library/react-native": "^13.3.3",
+    "@types/react": "^19.2.5",
+    "babel-plugin-module-resolver": "^5.0.2",
+    "eslint": "^9.39.1",
+    "jest": "^30.2.0",
+    "prettier": "^3.6.2",
+    "prettier-plugin-organize-imports": "^4.3.0",
+    "react": "^19.2.0",
+    "react-native": "0.82.1",
+    "typescript": "^5.9.3"
+  },
+  "engines": {
+    "node": ">=18"
+  },
+  "packageManager": "pnpm@10.22.0",
+  "publishConfig": {
+    "access": "public"
+  }
+}
