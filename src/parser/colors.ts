@@ -123,11 +123,14 @@ export const COLORS: Record<string, string> = {
 /**
  * Parse color classes (background, text, border)
  */
-export function parseColor(cls: string): StyleObject | null {
+export function parseColor(cls: string, customColors?: Record<string, string>): StyleObject | null {
+  // Merge custom colors with defaults (custom colors take precedence)
+  const colorMap = customColors ? { ...COLORS, ...customColors } : COLORS;
+
   // Background color: bg-blue-500
   if (cls.startsWith('bg-')) {
     const colorKey = cls.substring(3);
-    const color = COLORS[colorKey];
+    const color = colorMap[colorKey];
     if (color) {
       return { backgroundColor: color };
     }
@@ -136,7 +139,7 @@ export function parseColor(cls: string): StyleObject | null {
   // Text color: text-blue-500
   if (cls.startsWith('text-')) {
     const colorKey = cls.substring(5);
-    const color = COLORS[colorKey];
+    const color = colorMap[colorKey];
     if (color) {
       return { color: color };
     }
@@ -145,7 +148,7 @@ export function parseColor(cls: string): StyleObject | null {
   // Border color: border-blue-500
   if (cls.startsWith('border-') && !cls.match(/^border-[0-9]/)) {
     const colorKey = cls.substring(7);
-    const color = COLORS[colorKey];
+    const color = colorMap[colorKey];
     if (color) {
       return { borderColor: color };
     }
