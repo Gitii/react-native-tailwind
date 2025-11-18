@@ -1,5 +1,5 @@
 /**
- * Typography utilities (font size, weight, line height, text align)
+ * Typography utilities (font size, weight, line height, text align, letter spacing)
  */
 
 import type { StyleObject } from "../types";
@@ -19,6 +19,16 @@ export const FONT_SIZES: Record<string, number> = {
   "7xl": 72,
   "8xl": 96,
   "9xl": 128,
+};
+
+// Letter spacing scale
+export const LETTER_SPACING_SCALE: Record<string, number> = {
+  tighter: -0.8,
+  tight: -0.4,
+  normal: 0,
+  wide: 0.4,
+  wider: 0.8,
+  widest: 1.6,
 };
 
 // Font weight utilities
@@ -73,16 +83,93 @@ const LINE_HEIGHT_MAP: Record<string, StyleObject> = {
   "leading-loose": { lineHeight: 32 },
 };
 
+// Letter spacing utilities
+const TRACKING_MAP: Record<string, StyleObject> = {
+  "tracking-tighter": { letterSpacing: -0.8 },
+  "tracking-tight": { letterSpacing: -0.4 },
+  "tracking-normal": { letterSpacing: 0 },
+  "tracking-wide": { letterSpacing: 0.4 },
+  "tracking-wider": { letterSpacing: 0.8 },
+  "tracking-widest": { letterSpacing: 1.6 },
+};
+
+/**
+ * Parse arbitrary font size value: [18px], [20]
+ * Returns number for px values, null for unsupported formats
+ */
+function parseArbitraryFontSize(value: string): number | null {
+  // Match: [18px] or [18] (pixels only)
+  const pxMatch = value.match(/^\[(\d+)(?:px)?\]$/);
+  if (pxMatch) {
+    return parseInt(pxMatch[1], 10);
+  }
+
+  // Warn about unsupported formats
+  if (value.startsWith("[") && value.endsWith("]")) {
+    if (process.env.NODE_ENV !== "production") {
+      console.warn(
+        `[react-native-tailwind] Unsupported arbitrary font size value: ${value}. Only px values are supported (e.g., [18px] or [18]).`,
+      );
+    }
+    return null;
+  }
+
+  return null;
+}
+
+/**
+ * Parse arbitrary line height value: [24px], [28]
+ * Returns number for px values, null for unsupported formats
+ */
+function parseArbitraryLineHeight(value: string): number | null {
+  // Match: [24px] or [24] (pixels only)
+  const pxMatch = value.match(/^\[(\d+)(?:px)?\]$/);
+  if (pxMatch) {
+    return parseInt(pxMatch[1], 10);
+  }
+
+  // Warn about unsupported formats
+  if (value.startsWith("[") && value.endsWith("]")) {
+    if (process.env.NODE_ENV !== "production") {
+      console.warn(
+        `[react-native-tailwind] Unsupported arbitrary line height value: ${value}. Only px values are supported (e.g., [24px] or [24]).`,
+      );
+    }
+    return null;
+  }
+
+  return null;
+}
+
 /**
  * Parse typography classes
  */
 export function parseTypography(cls: string): StyleObject | null {
-  // Font size: text-base, text-lg, etc.
+  // Font size: text-base, text-lg, text-[18px], etc.
   if (cls.startsWith("text-")) {
     const sizeKey = cls.substring(5);
+
+    // Try arbitrary value first
+    const arbitraryValue = parseArbitraryFontSize(sizeKey);
+    if (arbitraryValue !== null) {
+      return { fontSize: arbitraryValue };
+    }
+
+    // Try preset scale
     const fontSize = FONT_SIZES[sizeKey];
     if (fontSize !== undefined) {
       return { fontSize };
+    }
+  }
+
+  // Line height: leading-normal, leading-[24px], etc.
+  if (cls.startsWith("leading-")) {
+    const heightKey = cls.substring(8);
+
+    // Try arbitrary value first
+    const arbitraryValue = parseArbitraryLineHeight(heightKey);
+    if (arbitraryValue !== null) {
+      return { lineHeight: arbitraryValue };
     }
   }
 
@@ -94,6 +181,7 @@ export function parseTypography(cls: string): StyleObject | null {
     TEXT_DECORATION_MAP[cls] ??
     TEXT_TRANSFORM_MAP[cls] ??
     LINE_HEIGHT_MAP[cls] ??
+    TRACKING_MAP[cls] ??
     null
   );
 }

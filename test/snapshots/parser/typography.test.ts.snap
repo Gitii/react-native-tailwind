@@ -1,0 +1,30 @@
+// Vitest Snapshot v1, https://vitest.dev/guide/snapshot.html
+
+exports[`FONT_SIZES > should export complete font size scale 1`] = `
+{
+  "2xl": 24,
+  "3xl": 30,
+  "4xl": 36,
+  "5xl": 48,
+  "6xl": 60,
+  "7xl": 72,
+  "8xl": 96,
+  "9xl": 128,
+  "base": 16,
+  "lg": 18,
+  "sm": 14,
+  "xl": 20,
+  "xs": 12,
+}
+`;
+
+exports[`LETTER_SPACING_SCALE > should export complete letter spacing scale 1`] = `
+{
+  "normal": 0,
+  "tight": -0.4,
+  "tighter": -0.8,
+  "wide": 0.4,
+  "wider": 0.8,
+  "widest": 1.6,
+}
+`;

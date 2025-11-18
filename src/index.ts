@@ -17,4 +17,4 @@ export { parseBorder, parseColor, parseLayout, parseSizing, parseSpacing, parseT
 export { COLORS } from "./parser/colors";
 export { SIZE_PERCENTAGES, SIZE_SCALE } from "./parser/sizing";
 export { SPACING_SCALE } from "./parser/spacing";
-export { FONT_SIZES } from "./parser/typography";
+export { FONT_SIZES, LETTER_SPACING_SCALE } from "./parser/typography";
