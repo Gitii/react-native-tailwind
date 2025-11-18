@@ -25,19 +25,31 @@ import {
 
 export type TextInputProps = Omit<RNTextInputProps, "style"> & {
   /**
-   * Style can be a static style object/array or a function that receives focus state
+   * Style can be a static style object/array or a function that receives focus and disabled state
    */
-  style?: RNTextInputProps["style"] | ((state: { focused: boolean }) => RNTextInputProps["style"]);
+  style?:
+    | RNTextInputProps["style"]
+    | ((state: { focused: boolean; disabled: boolean }) => RNTextInputProps["style"]);
+  /**
+   * Convenience prop for disabled state (overrides editable if provided)
+   * When true, sets editable to false
+   */
+  disabled?: boolean;
 };
 
 /**
- * Enhanced TextInput with focus state support
+ * Enhanced TextInput with focus and disabled state support
  *
  * Manages focus state internally and passes it to style functions,
- * enabling the use of focus: modifier in className.
+ * enabling the use of focus: and disabled: modifiers in className.
+ *
+ * Note: TextInput uses `editable` prop internally. You can pass either:
+ * - `disabled={true}` - convenience prop (sets editable to false)
+ * - `editable={false}` - React Native's native prop
+ * If both are provided, `disabled` takes precedence.
  */
 export const TextInput = forwardRef<RNTextInput, TextInputProps>(function TextInput(
-  { style, onFocus, onBlur, ...props },
+  { style, onFocus, onBlur, disabled, editable = true, ...props },
   ref,
 ) {
   const [focused, setFocused] = useState(false);
@@ -58,8 +70,21 @@ export const TextInput = forwardRef<RNTextInput, TextInputProps>(function TextIn
     [onBlur],
   );
 
-  // Resolve style - call function with focus state if needed
-  const resolvedStyle = typeof style === "function" ? style({ focused }) : style;
+  // Resolve editable state: disabled prop overrides editable if provided
+  const isEditable = disabled !== undefined ? !disabled : editable;
+  const isDisabled = !isEditable;
 
-  return <RNTextInput ref={ref} style={resolvedStyle} onFocus={handleFocus} onBlur={handleBlur} {...props} />;
+  // Resolve style - call function with focus and disabled state if needed
+  const resolvedStyle = typeof style === "function" ? style({ focused, disabled: isDisabled }) : style;
+
+  return (
+    <RNTextInput
+      ref={ref}
+      style={resolvedStyle}
+      editable={isEditable}
+      onFocus={handleFocus}
+      onBlur={handleBlur}
+      {...props}
+    />
+  );
 });

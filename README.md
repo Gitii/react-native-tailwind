@@ -15,11 +15,11 @@ Compile-time Tailwind CSS for React Native with zero runtime overhead. Transform
 ## Features
 
 - ⚡ **Zero runtime overhead** — All transformations happen at compile time
-- 🎯 **Babel-only setup** — No Metro configuration required (like Reanimated)
-- 📝 **TypeScript-first** — Full type safety and autocomplete support
-- 🚀 **Optimized performance** — Uses `StyleSheet.create` for optimal React Native performance
-- 📦 **Small bundle size** — Only includes actual styles used in your app
 - 🔧 **No dependencies** — Direct-to-React-Native style generation without tailwindcss package
+- 🎯 **Babel-only setup** — No Metro configuration required
+- 📝 **TypeScript-first** — Full type safety and autocomplete support
+- 🚀 **Optimized performance** — Compiles down to `StyleSheet.create` for optimal performance
+- 📦 **Small bundle size** — Only includes actual styles used in your app
 - 🎨 **Custom colors** — Extend the default palette via `tailwind.config.*`
 - 📐 **Arbitrary values** — Use custom sizes and borders: `w-[123px]`, `rounded-[20px]`
 - 🔀 **Dynamic className** — Conditional styles with hybrid compile-time optimization
@@ -397,19 +397,16 @@ export function MyButton() {
 
 ```tsx
 <Pressable
-  style={({ pressed }) => [
-    _twStyles._bg_blue_500_p_4_rounded_lg,
-    pressed && _twStyles._active_bg_blue_700,
-  ]}
+  style={({ pressed }) => [_twStyles._bg_blue_500_p_4_rounded_lg, pressed && _twStyles._active_bg_blue_700]}
 >
   <Text style={_twStyles._font_semibold_text_white}>Press Me</Text>
-</Pressable>
+</Pressable>;
 
 // Generated styles:
 const _twStyles = StyleSheet.create({
-  _bg_blue_500_p_4_rounded_lg: { backgroundColor: '#3B82F6', padding: 16, borderRadius: 8 },
-  _active_bg_blue_700: { backgroundColor: '#1D4ED8' },
-  _font_semibold_text_white: { fontWeight: '600', color: '#FFFFFF' },
+  _bg_blue_500_p_4_rounded_lg: { backgroundColor: "#3B82F6", padding: 16, borderRadius: 8 },
+  _active_bg_blue_700: { backgroundColor: "#1D4ED8" },
+  _font_semibold_text_white: { fontWeight: "600", color: "#FFFFFF" },
 });
 ```
 
@@ -459,6 +456,7 @@ export function MyInput() {
 **How it works:**
 
 The package exports an enhanced `TextInput` component that:
+
 1. Manages focus state internally using `onFocus`/`onBlur` callbacks
 2. Passes focus state to the style function: `style={({ focused }) => ...}`
 3. Works seamlessly with the `focus:` modifier in className
@@ -471,10 +469,10 @@ The package exports an enhanced `TextInput` component that:
 
 **Supported Modifiers by Component:**
 
-| Component   | Supported Modifiers | Notes |
-| ----------- | ------------------- | ----- |
-| `Pressable` | `active:`, `focus:`, `hover:` (web only) | Built into React Native |
-| `TextInput` (enhanced) | `focus:` | Use `@mgcrea/react-native-tailwind` export |
+| Component              | Supported Modifiers                      | Notes                                      |
+| ---------------------- | ---------------------------------------- | ------------------------------------------ |
+| `Pressable`            | `active:`, `focus:`, `hover:` (web only) | Built into React Native                    |
+| `TextInput` (enhanced) | `focus:`                                 | Use `@mgcrea/react-native-tailwind` export |
 
 **Important Notes:**
 
@@ -564,7 +562,7 @@ export function ListWithHeaderFooter({ items }) {
 When building reusable components, use static `className` strings internally. To support `className` props from parent components, you **must** accept the corresponding `style` props (the Babel plugin transforms `className` to `style` before your component receives it):
 
 ```tsx
-import { Pressable, Text, View, StyleProp, ViewStyle } from 'react-native';
+import { Pressable, Text, View, StyleProp, ViewStyle } from "react-native";
 
 type ButtonProps = {
   title: string;
@@ -581,14 +579,8 @@ export function Button({ title, onPress, style, containerStyle }: ButtonProps) {
   // Use static className strings - these get optimized at compile-time
   return (
     <View className="p-2 bg-gray-100 rounded-lg" style={containerStyle}>
-      <Pressable
-        className="bg-blue-500 px-6 py-4 rounded-lg items-center"
-        onPress={onPress}
-        style={style}
-      >
-        <Text className="text-white text-center font-semibold text-base">
-          {title}
-        </Text>
+      <Pressable className="bg-blue-500 px-6 py-4 rounded-lg items-center" onPress={onPress} style={style}>
+        <Text className="text-white text-center font-semibold text-base">{title}</Text>
       </Pressable>
     </View>
   );
