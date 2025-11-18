@@ -61,31 +61,46 @@ function getTargetStyleProp(attributeName: string): string {
 }
 
 /**
- * Check if a JSX element is a Pressable component (or compatible component)
- * Currently supports: Pressable
- * Future: Could be extended via plugin config for custom components
+ * Check if a JSX element supports modifiers and determine which modifiers are supported
+ * Returns an object with component info and supported modifiers
  */
-function isPressableComponent(jsxElement: any, t: typeof BabelTypes): boolean {
+function getComponentModifierSupport(
+  jsxElement: any,
+  t: typeof BabelTypes,
+): { component: string; supportedModifiers: ModifierType[] } | null {
   if (!t.isJSXOpeningElement(jsxElement)) {
-    return false;
+    return null;
   }
 
   const name = jsxElement.name;
+  let componentName: string | null = null;
 
   // Handle simple identifier: <Pressable>
-  if (t.isJSXIdentifier(name) && name.name === "Pressable") {
-    return true;
+  if (t.isJSXIdentifier(name)) {
+    componentName = name.name;
   }
 
   // Handle member expression: <ReactNative.Pressable>
   if (t.isJSXMemberExpression(name)) {
     const property = name.property;
-    if (t.isJSXIdentifier(property) && property.name === "Pressable") {
-      return true;
+    if (t.isJSXIdentifier(property)) {
+      componentName = property.name;
     }
   }
 
-  return false;
+  if (!componentName) {
+    return null;
+  }
+
+  // Map components to their supported modifiers
+  switch (componentName) {
+    case "Pressable":
+      return { component: "Pressable", supportedModifiers: ["active", "hover", "focus"] };
+    case "TextInput":
+      return { component: "TextInput", supportedModifiers: ["focus"] };
+    default:
+      return null;
+  }
 }
 
 /**
@@ -364,11 +379,7 @@ function getStatePropertyForModifier(modifier: ModifierType): string {
 /**
  * Create a style function for Pressable: ({ pressed }) => styleExpression
  */
-function createStyleFunction(
-  styleExpression: any,
-  modifierTypes: ModifierType[],
-  t: typeof BabelTypes,
-): any {
+function createStyleFunction(styleExpression: any, modifierTypes: ModifierType[], t: typeof BabelTypes): any {
   // Build parameter object: { pressed, hovered, focused }
   const paramProperties: any[] = [];
   const usedStateProps = new Set<string>();
@@ -476,40 +487,87 @@ export default function reactNativeTailwindBabelPlugin({
           // Check if className contains modifiers (active:, hover:, focus:)
           const { baseClasses, modifierClasses } = splitModifierClasses(className);
 
-          // If there are modifiers, check if this is a Pressable component
+          // If there are modifiers, check if this component supports them
           if (modifierClasses.length > 0) {
             // Get the JSX opening element (the direct parent of the attribute)
             const jsxOpeningElement = path.parent;
+            const componentSupport = getComponentModifierSupport(jsxOpeningElement, t);
 
-            if (isPressableComponent(jsxOpeningElement, t)) {
-              // Process className with modifiers for Pressable
-              const styleExpression = processStaticClassNameWithModifiers(className, state, t);
+            if (componentSupport) {
+              // Get modifier types used in className
+              const usedModifiers = Array.from(new Set(modifierClasses.map((m) => m.modifier)));
 
-              // Get modifier types for style function parameter
-              const modifierTypes = Array.from(new Set(modifierClasses.map((m) => m.modifier)));
-
-              // Create style function: ({ pressed }) => styleExpression
-              const styleFunctionExpression = createStyleFunction(styleExpression, modifierTypes, t);
-
-              // Check if there's already a style prop on this element
-              const parent = path.parent as any;
-              const styleAttribute = parent.attributes.find(
-                (attr: any) => t.isJSXAttribute(attr) && attr.name.name === targetStyleProp,
+              // Check if all modifiers are supported by this component
+              const unsupportedModifiers = usedModifiers.filter(
+                (mod) => !componentSupport.supportedModifiers.includes(mod),
               );
 
-              if (styleAttribute) {
-                // Merge with existing style prop
-                mergeStyleFunctionAttribute(path, styleAttribute, styleFunctionExpression, t);
+              if (unsupportedModifiers.length > 0) {
+                // Warn about unsupported modifiers
+                if (process.env.NODE_ENV !== "production") {
+                  console.warn(
+                    `[react-native-tailwind] Modifiers (${unsupportedModifiers.map((m) => `${m}:`).join(", ")}) are not supported on ${componentSupport.component} component at ${state.file.opts.filename ?? "unknown"}. ` +
+                      `Supported modifiers: ${componentSupport.supportedModifiers.join(", ")}`,
+                  );
+                }
+                // Filter out unsupported modifiers
+                const supportedModifierClasses = modifierClasses.filter((m) =>
+                  componentSupport.supportedModifiers.includes(m.modifier),
+                );
+
+                // If no supported modifiers remain, fall through to normal processing
+                if (supportedModifierClasses.length === 0) {
+                  // Continue to normal processing
+                } else {
+                  // Process only supported modifiers
+                  const filteredClassName =
+                    baseClasses.join(" ") +
+                    " " +
+                    supportedModifierClasses.map((m) => `${m.modifier}:${m.baseClass}`).join(" ");
+                  const styleExpression = processStaticClassNameWithModifiers(
+                    filteredClassName.trim(),
+                    state,
+                    t,
+                  );
+                  const modifierTypes = Array.from(new Set(supportedModifierClasses.map((m) => m.modifier)));
+                  const styleFunctionExpression = createStyleFunction(styleExpression, modifierTypes, t);
+
+                  const parent = path.parent as any;
+                  const styleAttribute = parent.attributes.find(
+                    (attr: any) => t.isJSXAttribute(attr) && attr.name.name === targetStyleProp,
+                  );
+
+                  if (styleAttribute) {
+                    mergeStyleFunctionAttribute(path, styleAttribute, styleFunctionExpression, t);
+                  } else {
+                    replaceWithStyleFunctionAttribute(path, styleFunctionExpression, targetStyleProp, t);
+                  }
+                  return;
+                }
               } else {
-                // Replace className with style function prop
-                replaceWithStyleFunctionAttribute(path, styleFunctionExpression, targetStyleProp, t);
+                // All modifiers are supported - process normally
+                const styleExpression = processStaticClassNameWithModifiers(className, state, t);
+                const modifierTypes = usedModifiers;
+                const styleFunctionExpression = createStyleFunction(styleExpression, modifierTypes, t);
+
+                const parent = path.parent as any;
+                const styleAttribute = parent.attributes.find(
+                  (attr: any) => t.isJSXAttribute(attr) && attr.name.name === targetStyleProp,
+                );
+
+                if (styleAttribute) {
+                  mergeStyleFunctionAttribute(path, styleAttribute, styleFunctionExpression, t);
+                } else {
+                  replaceWithStyleFunctionAttribute(path, styleFunctionExpression, targetStyleProp, t);
+                }
+                return;
               }
-              return;
             } else {
-              // Warn: modifiers only work on Pressable components
+              // Component doesn't support any modifiers
               if (process.env.NODE_ENV !== "production") {
+                const usedModifiers = Array.from(new Set(modifierClasses.map((m) => m.modifier)));
                 console.warn(
-                  `[react-native-tailwind] Modifiers (${modifierClasses.map((m) => `${m.modifier}:`).join(", ")}) can only be used on Pressable components. Found on non-Pressable element at ${state.file.opts.filename ?? "unknown"}`,
+                  `[react-native-tailwind] Modifiers (${usedModifiers.map((m) => `${m}:`).join(", ")}) can only be used on compatible components (Pressable, TextInput). Found on unsupported element at ${state.file.opts.filename ?? "unknown"}`,
                 );
               }
               // Fall through to normal processing (ignore modifiers)

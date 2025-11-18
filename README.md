@@ -371,9 +371,13 @@ The Babel plugin will merge them:
 </View>
 ```
 
-### Active State Modifier (Pressable)
+### State Modifiers
 
-Use the `active:` modifier to apply styles when a `Pressable` component is pressed. The Babel plugin detects `active:` classes and automatically generates a style function that leverages Pressable's `pressed` state.
+Apply styles based on component state with zero runtime overhead. The Babel plugin automatically generates optimized style functions.
+
+#### Active Modifier (Pressable)
+
+Use the `active:` modifier to apply styles when a `Pressable` component is pressed.
 
 **Basic Example:**
 
@@ -433,11 +437,54 @@ const _twStyles = StyleSheet.create({
 - ✅ **Optimized** — Styles deduplicated via `StyleSheet.create`
 - ✅ **Works with custom colors** — `active:bg-primary`, `active:bg-secondary`, etc.
 
+#### Focus Modifier (TextInput)
+
+Use the `focus:` modifier to apply styles when a `TextInput` component is focused. **Requires using the enhanced `TextInput` component from this package.**
+
+**Basic Example:**
+
+```tsx
+import { TextInput } from "@mgcrea/react-native-tailwind";
+
+export function MyInput() {
+  return (
+    <TextInput
+      className="border-2 border-gray-300 focus:border-blue-500 p-3 rounded-lg bg-white"
+      placeholder="Email address"
+    />
+  );
+}
+```
+
+**How it works:**
+
+The package exports an enhanced `TextInput` component that:
+1. Manages focus state internally using `onFocus`/`onBlur` callbacks
+2. Passes focus state to the style function: `style={({ focused }) => ...}`
+3. Works seamlessly with the `focus:` modifier in className
+
+**Multiple Focus Modifiers:**
+
+```tsx
+<TextInput className="border-2 border-gray-300 focus:border-green-500 bg-gray-50 focus:bg-white p-3 rounded-lg" />
+```
+
+**Supported Modifiers by Component:**
+
+| Component   | Supported Modifiers | Notes |
+| ----------- | ------------------- | ----- |
+| `Pressable` | `active:`, `focus:`, `hover:` (web only) | Built into React Native |
+| `TextInput` (enhanced) | `focus:` | Use `@mgcrea/react-native-tailwind` export |
+
 **Important Notes:**
 
-- ⚠️ **Pressable-only** — The `active:` modifier only works on `Pressable` components. Using it on other components (like `View`) will trigger a warning and the modifier will be ignored.
-- ℹ️ **Future support** — `hover:` and `focus:` modifiers may be added in the future (hover is web-only)
-- ℹ️ **No nested modifiers** — Combinations like `active:hover:bg-blue-500` are not currently supported
+- ⚠️ **Enhanced component required** — The `focus:` modifier requires using the enhanced `TextInput` from this package
+- ℹ️ **Component-specific** — Each modifier only works on compatible components
+- ℹ️ **No nested modifiers** — Combinations like `active:focus:bg-blue-500` are not currently supported
+- ✅ **Zero styling overhead** — All className parsing happens at compile-time
+- ✅ **Minimal runtime cost** — Only adds focus state management (`useState` + 2 callbacks)
+- ✅ **Type-safe** — Full TypeScript autocomplete for all modifiers
+- ✅ **Works with custom colors** — `focus:border-primary`, `active:bg-secondary`, etc.
 
 ### ScrollView Content Container
 

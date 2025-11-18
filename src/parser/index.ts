@@ -71,5 +71,5 @@ export { parseSpacing } from "./spacing";
 export { parseTypography } from "./typography";
 
 // Re-export modifier utilities
-export { parseModifier, hasModifier, splitModifierClasses } from "./modifiers";
+export { hasModifier, parseModifier, splitModifierClasses } from "./modifiers";
 export type { ModifierType, ParsedModifier } from "./modifiers";

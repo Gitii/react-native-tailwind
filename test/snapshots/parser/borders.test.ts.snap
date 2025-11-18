@@ -1,0 +1,25 @@
+// Vitest Snapshot v1, https://vitest.dev/guide/snapshot.html
+
+exports[`BORDER_RADIUS_SCALE > should export complete border radius scale 1`] = `
+{
+  "": 4,
+  "2xl": 16,
+  "3xl": 24,
+  "full": 9999,
+  "lg": 8,
+  "md": 6,
+  "none": 0,
+  "sm": 2,
+  "xl": 12,
+}
+`;
+
+exports[`BORDER_WIDTH_SCALE > should export complete border width scale 1`] = `
+{
+  "": 1,
+  "0": 0,
+  "2": 2,
+  "4": 4,
+  "8": 8,
+}
+`;

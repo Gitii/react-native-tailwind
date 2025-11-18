@@ -27,9 +27,92 @@ export const BORDER_RADIUS_SCALE: Record<string, number> = {
 };
 
 /**
+ * Property mapping for border width directions
+ */
+const BORDER_WIDTH_PROP_MAP: Record<string, string> = {
+  t: "borderTopWidth",
+  r: "borderRightWidth",
+  b: "borderBottomWidth",
+  l: "borderLeftWidth",
+};
+
+/**
+ * Property mapping for border radius corners
+ */
+const BORDER_RADIUS_CORNER_MAP: Record<string, string> = {
+  tl: "borderTopLeftRadius",
+  tr: "borderTopRightRadius",
+  bl: "borderBottomLeftRadius",
+  br: "borderBottomRightRadius",
+};
+
+/**
+ * Property mapping for border radius sides (returns array of properties)
+ */
+const BORDER_RADIUS_SIDE_MAP: Record<string, string[]> = {
+  t: ["borderTopLeftRadius", "borderTopRightRadius"],
+  r: ["borderTopRightRadius", "borderBottomRightRadius"],
+  b: ["borderBottomLeftRadius", "borderBottomRightRadius"],
+  l: ["borderTopLeftRadius", "borderBottomLeftRadius"],
+};
+
+/**
+ * Parse arbitrary border width value: [8px], [4]
+ * Returns number for px values, null for unsupported formats
+ */
+function parseArbitraryBorderWidth(value: string): number | null {
+  // Match: [8px] or [8] (pixels only)
+  const pxMatch = value.match(/^\[(\d+)(?:px)?\]$/);
+  if (pxMatch) {
+    return parseInt(pxMatch[1], 10);
+  }
+
+  // Warn about unsupported formats
+  if (value.startsWith("[") && value.endsWith("]")) {
+    if (process.env.NODE_ENV !== "production") {
+      console.warn(
+        `[react-native-tailwind] Unsupported arbitrary border width value: ${value}. Only px values are supported (e.g., [8px] or [8]).`,
+      );
+    }
+    return null;
+  }
+
+  return null;
+}
+
+/**
+ * Parse arbitrary border radius value: [12px], [8]
+ * Returns number for px values, null for unsupported formats
+ */
+function parseArbitraryBorderRadius(value: string): number | null {
+  // Match: [12px] or [12] (pixels only)
+  const pxMatch = value.match(/^\[(\d+)(?:px)?\]$/);
+  if (pxMatch) {
+    return parseInt(pxMatch[1], 10);
+  }
+
+  // Warn about unsupported formats
+  if (value.startsWith("[") && value.endsWith("]")) {
+    if (process.env.NODE_ENV !== "production") {
+      console.warn(
+        `[react-native-tailwind] Unsupported arbitrary border radius value: ${value}. Only px values are supported (e.g., [12px] or [12]).`,
+      );
+    }
+    return null;
+  }
+
+  return null;
+}
+
+/**
  * Parse border classes
  */
 export function parseBorder(cls: string): StyleObject | null {
+  // Border style (must come before parseBorderWidth)
+  if (cls === "border-solid") return { borderStyle: "solid" };
+  if (cls === "border-dotted") return { borderStyle: "dotted" };
+  if (cls === "border-dashed") return { borderStyle: "dashed" };
+
   // Border width (border-0, border-t, border-[8px], etc.)
   if (cls.startsWith("border-")) {
     return parseBorderWidth(cls);
@@ -44,11 +127,6 @@ export function parseBorder(cls: string): StyleObject | null {
     return parseBorderRadius(cls);
   }
 
-  // Border style
-  if (cls === "border-solid") return { borderStyle: "solid" };
-  if (cls === "border-dotted") return { borderStyle: "dotted" };
-  if (cls === "border-dashed") return { borderStyle: "dashed" };
-
   return null;
 }
 
@@ -56,50 +134,45 @@ export function parseBorder(cls: string): StyleObject | null {
  * Parse border width classes
  */
 function parseBorderWidth(cls: string): StyleObject | null {
-  // All borders with arbitrary values: border-[8px]
-  const allArbMatch = cls.match(/^border-\[(\d+)(?:px)?\]$/);
-  if (allArbMatch) {
-    return { borderWidth: parseInt(allArbMatch[1], 10) };
-  }
-
-  // Directional borders with arbitrary values: border-t-[8px]
-  const dirArbMatch = cls.match(/^border-([trbl])-\[(\d+)(?:px)?\]$/);
-  if (dirArbMatch) {
-    const dir = dirArbMatch[1];
-    const value = parseInt(dirArbMatch[2], 10);
-    const propMap: Record<string, string> = {
-      t: "borderTopWidth",
-      r: "borderRightWidth",
-      b: "borderBottomWidth",
-      l: "borderLeftWidth",
-    };
-    return { [propMap[dir]]: value };
-  }
-
-  // Preset directional borders: border-t-0, border-t-2, etc.
-  const dirMatch = cls.match(/^border-([trbl])-?(\d*)$/);
+  // Directional borders: border-t, border-t-2, border-t-[8px]
+  const dirMatch = cls.match(/^border-([trbl])(?:-(.+))?$/);
   if (dirMatch) {
     const dir = dirMatch[1];
-    const scaleKey = dirMatch[2] || ""; // empty string for border-t
-    const value = BORDER_WIDTH_SCALE[scaleKey];
+    const valueStr = dirMatch[2] || ""; // empty string for border-t
 
-    if (typeof value === "number") {
-      const propMap: Record<string, string> = {
-        t: "borderTopWidth",
-        r: "borderRightWidth",
-        b: "borderBottomWidth",
-        l: "borderLeftWidth",
-      };
-      return { [propMap[dir]]: value };
+    // Try arbitrary value first (if it starts with [)
+    if (valueStr.startsWith("[")) {
+      const arbitraryValue = parseArbitraryBorderWidth(valueStr);
+      if (arbitraryValue !== null) {
+        return { [BORDER_WIDTH_PROP_MAP[dir]]: arbitraryValue };
+      }
+      return null;
     }
+
+    // Try preset scale
+    const scaleValue = BORDER_WIDTH_SCALE[valueStr];
+    if (scaleValue !== undefined) {
+      return { [BORDER_WIDTH_PROP_MAP[dir]]: scaleValue };
+    }
+
+    return null;
   }
 
-  // Preset all borders: border-0, border-2, etc.
+  // All borders with preset values: border-0, border-2, border-4, border-8
   const allMatch = cls.match(/^border-(\d+)$/);
   if (allMatch) {
     const value = BORDER_WIDTH_SCALE[allMatch[1]];
     if (value !== undefined) {
       return { borderWidth: value };
+    }
+  }
+
+  // All borders with arbitrary values: border-[8px]
+  const allArbMatch = cls.match(/^border-(\[.+\])$/);
+  if (allArbMatch) {
+    const arbitraryValue = parseArbitraryBorderWidth(allArbMatch[1]);
+    if (arbitraryValue !== null) {
+      return { borderWidth: arbitraryValue };
     }
   }
 
@@ -110,88 +183,94 @@ function parseBorderWidth(cls: string): StyleObject | null {
  * Parse border radius classes
  */
 function parseBorderRadius(cls: string): StyleObject | null {
-  // All corners with arbitrary values: rounded-[12px]
-  const allArbMatch = cls.match(/^rounded-\[(\d+)(?:px)?\]$/);
-  if (allArbMatch) {
-    return { borderRadius: parseInt(allArbMatch[1], 10) };
+  // Remove "rounded" prefix for easier parsing
+  const withoutPrefix = cls.substring(7); // "rounded".length = 7
+
+  // Handle "rounded" by itself
+  if (withoutPrefix === "") {
+    return { borderRadius: BORDER_RADIUS_SCALE[""] };
   }
 
-  // Specific corners with arbitrary values: rounded-tl-[8px]
-  const cornerArbMatch = cls.match(/^rounded-(tl|tr|bl|br)-\[(\d+)(?:px)?\]$/);
-  if (cornerArbMatch) {
-    const corner = cornerArbMatch[1];
-    const value = parseInt(cornerArbMatch[2], 10);
-    const propMap: Record<string, string> = {
-      tl: "borderTopLeftRadius",
-      tr: "borderTopRightRadius",
-      bl: "borderBottomLeftRadius",
-      br: "borderBottomRightRadius",
-    };
-    return { [propMap[corner]]: value };
+  // Must start with "-" after "rounded"
+  if (!withoutPrefix.startsWith("-")) {
+    return null;
   }
 
-  // Sides with arbitrary values: rounded-t-[8px]
-  const sideArbMatch = cls.match(/^rounded-([trbl])-\[(\d+)(?:px)?\]$/);
-  if (sideArbMatch) {
-    const side = sideArbMatch[1];
-    const value = parseInt(sideArbMatch[2], 10);
-    const propMap: Record<string, string[]> = {
-      t: ["borderTopLeftRadius", "borderTopRightRadius"],
-      r: ["borderTopRightRadius", "borderBottomRightRadius"],
-      b: ["borderBottomLeftRadius", "borderBottomRightRadius"],
-      l: ["borderTopLeftRadius", "borderBottomLeftRadius"],
-    };
-    const result: StyleObject = {};
-    propMap[side].forEach((prop) => (result[prop] = value));
-    return result;
+  const rest = withoutPrefix.substring(1); // Remove leading "-"
+
+  // Handle "rounded-" (just dash, no content)
+  if (rest === "") {
+    return null;
   }
 
-  // All corners with preset values: rounded, rounded-lg, etc.
-  const allMatch = cls.match(/^rounded(-\w+)?$/);
-  if (allMatch) {
-    const scaleKey = allMatch[1] ? allMatch[1].substring(1) : ""; // remove leading dash
-    const value = BORDER_RADIUS_SCALE[scaleKey];
-    if (value !== undefined) {
-      return { borderRadius: value };
-    }
-  }
-
-  // Sides with preset values: rounded-t, rounded-t-lg, etc.
-  const sideMatch = cls.match(/^rounded-([trbl])(?:-(\w+))?$/);
-  if (sideMatch) {
-    const side = sideMatch[1];
-    const scaleKey = sideMatch[2] || ""; // empty string for rounded-t
-    const value = BORDER_RADIUS_SCALE[scaleKey];
-
-    if (value !== undefined) {
-      const propMap: Record<string, string[]> = {
-        t: ["borderTopLeftRadius", "borderTopRightRadius"],
-        r: ["borderTopRightRadius", "borderBottomRightRadius"],
-        b: ["borderBottomLeftRadius", "borderBottomRightRadius"],
-        l: ["borderTopLeftRadius", "borderBottomLeftRadius"],
-      };
-      const result: StyleObject = {};
-      propMap[side].forEach((prop) => (result[prop] = value));
-      return result;
-    }
-  }
-
-  // Specific corners with preset values: rounded-tl, rounded-tl-lg, etc.
-  const cornerMatch = cls.match(/^rounded-(tl|tr|bl|br)(?:-(\w+))?$/);
+  // Specific corners: rounded-tl, rounded-tl-lg, rounded-tl-[8px]
+  const cornerMatch = rest.match(/^(tl|tr|bl|br)(?:-(.+))?$/);
   if (cornerMatch) {
     const corner = cornerMatch[1];
-    const scaleKey = cornerMatch[2] || "";
-    const value = BORDER_RADIUS_SCALE[scaleKey];
+    const valueStr = cornerMatch[2] || ""; // empty string for rounded-tl
+
+    // Try arbitrary value first
+    if (valueStr.startsWith("[")) {
+      const arbitraryValue = parseArbitraryBorderRadius(valueStr);
+      if (arbitraryValue !== null) {
+        return { [BORDER_RADIUS_CORNER_MAP[corner]]: arbitraryValue };
+      }
+      return null;
+    }
+
+    // Try preset scale
+    const scaleValue = BORDER_RADIUS_SCALE[valueStr];
+    if (scaleValue !== undefined) {
+      return { [BORDER_RADIUS_CORNER_MAP[corner]]: scaleValue };
+    }
+
+    return null;
+  }
+
+  // Sides: rounded-t, rounded-t-lg, rounded-t-[8px]
+  const sideMatch = rest.match(/^([trbl])(?:-(.+))?$/);
+  if (sideMatch) {
+    const side = sideMatch[1];
+    const valueStr = sideMatch[2] || ""; // empty string for rounded-t
+
+    let value: number | undefined;
+
+    // Try arbitrary value first
+    if (valueStr.startsWith("[")) {
+      const arbitraryValue = parseArbitraryBorderRadius(valueStr);
+      if (arbitraryValue !== null) {
+        value = arbitraryValue;
+      } else {
+        return null;
+      }
+    } else {
+      // Try preset scale
+      value = BORDER_RADIUS_SCALE[valueStr];
+    }
 
     if (value !== undefined) {
-      const propMap: Record<string, string> = {
-        tl: "borderTopLeftRadius",
-        tr: "borderTopRightRadius",
-        bl: "borderBottomLeftRadius",
-        br: "borderBottomRightRadius",
-      };
-      return { [propMap[corner]]: value };
+      const result: StyleObject = {};
+      BORDER_RADIUS_SIDE_MAP[side].forEach((prop) => (result[prop] = value));
+      return result;
     }
+
+    return null;
+  }
+
+  // All corners with preset values: rounded-lg, rounded-xl, etc.
+  // Or arbitrary values: rounded-[12px]
+  if (rest.startsWith("[")) {
+    const arbitraryValue = parseArbitraryBorderRadius(rest);
+    if (arbitraryValue !== null) {
+      return { borderRadius: arbitraryValue };
+    }
+    return null;
+  }
+
+  // Preset scale
+  const scaleValue = BORDER_RADIUS_SCALE[rest];
+  if (scaleValue !== undefined) {
+    return { borderRadius: scaleValue };
   }
 
   return null;
