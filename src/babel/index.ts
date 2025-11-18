@@ -30,6 +30,7 @@ const STYLES_IDENTIFIER = "_twStyles";
  */
 const SUPPORTED_CLASS_ATTRIBUTES = [
   "className",
+  "containerClassName",
   "contentContainerClassName",
   "columnWrapperClassName",
   "ListHeaderComponentClassName",
@@ -40,6 +41,9 @@ const SUPPORTED_CLASS_ATTRIBUTES = [
  * Get the target style prop name based on the className attribute
  */
 function getTargetStyleProp(attributeName: string): string {
+  if (attributeName === "containerClassName") {
+    return "containerStyle";
+  }
   if (attributeName === "contentContainerClassName") {
     return "contentContainerStyle";
   }
