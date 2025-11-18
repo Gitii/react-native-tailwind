@@ -1,0 +1,68 @@
+/**
+ * Tailwind class parser for React Native
+ * Converts Tailwind-like class names to React Native style objects
+ */
+
+import type { StyleObject, Parser } from '../types';
+import { parseSpacing } from './spacing';
+import { parseColor } from './colors';
+import { parseLayout } from './layout';
+import { parseTypography } from './typography';
+import { parseBorder } from './borders';
+import { parseSizing } from './sizing';
+
+/**
+ * Parse a className string and return a React Native style object
+ * @param className - Space-separated class names
+ * @returns React Native style object
+ */
+export function parseClassName(className: string): StyleObject {
+  const classes = className.split(/\s+/).filter(Boolean);
+  const style: StyleObject = {};
+
+  for (const cls of classes) {
+    const parsedStyle = parseClass(cls);
+    Object.assign(style, parsedStyle);
+  }
+
+  return style;
+}
+
+/**
+ * Parse a single class name
+ * @param cls - Single class name
+ * @returns React Native style object
+ */
+export function parseClass(cls: string): StyleObject {
+  // Try each parser in order
+  const parsers: Parser[] = [
+    parseSpacing,
+    parseColor,
+    parseLayout,
+    parseTypography,
+    parseBorder,
+    parseSizing,
+  ];
+
+  for (const parser of parsers) {
+    const result = parser(cls);
+    if (result !== null) {
+      return result;
+    }
+  }
+
+  // Warn about unknown class in development
+  if (process.env.NODE_ENV !== 'production') {
+    console.warn(`[react-native-tailwind] Unknown class: "${cls}"`);
+  }
+
+  return {};
+}
+
+// Re-export parsers for testing/advanced usage
+export { parseSpacing } from './spacing';
+export { parseColor } from './colors';
+export { parseLayout } from './layout';
+export { parseTypography } from './typography';
+export { parseBorder } from './borders';
+export { parseSizing } from './sizing';
