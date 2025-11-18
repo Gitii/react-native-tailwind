@@ -94,7 +94,6 @@ function flattenColors(
 
     if (typeof value === "string") {
       result[newKey] = value;
-      // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
     } else if (typeof value === "object" && value !== null) {
       Object.assign(result, flattenColors(value, newKey));
     }
