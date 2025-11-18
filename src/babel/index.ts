@@ -22,6 +22,36 @@ type PluginState = PluginPass & {
   customColors: Record<string, string>;
 };
 
+/**
+ * Supported className-like attributes
+ */
+const SUPPORTED_CLASS_ATTRIBUTES = [
+  "className",
+  "contentContainerClassName",
+  "columnWrapperClassName",
+  "ListHeaderComponentClassName",
+  "ListFooterComponentClassName",
+] as const;
+
+/**
+ * Get the target style prop name based on the className attribute
+ */
+function getTargetStyleProp(attributeName: string): string {
+  if (attributeName === "contentContainerClassName") {
+    return "contentContainerStyle";
+  }
+  if (attributeName === "columnWrapperClassName") {
+    return "columnWrapperStyle";
+  }
+  if (attributeName === "ListHeaderComponentClassName") {
+    return "ListHeaderComponentStyle";
+  }
+  if (attributeName === "ListFooterComponentClassName") {
+    return "ListFooterComponentStyle";
+  }
+  return "style";
+}
+
 export default function reactNativeTailwindBabelPlugin({
   types: t,
 }: {
@@ -84,8 +114,8 @@ export default function reactNativeTailwindBabelPlugin({
         const node = path.node as any;
         const attributeName = node.name.name;
 
-        // Only process className attributes
-        if (attributeName !== "className") {
+        // Only process className-like attributes
+        if (!SUPPORTED_CLASS_ATTRIBUTES.includes(attributeName)) {
           return;
         }
 
@@ -96,9 +126,10 @@ export default function reactNativeTailwindBabelPlugin({
           // Warn about dynamic className in development
           if (process.env.NODE_ENV !== "production") {
             const filename = state.file.opts.filename ?? "unknown";
+            const targetStyleProp = getTargetStyleProp(attributeName);
             console.warn(
-              `[react-native-tailwind] Dynamic className values are not supported at ${filename}. ` +
-                "Use the style prop for dynamic values.",
+              `[react-native-tailwind] Dynamic ${attributeName} values are not supported at ${filename}. ` +
+                `Use the ${targetStyleProp} prop for dynamic values.`,
             );
           }
           return;
@@ -123,10 +154,13 @@ export default function reactNativeTailwindBabelPlugin({
         // Store in registry
         state.styleRegistry.set(styleKey, styleObject);
 
+        // Determine target style prop based on attribute name
+        const targetStyleProp = getTargetStyleProp(attributeName);
+
         // Check if there's already a style prop on this element
         const parent = path.parent as any;
         const styleAttribute = parent.attributes.find(
-          (attr: any) => t.isJSXAttribute(attr) && attr.name.name === "style",
+          (attr: any) => t.isJSXAttribute(attr) && attr.name.name === targetStyleProp,
         );
 
         if (styleAttribute) {
@@ -134,7 +168,7 @@ export default function reactNativeTailwindBabelPlugin({
           mergeStyleAttribute(path, styleAttribute, styleKey, t);
         } else {
           // Replace className with style prop
-          replaceWithStyleAttribute(path, styleKey, t);
+          replaceWithStyleAttribute(path, styleKey, targetStyleProp, t);
         }
       },
     },
@@ -157,9 +191,14 @@ function addStyleSheetImport(path: NodePath, t: typeof BabelTypes) {
 /**
  * Replace className with style attribute
  */
-function replaceWithStyleAttribute(classNamePath: NodePath, styleKey: string, t: typeof BabelTypes) {
+function replaceWithStyleAttribute(
+  classNamePath: NodePath,
+  styleKey: string,
+  targetStyleProp: string,
+  t: typeof BabelTypes,
+) {
   const styleAttribute = t.jsxAttribute(
-    t.jsxIdentifier("style"),
+    t.jsxIdentifier(targetStyleProp),
     t.jsxExpressionContainer(t.memberExpression(t.identifier("styles"), t.identifier(styleKey))),
   );
 
