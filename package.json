@@ -40,7 +40,7 @@
     "lint": "eslint .",
     "prettify": "prettier --write src/",
     "check": "tsc --noEmit",
-    "spec": "NODE_OPTIONS=--experimental-require-module jest",
+    "spec": "vitest",
     "test": "npm run lint && npm run check && npm run spec",
     "prepare": "npm run build"
   },
@@ -71,7 +71,8 @@
     "prettier-plugin-organize-imports": "^4.3.0",
     "react": "^19.2.0",
     "react-native": "0.82.1",
-    "typescript": "^5.9.3"
+    "typescript": "^5.9.3",
+    "vitest": "^4.0.10"
   },
   "engines": {
     "node": ">=18"
