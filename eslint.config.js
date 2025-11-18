@@ -5,6 +5,7 @@ const config = [
   {
     rules: {
       "@typescript-eslint/prefer-regexp-exec": "off",
+      "@typescript-eslint/no-unnecessary-condition": "off",
     },
   },
   {
