@@ -52,6 +52,193 @@ function getTargetStyleProp(attributeName: string): string {
   return "style";
 }
 
+/**
+ * Result of processing a dynamic expression
+ */
+type DynamicExpressionResult = {
+  // The transformed expression to use in the style prop
+  expression: any;
+  // Static parts that can be parsed at compile time (if any)
+  staticParts?: string[];
+};
+
+/**
+ * Process a dynamic className expression
+ * Extracts static strings and transforms the expression to use pre-compiled styles
+ */
+function processDynamicExpression(
+  expression: any,
+  state: PluginState,
+  t: typeof BabelTypes,
+): DynamicExpressionResult | null {
+  // Handle template literals: `m-4 ${condition ? "p-4" : "p-2"}`
+  if (t.isTemplateLiteral(expression)) {
+    return processTemplateLiteral(expression, state, t);
+  }
+
+  // Handle conditional expressions: condition ? "m-4" : "p-2"
+  if (t.isConditionalExpression(expression)) {
+    return processConditionalExpression(expression, state, t);
+  }
+
+  // Handle logical expressions: condition && "m-4"
+  if (t.isLogicalExpression(expression)) {
+    return processLogicalExpression(expression, state, t);
+  }
+
+  // Unsupported expression type
+  return null;
+}
+
+/**
+ * Process template literal: `static ${dynamic} more-static`
+ */
+function processTemplateLiteral(
+  node: any,
+  state: PluginState,
+  t: typeof BabelTypes,
+): DynamicExpressionResult | null {
+  const parts: any[] = [];
+  const staticParts: string[] = [];
+
+  // Process quasis (static parts) and expressions (dynamic parts)
+  for (let i = 0; i < node.quasis.length; i++) {
+    const quasi = node.quasis[i];
+    const staticText = quasi.value.cooked?.trim();
+
+    // Add static part if not empty
+    if (staticText) {
+      // Parse static classes and add to registry
+      const classes = staticText.split(/\s+/).filter(Boolean);
+      for (const cls of classes) {
+        const styleObject = parseClassName(cls, state.customColors);
+        const styleKey = generateStyleKey(cls);
+        state.styleRegistry.set(styleKey, styleObject);
+        staticParts.push(cls);
+
+        // Add to parts array
+        parts.push(t.memberExpression(t.identifier("styles"), t.identifier(styleKey)));
+      }
+    }
+
+    // Add dynamic expression if exists
+    if (i < node.expressions.length) {
+      const expr = node.expressions[i];
+
+      // Recursively process nested dynamic expressions
+      const result = processDynamicExpression(expr, state, t);
+      if (result) {
+        parts.push(result.expression);
+      } else {
+        // For unsupported expressions, keep them as-is
+        // This won't work at runtime but maintains the structure
+        parts.push(expr);
+      }
+    }
+  }
+
+  if (parts.length === 0) {
+    return null;
+  }
+
+  // If single part, return it directly; otherwise return array
+  const expression = parts.length === 1 ? parts[0] : t.arrayExpression(parts);
+
+  return {
+    expression,
+    staticParts: staticParts.length > 0 ? staticParts : undefined,
+  };
+}
+
+/**
+ * Process conditional expression: condition ? "class-a" : "class-b"
+ */
+function processConditionalExpression(
+  node: any,
+  state: PluginState,
+  t: typeof BabelTypes,
+): DynamicExpressionResult | null {
+  const consequent = processStringOrExpression(node.consequent, state, t);
+  const alternate = processStringOrExpression(node.alternate, state, t);
+
+  if (!consequent && !alternate) {
+    return null;
+  }
+
+  // Build conditional: condition ? consequentStyle : alternateStyle
+  const expression = t.conditionalExpression(
+    node.test,
+    consequent ?? t.nullLiteral(),
+    alternate ?? t.nullLiteral(),
+  );
+
+  return { expression };
+}
+
+/**
+ * Process logical expression: condition && "class-a"
+ */
+function processLogicalExpression(
+  node: any,
+  state: PluginState,
+  t: typeof BabelTypes,
+): DynamicExpressionResult | null {
+  // Only handle AND (&&) expressions
+  if (node.operator !== "&&") {
+    return null;
+  }
+
+  const right = processStringOrExpression(node.right, state, t);
+
+  if (!right) {
+    return null;
+  }
+
+  // Build logical: condition && style
+  const expression = t.logicalExpression("&&", node.left, right);
+
+  return { expression };
+}
+
+/**
+ * Process a node that might be a string literal or another expression
+ */
+function processStringOrExpression(node: any, state: PluginState, t: typeof BabelTypes): any {
+  // Handle string literals
+  if (t.isStringLiteral(node)) {
+    const className = node.value.trim();
+    if (!className) {
+      return null;
+    }
+
+    // Parse and register styles
+    const styleObject = parseClassName(className, state.customColors);
+    const styleKey = generateStyleKey(className);
+    state.styleRegistry.set(styleKey, styleObject);
+
+    return t.memberExpression(t.identifier("styles"), t.identifier(styleKey));
+  }
+
+  // Handle nested expressions recursively
+  if (t.isConditionalExpression(node)) {
+    const result = processConditionalExpression(node, state, t);
+    return result?.expression ?? null;
+  }
+
+  if (t.isLogicalExpression(node)) {
+    const result = processLogicalExpression(node, state, t);
+    return result?.expression ?? null;
+  }
+
+  if (t.isTemplateLiteral(node)) {
+    const result = processTemplateLiteral(node, state, t);
+    return result?.expression ?? null;
+  }
+
+  // Unsupported - return null
+  return null;
+}
+
 export default function reactNativeTailwindBabelPlugin({
   types: t,
 }: {
@@ -121,54 +308,94 @@ export default function reactNativeTailwindBabelPlugin({
 
         const value = node.value;
 
-        // Only handle static string literals
-        if (!t.isStringLiteral(value)) {
-          // Warn about dynamic className in development
-          if (process.env.NODE_ENV !== "production") {
-            const filename = state.file.opts.filename ?? "unknown";
-            const targetStyleProp = getTargetStyleProp(attributeName);
-            console.warn(
-              `[react-native-tailwind] Dynamic ${attributeName} values are not supported at ${filename}. ` +
-                `Use the ${targetStyleProp} prop for dynamic values.`,
-            );
+        // Determine target style prop based on attribute name
+        const targetStyleProp = getTargetStyleProp(attributeName);
+
+        // Handle static string literals (original behavior)
+        if (t.isStringLiteral(value)) {
+          const className = value.value.trim();
+
+          // Skip empty classNames
+          if (!className) {
+            path.remove();
+            return;
+          }
+
+          state.hasClassNames = true;
+
+          // Parse className to React Native styles
+          const styleObject = parseClassName(className, state.customColors);
+
+          // Generate unique style key
+          const styleKey = generateStyleKey(className);
+
+          // Store in registry
+          state.styleRegistry.set(styleKey, styleObject);
+
+          // Check if there's already a style prop on this element
+          const parent = path.parent as any;
+          const styleAttribute = parent.attributes.find(
+            (attr: any) => t.isJSXAttribute(attr) && attr.name.name === targetStyleProp,
+          );
+
+          if (styleAttribute) {
+            // Merge with existing style prop
+            mergeStyleAttribute(path, styleAttribute, styleKey, t);
+          } else {
+            // Replace className with style prop
+            replaceWithStyleAttribute(path, styleKey, targetStyleProp, t);
           }
           return;
         }
 
-        const className = value.value.trim();
+        // Handle dynamic expressions (JSXExpressionContainer)
+        if (t.isJSXExpressionContainer(value)) {
+          const expression = value.expression;
 
-        // Skip empty classNames
-        if (!className) {
-          path.remove();
-          return;
+          // Skip JSXEmptyExpression
+          if (t.isJSXEmptyExpression(expression)) {
+            return;
+          }
+
+          try {
+            // Process dynamic expression
+            const result = processDynamicExpression(expression, state, t);
+
+            if (result) {
+              state.hasClassNames = true;
+
+              // Check if there's already a style prop on this element
+              const parent = path.parent as any;
+              const styleAttribute = parent.attributes.find(
+                (attr: any) => t.isJSXAttribute(attr) && attr.name.name === targetStyleProp,
+              );
+
+              if (styleAttribute) {
+                // Merge with existing style prop
+                mergeDynamicStyleAttribute(path, styleAttribute, result, t);
+              } else {
+                // Replace className with style prop
+                replaceDynamicWithStyleAttribute(path, result, targetStyleProp, t);
+              }
+              return;
+            }
+          } catch (error) {
+            // Fall through to warning
+            if (process.env.NODE_ENV !== "production") {
+              console.warn(
+                `[react-native-tailwind] Failed to process dynamic ${attributeName} at ${state.file.opts.filename ?? "unknown"}: ${error instanceof Error ? error.message : String(error)}`,
+              );
+            }
+          }
         }
 
-        state.hasClassNames = true;
-
-        // Parse className to React Native styles
-        const styleObject = parseClassName(className, state.customColors);
-
-        // Generate unique style key
-        const styleKey = generateStyleKey(className);
-
-        // Store in registry
-        state.styleRegistry.set(styleKey, styleObject);
-
-        // Determine target style prop based on attribute name
-        const targetStyleProp = getTargetStyleProp(attributeName);
-
-        // Check if there's already a style prop on this element
-        const parent = path.parent as any;
-        const styleAttribute = parent.attributes.find(
-          (attr: any) => t.isJSXAttribute(attr) && attr.name.name === targetStyleProp,
-        );
-
-        if (styleAttribute) {
-          // Merge with existing style prop
-          mergeStyleAttribute(path, styleAttribute, styleKey, t);
-        } else {
-          // Replace className with style prop
-          replaceWithStyleAttribute(path, styleKey, targetStyleProp, t);
+        // Unsupported dynamic className - warn in development
+        if (process.env.NODE_ENV !== "production") {
+          const filename = state.file.opts.filename ?? "unknown";
+          console.warn(
+            `[react-native-tailwind] Dynamic ${attributeName} values are not fully supported at ${filename}. ` +
+              `Use the ${targetStyleProp} prop for dynamic values.`,
+          );
         }
       },
     },
@@ -222,6 +449,51 @@ function mergeStyleAttribute(
     t.memberExpression(t.identifier("styles"), t.identifier(styleKey)),
     existingStyle,
   ]);
+
+  styleAttribute.value = t.jsxExpressionContainer(styleArray);
+
+  // Remove the className attribute
+  classNamePath.remove();
+}
+
+/**
+ * Replace className with dynamic style attribute
+ */
+function replaceDynamicWithStyleAttribute(
+  classNamePath: NodePath,
+  result: DynamicExpressionResult,
+  targetStyleProp: string,
+  t: typeof BabelTypes,
+) {
+  const styleAttribute = t.jsxAttribute(
+    t.jsxIdentifier(targetStyleProp),
+    t.jsxExpressionContainer(result.expression),
+  );
+
+  classNamePath.replaceWith(styleAttribute);
+}
+
+/**
+ * Merge dynamic className styles with existing style prop
+ */
+function mergeDynamicStyleAttribute(
+  classNamePath: NodePath,
+  styleAttribute: any,
+  result: DynamicExpressionResult,
+  t: typeof BabelTypes,
+) {
+  const existingStyle = styleAttribute.value.expression;
+
+  // Merge dynamic expression with existing styles
+  // If existing is already an array, append to it; otherwise create new array
+  let styleArray;
+  if (t.isArrayExpression(existingStyle)) {
+    // Prepend dynamic styles to existing array
+    styleArray = t.arrayExpression([result.expression, ...existingStyle.elements]);
+  } else {
+    // Create new array with dynamic styles first, then existing
+    styleArray = t.arrayExpression([result.expression, existingStyle]);
+  }
 
   styleAttribute.value = t.jsxExpressionContainer(styleArray);
 
