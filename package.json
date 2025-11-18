@@ -17,7 +17,7 @@
   ],
   "scripts": {
     "dev": "cd example; npm run dev",
-    "build": "npm run build:babel && npm run build:types; npm run codegen:ios",
+    "build": "npm run build:babel && npm run build:types",
     "build:babel": "babel src --out-dir dist --extensions \".ts,.tsx,.js,.jsx\" --copy-files",
     "build:types": "tsc --emitDeclarationOnly",
     "install:ios": "cd example; npm run install:ios",
