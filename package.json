@@ -34,7 +34,7 @@
     "build": "npm run build:babel && npm run build:babel-plugin && npm run build:types",
     "build:babel": "babel src --out-dir dist --extensions \".ts,.tsx,.js,.jsx\" --copy-files --ignore 'src/babel/**' --ignore '**/*.d.ts'",
     "build:babel-plugin": "node scripts/bundle-babel-plugin.cjs",
-    "build:types": "tsc --emitDeclarationOnly",
+    "build:types": "tsc --emitDeclarationOnly && node scripts/post-build-types.cjs",
     "install:ios": "cd example; npm run install:ios",
     "open:ios": "cd example; npm run open:ios",
     "lint": "eslint .",
