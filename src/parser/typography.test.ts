@@ -31,6 +31,8 @@ describe("parseTypography - font size", () => {
   });
 
   it("should parse font size with arbitrary pixel values", () => {
+    expect(parseTypography("text-[13px]")).toEqual({ fontSize: 13 });
+    expect(parseTypography("text-[13]")).toEqual({ fontSize: 13 });
     expect(parseTypography("text-[18px]")).toEqual({ fontSize: 18 });
     expect(parseTypography("text-[18]")).toEqual({ fontSize: 18 });
     expect(parseTypography("text-[22px]")).toEqual({ fontSize: 22 });

@@ -241,8 +241,13 @@ export function parseColor(cls: string, customColors?: Record<string, string>): 
   };
 
   // Background color: bg-blue-500, bg-blue-500/50, bg-[#ff0000]/80
+  // Only parse arbitrary values that look like colors (start with #)
   if (cls.startsWith("bg-")) {
     const colorKey = cls.substring(3);
+    // Skip arbitrary values that don't look like colors (e.g., bg-[100%] is sizing)
+    if (colorKey.startsWith("[") && !colorKey.startsWith("[#")) {
+      return null;
+    }
     const color = parseColorWithOpacity(colorKey);
     if (color) {
       return { backgroundColor: color };
@@ -250,8 +255,13 @@ export function parseColor(cls: string, customColors?: Record<string, string>): 
   }
 
   // Text color: text-blue-500, text-blue-500/50, text-[#ff0000]/80
+  // Only parse arbitrary values that look like colors (start with #)
   if (cls.startsWith("text-")) {
     const colorKey = cls.substring(5);
+    // Skip arbitrary values that don't look like colors (e.g., text-[13px] is font size)
+    if (colorKey.startsWith("[") && !colorKey.startsWith("[#")) {
+      return null;
+    }
     const color = parseColorWithOpacity(colorKey);
     if (color) {
       return { color: color };
@@ -261,6 +271,10 @@ export function parseColor(cls: string, customColors?: Record<string, string>): 
   // Border color: border-blue-500, border-blue-500/50, border-[#ff0000]/80
   if (cls.startsWith("border-") && !cls.match(/^border-[0-9]/)) {
     const colorKey = cls.substring(7);
+    // Skip arbitrary values that don't look like colors (e.g., border-[3px] is width)
+    if (colorKey.startsWith("[") && !colorKey.startsWith("[#")) {
+      return null;
+    }
     const color = parseColorWithOpacity(colorKey);
     if (color) {
       return { borderColor: color };

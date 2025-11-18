@@ -192,6 +192,16 @@ describe("parseColor - edge cases", () => {
     expect(parseColor("bg-[rgb(255,0,0)]")).toBeNull(); // RGB format not supported
   });
 
+  it("should return null for non-color arbitrary values (to let other parsers handle them)", () => {
+    // These should be handled by typography parser
+    expect(parseColor("text-[13px]")).toBeNull();
+    expect(parseColor("text-[18px]")).toBeNull();
+    expect(parseColor("text-[24]")).toBeNull();
+    // These should be handled by sizing parser
+    expect(parseColor("bg-[100%]")).toBeNull();
+    expect(parseColor("bg-[50px]")).toBeNull();
+  });
+
   it("should not match partial class names", () => {
     expect(parseColor("background-blue-500")).toBeNull();
     expect(parseColor("textcolor-red-500")).toBeNull();
