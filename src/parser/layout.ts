@@ -4,197 +4,111 @@
 
 import type { StyleObject } from "../types";
 
+// Display utilities
+const DISPLAY_MAP: Record<string, StyleObject> = {
+  flex: { display: "flex" },
+  hidden: { display: "none" },
+};
+
+// Flex direction utilities
+const FLEX_DIRECTION_MAP: Record<string, StyleObject> = {
+  "flex-row": { flexDirection: "row" },
+  "flex-row-reverse": { flexDirection: "row-reverse" },
+  "flex-col": { flexDirection: "column" },
+  "flex-col-reverse": { flexDirection: "column-reverse" },
+};
+
+// Flex wrap utilities
+const FLEX_WRAP_MAP: Record<string, StyleObject> = {
+  "flex-wrap": { flexWrap: "wrap" },
+  "flex-wrap-reverse": { flexWrap: "wrap-reverse" },
+  "flex-nowrap": { flexWrap: "nowrap" },
+};
+
+// Flex utilities
+const FLEX_MAP: Record<string, StyleObject> = {
+  "flex-1": { flex: 1 },
+  "flex-auto": { flex: 1 },
+  "flex-none": { flex: 0 },
+};
+
+// Flex grow/shrink utilities
+const GROW_SHRINK_MAP: Record<string, StyleObject> = {
+  grow: { flexGrow: 1 },
+  "grow-0": { flexGrow: 0 },
+  shrink: { flexShrink: 1 },
+  "shrink-0": { flexShrink: 0 },
+};
+
+// Justify content utilities
+const JUSTIFY_CONTENT_MAP: Record<string, StyleObject> = {
+  "justify-start": { justifyContent: "flex-start" },
+  "justify-end": { justifyContent: "flex-end" },
+  "justify-center": { justifyContent: "center" },
+  "justify-between": { justifyContent: "space-between" },
+  "justify-around": { justifyContent: "space-around" },
+  "justify-evenly": { justifyContent: "space-evenly" },
+};
+
+// Align items utilities
+const ALIGN_ITEMS_MAP: Record<string, StyleObject> = {
+  "items-start": { alignItems: "flex-start" },
+  "items-end": { alignItems: "flex-end" },
+  "items-center": { alignItems: "center" },
+  "items-baseline": { alignItems: "baseline" },
+  "items-stretch": { alignItems: "stretch" },
+};
+
+// Align self utilities
+const ALIGN_SELF_MAP: Record<string, StyleObject> = {
+  "self-auto": { alignSelf: "auto" },
+  "self-start": { alignSelf: "flex-start" },
+  "self-end": { alignSelf: "flex-end" },
+  "self-center": { alignSelf: "center" },
+  "self-stretch": { alignSelf: "stretch" },
+  "self-baseline": { alignSelf: "baseline" },
+};
+
+// Align content utilities
+const ALIGN_CONTENT_MAP: Record<string, StyleObject> = {
+  "content-start": { alignContent: "flex-start" },
+  "content-end": { alignContent: "flex-end" },
+  "content-center": { alignContent: "center" },
+  "content-between": { alignContent: "space-between" },
+  "content-around": { alignContent: "space-around" },
+  "content-stretch": { alignContent: "stretch" },
+};
+
+// Position utilities
+const POSITION_MAP: Record<string, StyleObject> = {
+  absolute: { position: "absolute" },
+  relative: { position: "relative" },
+};
+
+// Overflow utilities
+const OVERFLOW_MAP: Record<string, StyleObject> = {
+  "overflow-hidden": { overflow: "hidden" },
+  "overflow-visible": { overflow: "visible" },
+  "overflow-scroll": { overflow: "scroll" },
+};
+
 /**
  * Parse layout classes
  */
 export function parseLayout(cls: string): StyleObject | null {
-  // Display: flex
-  if (cls === "flex") {
-    return { display: "flex" };
-  }
-
-  if (cls === "hidden") {
-    return { display: "none" };
-  }
-
-  // Flex direction
-  if (cls === "flex-row") {
-    return { flexDirection: "row" };
-  }
-
-  if (cls === "flex-row-reverse") {
-    return { flexDirection: "row-reverse" };
-  }
-
-  if (cls === "flex-col") {
-    return { flexDirection: "column" };
-  }
-
-  if (cls === "flex-col-reverse") {
-    return { flexDirection: "column-reverse" };
-  }
-
-  // Flex wrap
-  if (cls === "flex-wrap") {
-    return { flexWrap: "wrap" };
-  }
-
-  if (cls === "flex-wrap-reverse") {
-    return { flexWrap: "wrap-reverse" };
-  }
-
-  if (cls === "flex-nowrap") {
-    return { flexWrap: "nowrap" };
-  }
-
-  // Flex grow/shrink
-  if (cls === "flex-1") {
-    return { flex: 1 };
-  }
-
-  if (cls === "flex-auto") {
-    return { flex: 1 };
-  }
-
-  if (cls === "flex-none") {
-    return { flex: 0 };
-  }
-
-  // Flex grow
-  if (cls === "grow") {
-    return { flexGrow: 1 };
-  }
-
-  if (cls === "grow-0") {
-    return { flexGrow: 0 };
-  }
-
-  // Flex shrink
-  if (cls === "shrink") {
-    return { flexShrink: 1 };
-  }
-
-  if (cls === "shrink-0") {
-    return { flexShrink: 0 };
-  }
-
-  // Justify content
-  if (cls === "justify-start") {
-    return { justifyContent: "flex-start" };
-  }
-
-  if (cls === "justify-end") {
-    return { justifyContent: "flex-end" };
-  }
-
-  if (cls === "justify-center") {
-    return { justifyContent: "center" };
-  }
-
-  if (cls === "justify-between") {
-    return { justifyContent: "space-between" };
-  }
-
-  if (cls === "justify-around") {
-    return { justifyContent: "space-around" };
-  }
-
-  if (cls === "justify-evenly") {
-    return { justifyContent: "space-evenly" };
-  }
-
-  // Align items
-  if (cls === "items-start") {
-    return { alignItems: "flex-start" };
-  }
-
-  if (cls === "items-end") {
-    return { alignItems: "flex-end" };
-  }
-
-  if (cls === "items-center") {
-    return { alignItems: "center" };
-  }
-
-  if (cls === "items-baseline") {
-    return { alignItems: "baseline" };
-  }
-
-  if (cls === "items-stretch") {
-    return { alignItems: "stretch" };
-  }
-
-  // Align self
-  if (cls === "self-auto") {
-    return { alignSelf: "auto" };
-  }
-
-  if (cls === "self-start") {
-    return { alignSelf: "flex-start" };
-  }
-
-  if (cls === "self-end") {
-    return { alignSelf: "flex-end" };
-  }
-
-  if (cls === "self-center") {
-    return { alignSelf: "center" };
-  }
-
-  if (cls === "self-stretch") {
-    return { alignSelf: "stretch" };
-  }
-
-  if (cls === "self-baseline") {
-    return { alignSelf: "baseline" };
-  }
-
-  // Align content
-  if (cls === "content-start") {
-    return { alignContent: "flex-start" };
-  }
-
-  if (cls === "content-end") {
-    return { alignContent: "flex-end" };
-  }
-
-  if (cls === "content-center") {
-    return { alignContent: "center" };
-  }
-
-  if (cls === "content-between") {
-    return { alignContent: "space-between" };
-  }
-
-  if (cls === "content-around") {
-    return { alignContent: "space-around" };
-  }
-
-  if (cls === "content-stretch") {
-    return { alignContent: "stretch" };
-  }
-
-  // Position
-  if (cls === "absolute") {
-    return { position: "absolute" };
-  }
-
-  if (cls === "relative") {
-    return { position: "relative" };
-  }
-
-  // Overflow
-  if (cls === "overflow-hidden") {
-    return { overflow: "hidden" };
-  }
-
-  if (cls === "overflow-visible") {
-    return { overflow: "visible" };
-  }
-
-  if (cls === "overflow-scroll") {
-    return { overflow: "scroll" };
-  }
-
-  return null;
+  // Try each lookup table in order
+  return (
+    DISPLAY_MAP[cls] ??
+    FLEX_DIRECTION_MAP[cls] ??
+    FLEX_WRAP_MAP[cls] ??
+    FLEX_MAP[cls] ??
+    GROW_SHRINK_MAP[cls] ??
+    JUSTIFY_CONTENT_MAP[cls] ??
+    ALIGN_ITEMS_MAP[cls] ??
+    ALIGN_SELF_MAP[cls] ??
+    ALIGN_CONTENT_MAP[cls] ??
+    POSITION_MAP[cls] ??
+    OVERFLOW_MAP[cls] ??
+    null
+  );
 }
