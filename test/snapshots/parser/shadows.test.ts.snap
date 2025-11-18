@@ -1,0 +1,69 @@
+// Vitest Snapshot v1, https://vitest.dev/guide/snapshot.html
+
+exports[`SHADOW_SCALE > should export complete shadow scale 1`] = `
+{
+  "shadow": {
+    "shadowColor": "#000000",
+    "shadowOffset": {
+      "height": 1,
+      "width": 0,
+    },
+    "shadowOpacity": 0.1,
+    "shadowRadius": 2,
+  },
+  "shadow-2xl": {
+    "shadowColor": "#000000",
+    "shadowOffset": {
+      "height": 20,
+      "width": 0,
+    },
+    "shadowOpacity": 0.3,
+    "shadowRadius": 24,
+  },
+  "shadow-lg": {
+    "shadowColor": "#000000",
+    "shadowOffset": {
+      "height": 6,
+      "width": 0,
+    },
+    "shadowOpacity": 0.2,
+    "shadowRadius": 8,
+  },
+  "shadow-md": {
+    "shadowColor": "#000000",
+    "shadowOffset": {
+      "height": 3,
+      "width": 0,
+    },
+    "shadowOpacity": 0.15,
+    "shadowRadius": 4,
+  },
+  "shadow-none": {
+    "shadowColor": "transparent",
+    "shadowOffset": {
+      "height": 0,
+      "width": 0,
+    },
+    "shadowOpacity": 0,
+    "shadowRadius": 0,
+  },
+  "shadow-sm": {
+    "shadowColor": "#000000",
+    "shadowOffset": {
+      "height": 1,
+      "width": 0,
+    },
+    "shadowOpacity": 0.05,
+    "shadowRadius": 1,
+  },
+  "shadow-xl": {
+    "shadowColor": "#000000",
+    "shadowOffset": {
+      "height": 10,
+      "width": 0,
+    },
+    "shadowOpacity": 0.25,
+    "shadowRadius": 12,
+  },
+}
+`;
