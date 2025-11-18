@@ -22,6 +22,7 @@ Compile-time Tailwind CSS for React Native with zero runtime overhead. Transform
 - 🔧 **No dependencies** — Direct-to-React-Native style generation without tailwindcss package
 - 🎨 **Custom colors** — Extend the default palette via `tailwind.config.*`
 - 📐 **Arbitrary values** — Use custom sizes and borders: `w-[123px]`, `rounded-[20px]`
+- 🔀 **Dynamic className** — Conditional styles with hybrid compile-time optimization
 - 📜 **Special style props** — Support for `contentContainerClassName`, `columnWrapperClassName`, and more
 
 ## Installation
@@ -247,6 +248,116 @@ export function Card({ title, description, onPress }) {
     </View>
   );
 }
+```
+
+### Dynamic className (Hybrid Optimization)
+
+You can use dynamic expressions in `className` for conditional styling. The Babel plugin will parse all static strings at compile-time and preserve the conditional logic:
+
+**Conditional Expression:**
+
+```tsx
+import { useState } from "react";
+import { View, Text, Pressable } from "react-native";
+
+export function ToggleButton() {
+  const [isActive, setIsActive] = useState(false);
+
+  return (
+    <Pressable
+      onPress={() => setIsActive(!isActive)}
+      className={isActive ? "bg-green-500 p-4" : "bg-red-500 p-4"}
+    >
+      <Text className="text-white">{isActive ? "Active" : "Inactive"}</Text>
+    </Pressable>
+  );
+}
+```
+
+**Transforms to:**
+
+```tsx
+<Pressable
+  onPress={() => setIsActive(!isActive)}
+  style={isActive ? styles._bg_green_500_p_4 : styles._bg_red_500_p_4}
+>
+  <Text style={styles._text_white}>{isActive ? "Active" : "Inactive"}</Text>
+</Pressable>
+```
+
+**Template Literal (Static + Dynamic):**
+
+```tsx
+<Pressable
+  className={`border-2 rounded-lg ${isActive ? "bg-blue-500" : "bg-gray-300"} p-4`}
+>
+  <Text className="text-white">Click Me</Text>
+</Pressable>
+```
+
+**Transforms to:**
+
+```tsx
+<Pressable
+  style={[
+    styles._border_2,
+    styles._rounded_lg,
+    isActive ? styles._bg_blue_500 : styles._bg_gray_300,
+    styles._p_4
+  ]}
+>
+  <Text style={styles._text_white}>Click Me</Text>
+</Pressable>
+```
+
+**Logical Expression:**
+
+```tsx
+<View className={`p-4 bg-gray-100 ${isActive && "border-4 border-purple-500"}`}>
+  <Text>Content</Text>
+</View>
+```
+
+**Transforms to:**
+
+```tsx
+<View
+  style={[
+    styles._p_4,
+    styles._bg_gray_100,
+    isActive && styles._border_4_border_purple_500
+  ]}
+>
+  <Text>Content</Text>
+</View>
+```
+
+**Multiple Conditionals:**
+
+```tsx
+<View
+  className={`${size === "lg" ? "p-8" : "p-4"} ${isActive ? "bg-blue-500" : "bg-gray-400"}`}
+>
+  <Text>Dynamic Size & Color</Text>
+</View>
+```
+
+**Key Benefits:**
+
+- ✅ All string literals are parsed at compile-time
+- ✅ Only conditional logic remains at runtime (no parser overhead)
+- ✅ Full type-safety and validation for all class names
+- ✅ Optimal performance with pre-compiled styles
+
+**What Won't Work:**
+
+```tsx
+// ❌ Runtime variables in class names
+const spacing = 4;
+<View className={`p-${spacing}`} />  // Can't parse "p-${spacing}" at compile time
+
+// ✅ Use inline style for truly dynamic values:
+<View className="border-2" style={{ padding: spacing * 4 }} />
 ```
 
 ### Combining with Inline Styles
