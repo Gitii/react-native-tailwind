@@ -1,10 +1,13 @@
+/* eslint-disable @typescript-eslint/consistent-type-definitions */
+
 /**
  * TypeScript declarations to add className prop to React Native components
+ * This file provides module augmentation for react-native to add className prop support
  */
 
-import 'react-native';
+import "react-native";
 
-declare module 'react-native' {
+declare module "react-native" {
   interface ViewProps {
     /**
      * Tailwind-like class names for styling
