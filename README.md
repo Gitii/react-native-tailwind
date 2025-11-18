@@ -1,17 +1,27 @@
-# @mgcrea/react-native-tailwind
+# React Native Tailwind
 
-> Compile-time Tailwind CSS for React Native with zero runtime overhead
+<div align="center">
 
-A modern, performant Tailwind-like utility library for React Native that transforms `className` props to optimized `StyleSheet.create` calls at build time using a Babel plugin.
+[![npm version](https://img.shields.io/npm/v/@mgcrea/react-native-tailwind.svg?style=for-the-badge)](https://www.npmjs.com/package/@mgcrea/react-native-tailwind)
+[![npm downloads](https://img.shields.io/npm/dt/@mgcrea/react-native-tailwind.svg?style=for-the-badge)](https://www.npmjs.com/package/@mgcrea/react-native-tailwind)
+[![license](https://img.shields.io/github/license/mgcrea/react-native-tailwind.svg?style=for-the-badge)](https://github.com/mgcrea/react-native-tailwind/blob/main/LICENSE)
+
+</div>
+
+## Overview
+
+Compile-time Tailwind CSS for React Native with zero runtime overhead. Transform `className` props to optimized `StyleSheet.create` calls at build time using a Babel plugin.
 
 ## Features
 
-- ✅ **Zero runtime overhead** - All transformations happen at compile time
-- ✅ **Babel-only setup** - No Metro configuration required (like Reanimated)
-- ✅ **TypeScript-first** - Full type safety and autocomplete support
-- ✅ **Optimized performance** - Uses `StyleSheet.create` for optimal React Native performance
-- ✅ **Small bundle size** - Only includes actual styles used in your app
-- ✅ **No dependencies** - Direct-to-React-Native style generation without tailwindcss package
+- ⚡ **Zero runtime overhead** — All transformations happen at compile time
+- 🎯 **Babel-only setup** — No Metro configuration required (like Reanimated)
+- 📝 **TypeScript-first** — Full type safety and autocomplete support
+- 🚀 **Optimized performance** — Uses `StyleSheet.create` for optimal React Native performance
+- 📦 **Small bundle size** — Only includes actual styles used in your app
+- 🔧 **No dependencies** — Direct-to-React-Native style generation without tailwindcss package
+- 🎨 **Custom colors** — Extend the default palette via `tailwind.config.*`
+- 📐 **Arbitrary values** — Use custom sizes and borders: `w-[123px]`, `rounded-[20px]`
 
 ## Installation
 
@@ -70,13 +80,13 @@ export function MyComponent() {
 
 The Babel plugin transforms your code at compile time:
 
-### Input (what you write):
+**Input** (what you write):
 
 ```tsx
 <View className="m-4 p-2 bg-blue-500 rounded-lg" />
 ```
 
-### Output (what Babel generates):
+**Output** (what Babel generates):
 
 ```tsx
 import { StyleSheet } from "react-native";
@@ -93,85 +103,119 @@ const styles = StyleSheet.create({
 });
 ```
 
-## Supported Classes
+## API Reference
 
-### Spacing (Margin & Padding)
+### Spacing
 
-- `m-{size}` - margin (all sides)
-- `mx-{size}`, `my-{size}` - horizontal/vertical margin
-- `mt-{size}`, `mr-{size}`, `mb-{size}`, `ml-{size}` - directional margin
-- `p-{size}` - padding (all sides)
-- `px-{size}`, `py-{size}` - horizontal/vertical padding
-- `pt-{size}`, `pr-{size}`, `pb-{size}`, `pl-{size}` - directional padding
-- `gap-{size}` - gap
+**Margin & Padding:**
 
-**Available sizes:** 0, 0.5, 1, 1.5, 2, 2.5, 3, 3.5, 4, 5, 6, 7, 8, 9, 10, 11, 12, 14, 16, 20, 24, 28, 32, 36, 40, 44, 48, 52, 56, 60, 64, 72, 80, 96
+- `m-{size}`, `p-{size}` — All sides
+- `mx-{size}`, `my-{size}`, `px-{size}`, `py-{size}` — Horizontal/vertical
+- `mt-{size}`, `mr-{size}`, `mb-{size}`, `ml-{size}` — Directional margin
+- `pt-{size}`, `pr-{size}`, `pb-{size}`, `pl-{size}` — Directional padding
+- `gap-{size}` — Gap between flex items
 
-### Layout (Flexbox)
+**Available sizes:** `0`, `0.5`, `1`, `1.5`, `2`, `2.5`, `3`, `3.5`, `4`, `5`, `6`, `7`, `8`, `9`, `10`, `11`, `12`, `14`, `16`, `20`, `24`, `28`, `32`, `36`, `40`, `44`, `48`, `52`, `56`, `60`, `64`, `72`, `80`, `96`
 
-- `flex`, `flex-1`, `flex-auto`, `flex-none`
-- `flex-row`, `flex-row-reverse`, `flex-col`, `flex-col-reverse`
-- `flex-wrap`, `flex-wrap-reverse`, `flex-nowrap`
-- `items-start`, `items-end`, `items-center`, `items-baseline`, `items-stretch`
-- `justify-start`, `justify-end`, `justify-center`, `justify-between`, `justify-around`, `justify-evenly`
-- `self-auto`, `self-start`, `self-end`, `self-center`, `self-stretch`, `self-baseline`
-- `grow`, `grow-0`, `shrink`, `shrink-0`
+### Layout
+
+**Flexbox:**
+
+- `flex`, `flex-1`, `flex-auto`, `flex-none` — Flex sizing
+- `flex-row`, `flex-row-reverse`, `flex-col`, `flex-col-reverse` — Direction
+- `flex-wrap`, `flex-wrap-reverse`, `flex-nowrap` — Wrapping
+- `items-start`, `items-end`, `items-center`, `items-baseline`, `items-stretch` — Align items
+- `justify-start`, `justify-end`, `justify-center`, `justify-between`, `justify-around`, `justify-evenly` — Justify content
+- `self-auto`, `self-start`, `self-end`, `self-center`, `self-stretch`, `self-baseline` — Align self
+- `grow`, `grow-0`, `shrink`, `shrink-0` — Flex grow/shrink
+
+**Other:**
+
+- `absolute`, `relative` — Position
+- `overflow-hidden`, `overflow-visible`, `overflow-scroll` — Overflow
+- `flex`, `hidden` — Display
 
 ### Colors
 
-- `bg-{color}-{shade}` - background color
-- `text-{color}-{shade}` - text color
-- `border-{color}-{shade}` - border color
+- `bg-{color}-{shade}` — Background color
+- `text-{color}-{shade}` — Text color
+- `border-{color}-{shade}` — Border color
 
-**Available colors:** gray, red, blue, green, yellow, purple, pink, orange, indigo, white, black, transparent
+**Available colors:** `gray`, `red`, `blue`, `green`, `yellow`, `purple`, `pink`, `orange`, `indigo`, `white`, `black`, `transparent`
 
-**Available shades:** 50, 100, 200, 300, 400, 500, 600, 700, 800, 900
+**Available shades:** `50`, `100`, `200`, `300`, `400`, `500`, `600`, `700`, `800`, `900`
+
+> **Note:** You can extend the color palette with custom colors via `tailwind.config.*` — see [Custom Colors](#custom-colors)
 
 ### Typography
 
-- **Font Size:** `text-xs`, `text-sm`, `text-base`, `text-lg`, `text-xl`, `text-2xl`, `text-3xl`, `text-4xl`, `text-5xl`, `text-6xl`, `text-7xl`, `text-8xl`, `text-9xl`
-- **Font Weight:** `font-thin`, `font-extralight`, `font-light`, `font-normal`, `font-medium`, `font-semibold`, `font-bold`, `font-extrabold`, `font-black`
-- **Font Style:** `italic`, `not-italic`
-- **Text Align:** `text-left`, `text-center`, `text-right`, `text-justify`
-- **Text Decoration:** `underline`, `line-through`, `no-underline`
-- **Text Transform:** `uppercase`, `lowercase`, `capitalize`, `normal-case`
-- **Line Height:** `leading-none`, `leading-tight`, `leading-snug`, `leading-normal`, `leading-relaxed`, `leading-loose`
+**Font Size:**
+
+`text-xs`, `text-sm`, `text-base`, `text-lg`, `text-xl`, `text-2xl`, `text-3xl`, `text-4xl`, `text-5xl`, `text-6xl`, `text-7xl`, `text-8xl`, `text-9xl`
+
+**Font Weight:**
+
+`font-thin`, `font-extralight`, `font-light`, `font-normal`, `font-medium`, `font-semibold`, `font-bold`, `font-extrabold`, `font-black`
+
+**Other:**
+
+- `italic`, `not-italic` — Font style
+- `text-left`, `text-center`, `text-right`, `text-justify` — Text alignment
+- `underline`, `line-through`, `no-underline` — Text decoration
+- `uppercase`, `lowercase`, `capitalize`, `normal-case` — Text transform
+- `leading-none`, `leading-tight`, `leading-snug`, `leading-normal`, `leading-relaxed`, `leading-loose` — Line height
 
 ### Borders
 
-- **Width:** `border`, `border-0`, `border-2`, `border-4`, `border-8`
-- **Directional:** `border-t`, `border-r`, `border-b`, `border-l` (with variants -0, -2, -4)
-- **Arbitrary Width:** `border-[8px]`, `border-t-[12px]`, `border-r-[4px]`
-- **Radius:** `rounded-none`, `rounded-sm`, `rounded`, `rounded-md`, `rounded-lg`, `rounded-xl`, `rounded-2xl`, `rounded-3xl`, `rounded-full`
-- **Directional Radius:** `rounded-t`, `rounded-r`, `rounded-b`, `rounded-l` (with size variants)
-- **Corner Radius:** `rounded-tl`, `rounded-tr`, `rounded-bl`, `rounded-br` (with size variants)
-- **Arbitrary Radius:** `rounded-[12px]`, `rounded-t-[8px]`, `rounded-tl-[16px]`
-- **Style:** `border-solid`, `border-dotted`, `border-dashed`
+**Width:**
+
+- `border`, `border-0`, `border-2`, `border-4`, `border-8` — All sides
+- `border-t`, `border-r`, `border-b`, `border-l` (with variants `-0`, `-2`, `-4`, `-8`) — Directional
+- `border-[8px]`, `border-t-[12px]` — Arbitrary values
+
+**Radius:**
+
+- `rounded-none`, `rounded-sm`, `rounded`, `rounded-md`, `rounded-lg`, `rounded-xl`, `rounded-2xl`, `rounded-3xl`, `rounded-full` — All corners
+- `rounded-t`, `rounded-r`, `rounded-b`, `rounded-l` (with size variants) — Directional
+- `rounded-tl`, `rounded-tr`, `rounded-bl`, `rounded-br` (with size variants) — Individual corners
+- `rounded-[12px]`, `rounded-t-[8px]`, `rounded-tl-[16px]` — Arbitrary values
+
+**Style:**
+
+`border-solid`, `border-dotted`, `border-dashed`
 
 ### Sizing
 
-- `w-{size}`, `h-{size}` - width/height
-- `min-w-{size}`, `min-h-{size}` - min width/height
-- `max-w-{size}`, `max-h-{size}` - max width/height
+- `w-{size}`, `h-{size}` — Width/height
+- `min-w-{size}`, `min-h-{size}` — Min width/height
+- `max-w-{size}`, `max-h-{size}` — Max width/height
 
 **Available sizes:**
 
-- Numeric: 0-96 (same as spacing scale)
-- Fractional: `1/2`, `1/3`, `2/3`, `1/4`, `3/4`, `1/5`, `2/5`, `3/5`, `4/5`, `1/6`, `2/6`, `3/6`, `4/6`, `5/6`
-- Special: `full` (100%), `auto`
-- **Arbitrary values:** `w-[123px]`, `h-[50%]`, `min-w-[200px]`, `max-h-[80%]`
+- **Numeric:** `0`-`96` (same as spacing scale)
+- **Fractional:** `1/2`, `1/3`, `2/3`, `1/4`, `3/4`, `1/5`, `2/5`, `3/5`, `4/5`, `1/6`, `2/6`, `3/6`, `4/6`, `5/6`
+- **Special:** `full` (100%), `auto`
+- **Arbitrary:** `w-[123px]`, `h-[50%]`, `min-w-[200px]`, `max-h-[80%]`
 
-> **Note:** Arbitrary sizing supports pixel values (`[123px]` or `[123]`) and percentages (`[50%]`). Other units (rem, em, vh, vw) are not supported in React Native.
+> **Note:** Arbitrary sizing supports pixel values (`[123px]` or `[123]`) and percentages (`[50%]`). Other units (`rem`, `em`, `vh`, `vw`) are not supported in React Native.
 
-### Other
+## Usage Examples
 
-- **Position:** `absolute`, `relative`
-- **Overflow:** `overflow-hidden`, `overflow-visible`, `overflow-scroll`
-- **Display:** `flex`, `hidden`
+### Basic Example
 
-## Examples
+```tsx
+import { View, Text } from "react-native";
 
-### Basic Card Component
+export function MyComponent() {
+  return (
+    <View className="flex-1 bg-gray-100 p-4">
+      <Text className="text-xl font-bold text-blue-500">Hello, Tailwind!</Text>
+    </View>
+  );
+}
+```
+
+### Card Component
 
 ```tsx
 import { View, Text, Pressable } from "react-native";
@@ -191,7 +235,7 @@ export function Card({ title, description, onPress }) {
 
 ### Combining with Inline Styles
 
-You can still use inline `style` prop alongside `className`:
+You can use inline `style` prop alongside `className`:
 
 ```tsx
 <View className="flex-1 p-4 bg-blue-500" style={{ paddingTop: safeAreaInsets.top }}>
@@ -199,7 +243,7 @@ You can still use inline `style` prop alongside `className`:
 </View>
 ```
 
-The Babel plugin will generate:
+The Babel plugin will merge them:
 
 ```tsx
 <View style={[styles._className_styles, { paddingTop: safeAreaInsets.top }]}>
@@ -207,26 +251,36 @@ The Babel plugin will generate:
 </View>
 ```
 
-## Performance
+## Architecture
 
-### Benchmark Comparison
+### Compile-Time Transformation
 
-| Approach                 | Runtime Overhead     | Bundle Size | Build Time |
-| ------------------------ | -------------------- | ----------- | ---------- |
-| **This Library (Babel)** | 0ms (compile-time)   | ~4kb        | +50-200ms  |
-| Runtime Parser           | ~2-5ms per component | ~28kb       | 0ms        |
-| NativeWind v4            | Very low             | Medium      | +100-500ms |
+The Babel plugin performs all transformations during build time, ensuring zero runtime overhead:
 
-### Why It's Fast
+1. **AST Transformation** — Visits JSX elements and finds `className` attributes
+2. **Static Analysis** — Only processes string literals (dynamic values produce warnings)
+3. **Style Registry** — Collects all className → style mappings per file
+4. **Code Generation** — Injects `StyleSheet.create()` at end of file
+5. **Import Management** — Adds `StyleSheet` import if needed
 
-1. **Zero Runtime Cost:** All className parsing happens at build time
-2. **StyleSheet.create:** Uses React Native's optimized StyleSheet API
-3. **Tree Shaking:** Only includes styles actually used in your app
-4. **Deduplication:** Identical styles are reused across components
+### Performance Characteristics
+
+| Metric           | Value              |
+| ---------------- | ------------------ |
+| Runtime Overhead | 0ms (compile-time) |
+| Bundle Size      | ~4KB typical       |
+| Build Time       | +50-200ms          |
+
+**Why it's fast:**
+
+- ⚡ All className parsing happens at build time
+- 🎯 Uses React Native's optimized `StyleSheet.create` API
+- 📦 Tree shaking — only includes styles actually used
+- 🔄 Deduplication — identical styles reused across components
 
 ## Limitations
 
-### Dynamic Class Names Not Supported
+**Dynamic class names are not supported** — The Babel plugin can only transform static string literals:
 
 ```tsx
 // ❌ This will NOT work
@@ -237,95 +291,34 @@ const spacing = 4;
 <View className="p-2" style={{ margin: spacing * 4 }} />
 ```
 
-The Babel plugin can only transform static string literals. For dynamic styling, use the `style` prop.
+For dynamic styling, use the `style` prop alongside `className`.
 
-## Comparison with Other Libraries
-
-### vs NativeWind
-
-| Feature                | NativeWind v4 | This Library |
-| ---------------------- | ------------- | ------------ |
-| Setup                  | Metro + Babel | Babel only   |
-| tailwindcss dependency | Yes           | No           |
-| Runtime overhead       | Very low      | Zero         |
-| Dynamic classes        | Full support  | Limited      |
-| Bundle size            | Medium        | Smaller      |
-| Learning curve         | Moderate      | Low          |
-
-### vs twrnc (Tailwind React Native Classnames)
-
-| Feature         | twrnc          | This Library             |
-| --------------- | -------------- | ------------------------ |
-| Approach        | Runtime parser | Compile-time             |
-| Performance     | Good (cached)  | Excellent (zero runtime) |
-| Bundle size     | ~20kb          | ~4kb                     |
-| Dynamic classes | Full support   | Limited                  |
-
-## Migration from Runtime Wrapper
-
-If you were using the old `createTailwindComponent` wrapper:
-
-### Before:
-
-```tsx
-import { createTailwindViewComponent } from "@mgcrea/react-native-tailwind";
-
-const StyledView = createTailwindViewComponent(View);
-
-<StyledView className="m-4 p-2" />;
-```
-
-### After:
-
-```tsx
-import { View } from "react-native";
-
-<View className="m-4 p-2" />;
-```
-
-Simply:
-
-1. Add the Babel plugin to your config
-2. Create the TypeScript declaration file (`src/types/react-native-tailwind.d.ts`)
-3. Use `className` directly on React Native components!
-
-## Advanced Usage
+## Advanced
 
 ### Arbitrary Values
 
-Use arbitrary values for custom sizes and borders that aren't in the preset scales:
+Use arbitrary values for custom sizes and borders not in the preset scales:
 
 ```tsx
-// Sizing with arbitrary pixel values
-<View className="w-[350px] h-[200px]" />
-
-// Sizing with arbitrary percentages
-<View className="w-[85%] min-h-[50%]" />
-
-// Border width with arbitrary values
-<View className="border-[3px] border-t-[5px]" />
-
-// Border radius with arbitrary values
-<View className="rounded-[20px] rounded-tl-[8px]" />
+<View className="w-[350px] h-[85%] border-[3px] rounded-[20px]" />
 ```
 
-**Supported formats:**
+**Supported:**
 
-- **Pixels:** `[123px]` or `[123]` (equivalent)
-- **Percentages:** `[50%]`, `[33.333%]`
+- **Sizing:** `w-[...]`, `h-[...]`, `min-w-[...]`, `min-h-[...]`, `max-w-[...]`, `max-h-[...]`
+- **Border width:** `border-[...]`, `border-t-[...]`, `border-r-[...]`, `border-b-[...]`, `border-l-[...]`
+- **Border radius:** `rounded-[...]`, `rounded-t-[...]`, `rounded-tl-[...]`, etc.
 
-**Where arbitrary values work:**
+**Formats:**
 
-- Sizing: `w-[...]`, `h-[...]`, `min-w-[...]`, `min-h-[...]`, `max-w-[...]`, `max-h-[...]`
-- Border width: `border-[...]`, `border-t-[...]`, `border-r-[...]`, `border-b-[...]`, `border-l-[...]`
-- Border radius: `rounded-[...]`, `rounded-t-[...]`, `rounded-tl-[...]`, etc.
+- Pixels: `[123px]` or `[123]`
+- Percentages: `[50%]`, `[33.333%]`
 
-**React Native limitations:**
-Arbitrary values only support `px` and `%` units. CSS units like `rem`, `em`, `vh`, and `vw` are not supported by React Native and will generate warnings in development.
+> **Note:** Only `px` and `%` units are supported. CSS units (`rem`, `em`, `vh`, `vw`) are not supported by React Native.
 
-### Custom Colors via Tailwind Config
+### Custom Colors
 
-You can extend the default color palette by creating a `tailwind.config.js` (or `.mjs`, `.cjs`) file in your project root:
+Extend the default color palette via `tailwind.config.*` in your project root:
 
 ```javascript
 // tailwind.config.mjs
@@ -346,144 +339,149 @@ export default {
 };
 ```
 
-Then use your custom colors in className:
+Then use your custom colors:
 
 ```tsx
 <View className="bg-primary p-4">
   <Text className="text-brand">Custom branded text</Text>
-  <View className="bg-brand-light rounded-lg">{/* Nested colors become brand-light, brand-dark */}</View>
+  <View className="bg-brand-light rounded-lg" />
 </View>
 ```
 
 **How it works:**
 
-- The Babel plugin automatically discovers `tailwind.config.*` files by traversing up from your source files
-- Custom colors are merged with defaults at build time (custom colors take precedence)
-- Nested color objects are flattened using dash notation (e.g., `brand.light` → `brand-light`)
-- **Zero runtime overhead** - All config loading happens during compilation
+- Babel plugin discovers config by traversing up from source files
+- Custom colors merged with defaults at build time (custom takes precedence)
+- Nested objects flattened with dash notation: `brand.light` → `brand-light`
+- Zero runtime overhead — all loading happens during compilation
 
-**Supported config formats:**
+**Supported formats:** `.js`, `.mjs`, `.cjs`, `.ts`
 
-- `tailwind.config.js` (CommonJS)
-- `tailwind.config.mjs` (ES modules)
-- `tailwind.config.cjs` (CommonJS explicit)
-- `tailwind.config.ts` (TypeScript - experimental)
+> **Tip:** Use `theme.extend.colors` to keep default Tailwind colors. Using `theme.colors` directly will override all defaults.
 
-**Best practice:**
-Use `theme.extend.colors` to add custom colors while keeping all default Tailwind colors. Using `theme.colors` directly will override all defaults.
+### Programmatic API
 
-### Accessing the Parser Programmatically
+Access the parser and constants programmatically:
 
 ```typescript
-import { parseClassName } from "@mgcrea/react-native-tailwind";
+import { parseClassName, COLORS, SPACING_SCALE } from "@mgcrea/react-native-tailwind";
 
+// Parse className strings
 const styles = parseClassName("m-4 p-2 bg-blue-500");
 // Returns: { margin: 16, padding: 8, backgroundColor: '#3B82F6' }
-```
 
-### Customizing Colors/Spacing
-
-You can import and modify the default scales:
-
-```typescript
-import { COLORS, SPACING_SCALE } from "@mgcrea/react-native-tailwind";
-
-// Use in your own utilities
-const customColor = COLORS["blue-500"]; // '#3B82F6'
-const customSpacing = SPACING_SCALE[4]; // 16
+// Access default scales
+const blueColor = COLORS["blue-500"]; // '#3B82F6'
+const spacing = SPACING_SCALE[4]; // 16
 ```
 
 ## Troubleshooting
 
-### TypeScript Errors
+### TypeScript `className` Errors
 
-If you see TypeScript errors about `className` not being a valid prop:
+If TypeScript doesn't recognize the `className` prop:
 
-1. Make sure you've created the type declaration file:
+1. Create the type declaration file:
 
    ```typescript
    // src/types/react-native-tailwind.d.ts
    import "@mgcrea/react-native-tailwind/react-native";
    ```
 
-2. Verify the file is in a location covered by your `tsconfig.json` `include` pattern
-
-3. Restart your TypeScript server in VS Code (Cmd+Shift+P → "TypeScript: Restart TS Server")
+2. Verify it's covered by your `tsconfig.json` `include` pattern
+3. Restart TypeScript server (VS Code: Cmd+Shift+P → "TypeScript: Restart TS Server")
 
 ### Babel Plugin Not Working
 
-1. Clear Metro cache:
+**Clear Metro cache:**
 
-   ```bash
-   npx react-native start --reset-cache
-   ```
+```bash
+npx react-native start --reset-cache
+```
 
-2. Verify `babel.config.js` includes the plugin:
+**Verify `babel.config.js`:**
 
-   ```javascript
-   plugins: ["@mgcrea/react-native-tailwind/babel"];
-   ```
+```javascript
+plugins: ["@mgcrea/react-native-tailwind/babel"];
+```
 
-3. Check that the plugin is installed in your `node_modules`
+### Custom Colors Not Recognized
 
-### Custom Colors Not Working
-
-If your custom colors from `tailwind.config.*` aren't being recognized:
-
-1. **Check config file location**: The config must be in your project root or a parent directory. The Babel plugin searches upward from each source file.
-
-2. **Verify config format**: Make sure your config exports the theme correctly:
+1. **Config location** — Must be in project root or parent directory
+2. **Config format** — Verify proper export:
 
    ```javascript
-   // ✅ Correct (CommonJS)
-   module.exports = {
-     theme: { extend: { colors: { ... } } }
-   };
+   // CommonJS
+   module.exports = { theme: { extend: { colors: { ... } } } };
 
-   // ✅ Correct (ESM)
-   export default {
-     theme: { extend: { colors: { ... } } }
-   };
+   // ESM
+   export default { theme: { extend: { colors: { ... } } } };
    ```
 
-3. **Clear Metro cache**: Config changes require cache reset:
+3. **Clear cache** — Config changes require Metro cache reset
+4. **Use `theme.extend.colors`** — Don't use `theme.colors` directly (overrides defaults)
 
-   ```bash
-   npx react-native start --reset-cache
-   ```
+## Development
 
-4. **Check build output**: The Babel plugin logs warnings about config loading in development. Check Metro logs for `[react-native-tailwind]` messages.
+### Project Setup
 
-5. **Use theme.extend.colors**: Don't use `theme.colors` directly as it will override all defaults:
+```bash
+git clone https://github.com/mgcrea/react-native-tailwind.git
+cd react-native-tailwind
+pnpm install
+```
 
-   ```javascript
-   // ❌ Overrides all defaults
-   theme: {
-     colors: {
-       primary: "#000";
-     }
-   }
+### Build
 
-   // ✅ Extends defaults
-   theme: {
-     extend: {
-       colors: {
-         primary: "#000";
-       }
-     }
-   }
-   ```
+```bash
+pnpm build              # Full build
+pnpm build:babel        # Compile TypeScript
+pnpm build:babel-plugin # Bundle Babel plugin
+pnpm build:types        # Generate type declarations
+```
 
-## Contributing
+### Testing
 
-Contributions are welcome! Please read our [contributing guidelines](CONTRIBUTING.md) first.
+```bash
+pnpm test               # Run all tests
+pnpm lint               # ESLint
+pnpm check              # TypeScript type check
+pnpm spec               # Jest tests
+```
+
+### Example App
+
+```bash
+pnpm dev                # Run example app
+cd example && npm run dev -- --reset-cache
+```
+
+## Authors
+
+- [Olivier Louvignes](https://github.com/mgcrea) - [@mgcrea](https://twitter.com/mgcrea)
 
 ## License
 
-MIT © [Olivier Louvignes](https://github.com/mgcrea)
+```text
+MIT License
 
-## Acknowledgments
+Copyright (c) 2025 Olivier Louvignes <olivier@mgcrea.io>
 
-- Inspired by [Tailwind CSS](https://tailwindcss.com/)
-- Babel transformation approach inspired by [Reanimated](https://docs.swmansion.com/react-native-reanimated/)
-- Performance optimizations inspired by [fast-styles](https://github.com/ferologics/fast-styles)
+Permission is hereby granted, free of charge, to any person obtaining a copy
+of this software and associated documentation files (the "Software"), to deal
+in the Software without restriction, including without limitation the rights
+to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+copies of the Software, and to permit persons to whom the Software is
+furnished to do so, subject to the following conditions:
+
+The above copyright notice and this permission notice shall be included in all
+copies or substantial portions of the Software.
+
+THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+SOFTWARE.
+```

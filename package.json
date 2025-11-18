@@ -1,7 +1,7 @@
 {
   "name": "@mgcrea/react-native-tailwind",
   "version": "0.1.0",
-  "description": "React Native utility-first CSS framework based on Tailwind CSS principles",
+  "description": "Compile-time Tailwind CSS for React Native with zero runtime overhead",
   "author": "Olivier Louvignes <olivier@mgcrea.io> (https://github.com/mgcrea)",
   "homepage": "https://github.com/mgcrea/react-native-tailwind#readme",
   "repository": "github:mgcrea/react-native-tailwind",
