@@ -441,6 +441,73 @@ export function ListWithHeaderFooter({ items }) {
 }
 ```
 
+### Building Reusable Components
+
+When building reusable components, use static `className` strings internally. To support `className` props from parent components, you **must** accept the corresponding `style` props (the Babel plugin transforms `className` to `style` before your component receives it):
+
+```tsx
+import { Pressable, Text, View, StyleProp, ViewStyle } from 'react-native';
+
+type ButtonProps = {
+  title: string;
+  onPress?: () => void;
+  // REQUIRED: Must accept style props for className to work
+  style?: StyleProp<ViewStyle>;
+  containerStyle?: StyleProp<ViewStyle>;
+  // Optional: Include in type for TypeScript compatibility
+  className?: string; // compile-time only
+  containerClassName?: string; // compile-time only
+};
+
+export function Button({ title, onPress, style, containerStyle }: ButtonProps) {
+  // Use static className strings - these get optimized at compile-time
+  return (
+    <View className="p-2 bg-gray-100 rounded-lg" style={containerStyle}>
+      <Pressable
+        className="bg-blue-500 px-6 py-4 rounded-lg items-center"
+        onPress={onPress}
+        style={style}
+      >
+        <Text className="text-white text-center font-semibold text-base">
+          {title}
+        </Text>
+      </Pressable>
+    </View>
+  );
+}
+```
+
+**Key Points:**
+
+- ✅ Use **static className strings** internally for default styling
+- ✅ **Must accept `style` props** - the Babel plugin transforms `className` → `style` before your component receives it
+- ✅ Include `className` props in the type (for TypeScript compatibility)
+- ✅ **Don't destructure** className props - they're already transformed to `style` and will be `undefined` at runtime
+- ✅ Babel plugin optimizes all static strings to `StyleSheet.create` calls
+
+**Usage:**
+
+```tsx
+// Default styling (uses internal static classNames)
+<Button title="Click Me" onPress={handlePress} />
+
+// Override with runtime styles
+<Button
+  title="Custom"
+  style={{ backgroundColor: '#10B981' }}
+  containerStyle={{ padding: 16 }}
+  onPress={handlePress}
+/>
+
+// className props are accepted but transformed by Babel upstream
+<Button className="bg-red-500 p-8" title="Red Button" />
+// At compile-time, this becomes:
+// <Button style={_twStyles._bg_red_500_p_8} title="Red Button" />
+// At runtime, className is undefined (already transformed to style)
+```
+
+This pattern allows you to build component libraries with optimized default styling while still supporting full customization.
+
 ## Architecture
 
 ### Compile-Time Transformation
