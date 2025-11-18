@@ -22,6 +22,9 @@ type PluginState = PluginPass & {
   customColors: Record<string, string>;
 };
 
+// Use a unique identifier to avoid conflicts with user's own styles
+const STYLES_IDENTIFIER = "_twStyles";
+
 /**
  * Supported className-like attributes
  */
@@ -117,7 +120,7 @@ function processTemplateLiteral(
         staticParts.push(cls);
 
         // Add to parts array
-        parts.push(t.memberExpression(t.identifier("styles"), t.identifier(styleKey)));
+        parts.push(t.memberExpression(t.identifier(STYLES_IDENTIFIER), t.identifier(styleKey)));
       }
     }
 
@@ -216,7 +219,7 @@ function processStringOrExpression(node: any, state: PluginState, t: typeof Babe
     const styleKey = generateStyleKey(className);
     state.styleRegistry.set(styleKey, styleObject);
 
-    return t.memberExpression(t.identifier("styles"), t.identifier(styleKey));
+    return t.memberExpression(t.identifier(STYLES_IDENTIFIER), t.identifier(styleKey));
   }
 
   // Handle nested expressions recursively
@@ -426,7 +429,7 @@ function replaceWithStyleAttribute(
 ) {
   const styleAttribute = t.jsxAttribute(
     t.jsxIdentifier(targetStyleProp),
-    t.jsxExpressionContainer(t.memberExpression(t.identifier("styles"), t.identifier(styleKey))),
+    t.jsxExpressionContainer(t.memberExpression(t.identifier(STYLES_IDENTIFIER), t.identifier(styleKey))),
   );
 
   classNamePath.replaceWith(styleAttribute);
@@ -446,7 +449,7 @@ function mergeStyleAttribute(
   // Create array with className styles first, then existing styles
   // This allows existing styles to override className styles
   const styleArray = t.arrayExpression([
-    t.memberExpression(t.identifier("styles"), t.identifier(styleKey)),
+    t.memberExpression(t.identifier(STYLES_IDENTIFIER), t.identifier(styleKey)),
     existingStyle,
   ]);
 
@@ -531,10 +534,10 @@ function injectStyles(
     styleProperties.push(t.objectProperty(t.identifier(key), t.objectExpression(properties)));
   }
 
-  // Create: const styles = StyleSheet.create({ ... })
+  // Create: const _tailwindStyles = StyleSheet.create({ ... })
   const styleSheet = t.variableDeclaration("const", [
     t.variableDeclarator(
-      t.identifier("styles"),
+      t.identifier(STYLES_IDENTIFIER),
       t.callExpression(t.memberExpression(t.identifier("StyleSheet"), t.identifier("create")), [
         t.objectExpression(styleProperties),
       ]),
