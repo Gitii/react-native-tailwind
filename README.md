@@ -494,7 +494,7 @@ export function SubmitButton({ isLoading }) {
       disabled={isLoading}
       className="bg-blue-500 active:bg-blue-700 disabled:bg-gray-400 p-4 rounded-lg"
     >
-      <Text className="text-white font-semibold disabled:text-gray-600">
+      <Text className="text-white font-semibold">
         {isLoading ? "Loading..." : "Submit"}
       </Text>
     </Pressable>
