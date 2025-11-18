@@ -69,7 +69,7 @@ declare module "react-native" {
     className?: string;
   }
 
-  interface FlatListProps<_ItemT> {
+  interface FlatListProps<ItemT> extends VirtualizedListProps<ItemT> {
     /**
      * Tailwind-like class names for styling
      * @example
