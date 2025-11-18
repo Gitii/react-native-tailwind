@@ -34,7 +34,7 @@
     "build": "npm run build:babel && npm run build:babel-plugin && npm run build:types",
     "build:babel": "babel src --out-dir dist --extensions \".ts,.tsx,.js,.jsx\" --copy-files --ignore 'src/babel/**' --ignore '**/*.d.ts'",
     "build:babel-plugin": "node --experimental-strip-types scripts/bundle-babel-plugin.ts",
-    "build:types": "tsc --emitDeclarationOnly && node --experimental-strip-types scripts/post-build-types.ts",
+    "build:types": "tsc --project tsconfig.build.json --emitDeclarationOnly && node --experimental-strip-types scripts/post-build-types.ts",
     "install:ios": "cd example; npm run install:ios",
     "open:ios": "cd example; npm run open:ios",
     "lint": "eslint src/",

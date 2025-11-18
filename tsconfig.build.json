@@ -6,11 +6,12 @@
     "resolveJsonModule": true,
     "module": "ESNext",
     "noEmit": false,
+    "rootDir": "./src",
+    "outDir": "./dist",
     "baseUrl": "./",
     "paths": {
-      "src/*": ["src/*"],
-      "test/*": ["test/*"]
+      "src/*": ["src/*"]
     }
   },
-  "include": ["src", "test"]
+  "include": ["src"]
 }
