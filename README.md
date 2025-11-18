@@ -31,9 +31,9 @@ Update your `babel.config.js`:
 
 ```javascript
 module.exports = {
-  presets: ['module:@react-native/babel-preset'],
+  presets: ["module:@react-native/babel-preset"],
   plugins: [
-    '@mgcrea/react-native-tailwind/babel', // Add this line
+    "@mgcrea/react-native-tailwind/babel", // Add this line
   ],
 };
 ```
@@ -45,7 +45,7 @@ Create a type declaration file in your project to enable `className` prop autoco
 **Create `src/types/react-native-tailwind.d.ts`:**
 
 ```typescript
-import '@mgcrea/react-native-tailwind/react-native';
+import "@mgcrea/react-native-tailwind/react-native";
 ```
 
 This file will be automatically picked up by TypeScript and enables autocomplete for the `className` prop on all React Native components.
@@ -55,14 +55,12 @@ This file will be automatically picked up by TypeScript and enables autocomplete
 ### 3. Start Using className
 
 ```tsx
-import { View, Text } from 'react-native';
+import { View, Text } from "react-native";
 
 export function MyComponent() {
   return (
     <View className="flex-1 bg-gray-100 p-4">
-      <Text className="text-xl font-bold text-blue-500">
-        Hello, Tailwind!
-      </Text>
+      <Text className="text-xl font-bold text-blue-500">Hello, Tailwind!</Text>
     </View>
   );
 }
@@ -81,15 +79,15 @@ The Babel plugin transforms your code at compile time:
 ### Output (what Babel generates):
 
 ```tsx
-import { StyleSheet } from 'react-native';
+import { StyleSheet } from "react-native";
 
-<View style={styles._bg_blue_500_m_4_p_2_rounded_lg} />
+<View style={styles._bg_blue_500_m_4_p_2_rounded_lg} />;
 
 const styles = StyleSheet.create({
   _bg_blue_500_m_4_p_2_rounded_lg: {
     margin: 16,
     padding: 8,
-    backgroundColor: '#3B82F6',
+    backgroundColor: "#3B82F6",
     borderRadius: 8,
   },
 });
@@ -143,8 +141,11 @@ const styles = StyleSheet.create({
 
 - **Width:** `border`, `border-0`, `border-2`, `border-4`, `border-8`
 - **Directional:** `border-t`, `border-r`, `border-b`, `border-l` (with variants -0, -2, -4)
+- **Arbitrary Width:** `border-[8px]`, `border-t-[12px]`, `border-r-[4px]`
 - **Radius:** `rounded-none`, `rounded-sm`, `rounded`, `rounded-md`, `rounded-lg`, `rounded-xl`, `rounded-2xl`, `rounded-3xl`, `rounded-full`
-- **Directional Radius:** `rounded-t`, `rounded-r`, `rounded-b`, `rounded-l` (with -none, -lg variants)
+- **Directional Radius:** `rounded-t`, `rounded-r`, `rounded-b`, `rounded-l` (with size variants)
+- **Corner Radius:** `rounded-tl`, `rounded-tr`, `rounded-bl`, `rounded-br` (with size variants)
+- **Arbitrary Radius:** `rounded-[12px]`, `rounded-t-[8px]`, `rounded-tl-[16px]`
 - **Style:** `border-solid`, `border-dotted`, `border-dashed`
 
 ### Sizing
@@ -154,9 +155,13 @@ const styles = StyleSheet.create({
 - `max-w-{size}`, `max-h-{size}` - max width/height
 
 **Available sizes:**
+
 - Numeric: 0-96 (same as spacing scale)
 - Fractional: `1/2`, `1/3`, `2/3`, `1/4`, `3/4`, `1/5`, `2/5`, `3/5`, `4/5`, `1/6`, `2/6`, `3/6`, `4/6`, `5/6`
 - Special: `full` (100%), `auto`
+- **Arbitrary values:** `w-[123px]`, `h-[50%]`, `min-w-[200px]`, `max-h-[80%]`
+
+> **Note:** Arbitrary sizing supports pixel values (`[123px]` or `[123]`) and percentages (`[50%]`). Other units (rem, em, vh, vw) are not supported in React Native.
 
 ### Other
 
@@ -169,24 +174,15 @@ const styles = StyleSheet.create({
 ### Basic Card Component
 
 ```tsx
-import { View, Text, Pressable } from 'react-native';
+import { View, Text, Pressable } from "react-native";
 
 export function Card({ title, description, onPress }) {
   return (
     <View className="bg-white rounded-lg p-6 mb-4 border border-gray-200">
-      <Text className="text-xl font-semibold text-gray-900 mb-2">
-        {title}
-      </Text>
-      <Text className="text-base text-gray-600 mb-4">
-        {description}
-      </Text>
-      <Pressable
-        className="bg-blue-500 px-4 py-2 rounded-lg items-center"
-        onPress={onPress}
-      >
-        <Text className="text-white font-semibold">
-          Learn More
-        </Text>
+      <Text className="text-xl font-semibold text-gray-900 mb-2">{title}</Text>
+      <Text className="text-base text-gray-600 mb-4">{description}</Text>
+      <Pressable className="bg-blue-500 px-4 py-2 rounded-lg items-center" onPress={onPress}>
+        <Text className="text-white font-semibold">Learn More</Text>
       </Pressable>
     </View>
   );
@@ -198,10 +194,7 @@ export function Card({ title, description, onPress }) {
 You can still use inline `style` prop alongside `className`:
 
 ```tsx
-<View
-  className="flex-1 p-4 bg-blue-500"
-  style={{ paddingTop: safeAreaInsets.top }}
->
+<View className="flex-1 p-4 bg-blue-500" style={{ paddingTop: safeAreaInsets.top }}>
   <Text>Content</Text>
 </View>
 ```
@@ -218,11 +211,11 @@ The Babel plugin will generate:
 
 ### Benchmark Comparison
 
-| Approach | Runtime Overhead | Bundle Size | Build Time |
-|----------|-----------------|-------------|------------|
-| **This Library (Babel)** | 0ms (compile-time) | ~4kb | +50-200ms |
-| Runtime Parser | ~2-5ms per component | ~28kb | 0ms |
-| NativeWind v4 | Very low | Medium | +100-500ms |
+| Approach                 | Runtime Overhead     | Bundle Size | Build Time |
+| ------------------------ | -------------------- | ----------- | ---------- |
+| **This Library (Babel)** | 0ms (compile-time)   | ~4kb        | +50-200ms  |
+| Runtime Parser           | ~2-5ms per component | ~28kb       | 0ms        |
+| NativeWind v4            | Very low             | Medium      | +100-500ms |
 
 ### Why It's Fast
 
@@ -250,23 +243,23 @@ The Babel plugin can only transform static string literals. For dynamic styling,
 
 ### vs NativeWind
 
-| Feature | NativeWind v4 | This Library |
-|---------|---------------|--------------|
-| Setup | Metro + Babel | Babel only |
-| tailwindcss dependency | Yes | No |
-| Runtime overhead | Very low | Zero |
-| Dynamic classes | Full support | Limited |
-| Bundle size | Medium | Smaller |
-| Learning curve | Moderate | Low |
+| Feature                | NativeWind v4 | This Library |
+| ---------------------- | ------------- | ------------ |
+| Setup                  | Metro + Babel | Babel only   |
+| tailwindcss dependency | Yes           | No           |
+| Runtime overhead       | Very low      | Zero         |
+| Dynamic classes        | Full support  | Limited      |
+| Bundle size            | Medium        | Smaller      |
+| Learning curve         | Moderate      | Low          |
 
 ### vs twrnc (Tailwind React Native Classnames)
 
-| Feature | twrnc | This Library |
-|---------|-------|--------------|
-| Approach | Runtime parser | Compile-time |
-| Performance | Good (cached) | Excellent (zero runtime) |
-| Bundle size | ~20kb | ~4kb |
-| Dynamic classes | Full support | Limited |
+| Feature         | twrnc          | This Library             |
+| --------------- | -------------- | ------------------------ |
+| Approach        | Runtime parser | Compile-time             |
+| Performance     | Good (cached)  | Excellent (zero runtime) |
+| Bundle size     | ~20kb          | ~4kb                     |
+| Dynamic classes | Full support   | Limited                  |
 
 ## Migration from Runtime Wrapper
 
@@ -275,27 +268,60 @@ If you were using the old `createTailwindComponent` wrapper:
 ### Before:
 
 ```tsx
-import { createTailwindViewComponent } from '@mgcrea/react-native-tailwind';
+import { createTailwindViewComponent } from "@mgcrea/react-native-tailwind";
 
 const StyledView = createTailwindViewComponent(View);
 
-<StyledView className="m-4 p-2" />
+<StyledView className="m-4 p-2" />;
 ```
 
 ### After:
 
 ```tsx
-import { View } from 'react-native';
+import { View } from "react-native";
 
-<View className="m-4 p-2" />
+<View className="m-4 p-2" />;
 ```
 
 Simply:
+
 1. Add the Babel plugin to your config
 2. Create the TypeScript declaration file (`src/types/react-native-tailwind.d.ts`)
 3. Use `className` directly on React Native components!
 
 ## Advanced Usage
+
+### Arbitrary Values
+
+Use arbitrary values for custom sizes and borders that aren't in the preset scales:
+
+```tsx
+// Sizing with arbitrary pixel values
+<View className="w-[350px] h-[200px]" />
+
+// Sizing with arbitrary percentages
+<View className="w-[85%] min-h-[50%]" />
+
+// Border width with arbitrary values
+<View className="border-[3px] border-t-[5px]" />
+
+// Border radius with arbitrary values
+<View className="rounded-[20px] rounded-tl-[8px]" />
+```
+
+**Supported formats:**
+
+- **Pixels:** `[123px]` or `[123]` (equivalent)
+- **Percentages:** `[50%]`, `[33.333%]`
+
+**Where arbitrary values work:**
+
+- Sizing: `w-[...]`, `h-[...]`, `min-w-[...]`, `min-h-[...]`, `max-w-[...]`, `max-h-[...]`
+- Border width: `border-[...]`, `border-t-[...]`, `border-r-[...]`, `border-b-[...]`, `border-l-[...]`
+- Border radius: `rounded-[...]`, `rounded-t-[...]`, `rounded-tl-[...]`, etc.
+
+**React Native limitations:**
+Arbitrary values only support `px` and `%` units. CSS units like `rem`, `em`, `vh`, and `vw` are not supported by React Native and will generate warnings in development.
 
 ### Custom Colors via Tailwind Config
 
@@ -307,12 +333,12 @@ export default {
   theme: {
     extend: {
       colors: {
-        primary: '#1d4ed8',
-        secondary: '#9333ea',
+        primary: "#1d4ed8",
+        secondary: "#9333ea",
         brand: {
-          light: '#f0f9ff',
-          DEFAULT: '#0284c7',
-          dark: '#0c4a6e',
+          light: "#f0f9ff",
+          DEFAULT: "#0284c7",
+          dark: "#0c4a6e",
         },
       },
     },
@@ -325,19 +351,19 @@ Then use your custom colors in className:
 ```tsx
 <View className="bg-primary p-4">
   <Text className="text-brand">Custom branded text</Text>
-  <View className="bg-brand-light rounded-lg">
-    {/* Nested colors become brand-light, brand-dark */}
-  </View>
+  <View className="bg-brand-light rounded-lg">{/* Nested colors become brand-light, brand-dark */}</View>
 </View>
 ```
 
 **How it works:**
+
 - The Babel plugin automatically discovers `tailwind.config.*` files by traversing up from your source files
 - Custom colors are merged with defaults at build time (custom colors take precedence)
 - Nested color objects are flattened using dash notation (e.g., `brand.light` → `brand-light`)
 - **Zero runtime overhead** - All config loading happens during compilation
 
 **Supported config formats:**
+
 - `tailwind.config.js` (CommonJS)
 - `tailwind.config.mjs` (ES modules)
 - `tailwind.config.cjs` (CommonJS explicit)
@@ -349,9 +375,9 @@ Use `theme.extend.colors` to add custom colors while keeping all default Tailwin
 ### Accessing the Parser Programmatically
 
 ```typescript
-import { parseClassName } from '@mgcrea/react-native-tailwind';
+import { parseClassName } from "@mgcrea/react-native-tailwind";
 
-const styles = parseClassName('m-4 p-2 bg-blue-500');
+const styles = parseClassName("m-4 p-2 bg-blue-500");
 // Returns: { margin: 16, padding: 8, backgroundColor: '#3B82F6' }
 ```
 
@@ -360,10 +386,10 @@ const styles = parseClassName('m-4 p-2 bg-blue-500');
 You can import and modify the default scales:
 
 ```typescript
-import { COLORS, SPACING_SCALE } from '@mgcrea/react-native-tailwind';
+import { COLORS, SPACING_SCALE } from "@mgcrea/react-native-tailwind";
 
 // Use in your own utilities
-const customColor = COLORS['blue-500']; // '#3B82F6'
+const customColor = COLORS["blue-500"]; // '#3B82F6'
 const customSpacing = SPACING_SCALE[4]; // 16
 ```
 
@@ -374,9 +400,10 @@ const customSpacing = SPACING_SCALE[4]; // 16
 If you see TypeScript errors about `className` not being a valid prop:
 
 1. Make sure you've created the type declaration file:
+
    ```typescript
    // src/types/react-native-tailwind.d.ts
-   import '@mgcrea/react-native-tailwind/react-native';
+   import "@mgcrea/react-native-tailwind/react-native";
    ```
 
 2. Verify the file is in a location covered by your `tsconfig.json` `include` pattern
@@ -386,13 +413,15 @@ If you see TypeScript errors about `className` not being a valid prop:
 ### Babel Plugin Not Working
 
 1. Clear Metro cache:
+
    ```bash
    npx react-native start --reset-cache
    ```
 
 2. Verify `babel.config.js` includes the plugin:
+
    ```javascript
-   plugins: ['@mgcrea/react-native-tailwind/babel']
+   plugins: ["@mgcrea/react-native-tailwind/babel"];
    ```
 
 3. Check that the plugin is installed in your `node_modules`
@@ -404,6 +433,7 @@ If your custom colors from `tailwind.config.*` aren't being recognized:
 1. **Check config file location**: The config must be in your project root or a parent directory. The Babel plugin searches upward from each source file.
 
 2. **Verify config format**: Make sure your config exports the theme correctly:
+
    ```javascript
    // ✅ Correct (CommonJS)
    module.exports = {
@@ -417,6 +447,7 @@ If your custom colors from `tailwind.config.*` aren't being recognized:
    ```
 
 3. **Clear Metro cache**: Config changes require cache reset:
+
    ```bash
    npx react-native start --reset-cache
    ```
@@ -424,12 +455,23 @@ If your custom colors from `tailwind.config.*` aren't being recognized:
 4. **Check build output**: The Babel plugin logs warnings about config loading in development. Check Metro logs for `[react-native-tailwind]` messages.
 
 5. **Use theme.extend.colors**: Don't use `theme.colors` directly as it will override all defaults:
+
    ```javascript
    // ❌ Overrides all defaults
-   theme: { colors: { primary: '#000' } }
+   theme: {
+     colors: {
+       primary: "#000";
+     }
+   }
 
    // ✅ Extends defaults
-   theme: { extend: { colors: { primary: '#000' } } }
+   theme: {
+     extend: {
+       colors: {
+         primary: "#000";
+       }
+     }
+   }
    ```
 
 ## Contributing
