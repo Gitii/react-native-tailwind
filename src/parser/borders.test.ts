@@ -1,9 +1,5 @@
 import { describe, expect, it } from "vitest";
-import {
-  BORDER_RADIUS_SCALE,
-  BORDER_WIDTH_SCALE,
-  parseBorder,
-} from "./borders";
+import { BORDER_RADIUS_SCALE, BORDER_WIDTH_SCALE, parseBorder } from "./borders";
 
 describe("BORDER_WIDTH_SCALE", () => {
   it("should export complete border width scale", () => {

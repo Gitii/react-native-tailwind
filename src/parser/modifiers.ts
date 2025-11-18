@@ -2,7 +2,7 @@
  * Modifier parsing utilities for state-based class names (active:, hover:, focus:)
  */
 
-export type ModifierType = 'active' | 'hover' | 'focus';
+export type ModifierType = "active" | "hover" | "focus";
 
 export interface ParsedModifier {
   modifier: ModifierType;
@@ -12,7 +12,7 @@ export interface ParsedModifier {
 /**
  * Supported modifiers that map to component states
  */
-const SUPPORTED_MODIFIERS: readonly ModifierType[] = ['active', 'hover', 'focus'] as const;
+const SUPPORTED_MODIFIERS: readonly ModifierType[] = ["active", "hover", "focus"] as const;
 
 /**
  * Parse a class name to detect and extract modifiers
@@ -26,7 +26,7 @@ const SUPPORTED_MODIFIERS: readonly ModifierType[] = ['active', 'hover', 'focus'
  * parseModifier("hover:focus:bg-blue-500") // null (nested modifiers not supported)
  */
 export function parseModifier(cls: string): ParsedModifier | null {
-  const colonIndex = cls.indexOf(':');
+  const colonIndex = cls.indexOf(":");
 
   // No colon means no modifier
   if (colonIndex === -1) {
@@ -42,7 +42,7 @@ export function parseModifier(cls: string): ParsedModifier | null {
   }
 
   // Check for nested modifiers (not currently supported)
-  if (baseClass.includes(':')) {
+  if (baseClass.includes(":")) {
     return null;
   }
 
