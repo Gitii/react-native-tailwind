@@ -95,11 +95,11 @@ The Babel plugin transforms your code at compile time:
 ```tsx
 import { StyleSheet } from "react-native";
 
-<View style={styles._bg_blue_500_m_4_p_2_rounded_lg} />;
-<ScrollView contentContainerStyle={styles._gap_4_items_center} />;
-<FlatList columnWrapperStyle={styles._gap_4} ListHeaderComponentStyle={styles._bg_gray_100_p_4} />;
+<View style={_twStyles._bg_blue_500_m_4_p_2_rounded_lg} />;
+<ScrollView contentContainerStyle={_twStyles._gap_4_items_center} />;
+<FlatList columnWrapperStyle={_twStyles._gap_4} ListHeaderComponentStyle={_twStyles._bg_gray_100_p_4} />;
 
-const styles = StyleSheet.create({
+const _twStyles = StyleSheet.create({
   _bg_blue_500_m_4_p_2_rounded_lg: {
     margin: 16,
     padding: 8,
@@ -279,18 +279,16 @@ export function ToggleButton() {
 ```tsx
 <Pressable
   onPress={() => setIsActive(!isActive)}
-  style={isActive ? styles._bg_green_500_p_4 : styles._bg_red_500_p_4}
+  style={isActive ? _twStyles._bg_green_500_p_4 : _twStyles._bg_red_500_p_4}
 >
-  <Text style={styles._text_white}>{isActive ? "Active" : "Inactive"}</Text>
+  <Text style={_twStyles._text_white}>{isActive ? "Active" : "Inactive"}</Text>
 </Pressable>
 ```
 
 **Template Literal (Static + Dynamic):**
 
 ```tsx
-<Pressable
-  className={`border-2 rounded-lg ${isActive ? "bg-blue-500" : "bg-gray-300"} p-4`}
->
+<Pressable className={`border-2 rounded-lg ${isActive ? "bg-blue-500" : "bg-gray-300"} p-4`}>
   <Text className="text-white">Click Me</Text>
 </Pressable>
 ```
@@ -300,13 +298,13 @@ export function ToggleButton() {
 ```tsx
 <Pressable
   style={[
-    styles._border_2,
-    styles._rounded_lg,
-    isActive ? styles._bg_blue_500 : styles._bg_gray_300,
-    styles._p_4
+    _twStyles._border_2,
+    _twStyles._rounded_lg,
+    isActive ? _twStyles._bg_blue_500 : _twStyles._bg_gray_300,
+    _twStyles._p_4,
   ]}
 >
-  <Text style={styles._text_white}>Click Me</Text>
+  <Text style={_twStyles._text_white}>Click Me</Text>
 </Pressable>
 ```
 
@@ -321,13 +319,7 @@ export function ToggleButton() {
 **Transforms to:**
 
 ```tsx
-<View
-  style={[
-    styles._p_4,
-    styles._bg_gray_100,
-    isActive && styles._border_4_border_purple_500
-  ]}
->
+<View style={[_twStyles._p_4, _twStyles._bg_gray_100, isActive && _twStyles._border_4_border_purple_500]}>
   <Text>Content</Text>
 </View>
 ```
@@ -335,9 +327,7 @@ export function ToggleButton() {
 **Multiple Conditionals:**
 
 ```tsx
-<View
-  className={`${size === "lg" ? "p-8" : "p-4"} ${isActive ? "bg-blue-500" : "bg-gray-400"}`}
->
+<View className={`${size === "lg" ? "p-8" : "p-4"} ${isActive ? "bg-blue-500" : "bg-gray-400"}`}>
   <Text>Dynamic Size & Color</Text>
 </View>
 ```
@@ -373,7 +363,7 @@ You can use inline `style` prop alongside `className`:
 The Babel plugin will merge them:
 
 ```tsx
-<View style={[styles._className_styles, { paddingTop: safeAreaInsets.top }]}>
+<View style={[_twStyles._className_styles, { paddingTop: safeAreaInsets.top }]}>
   <Text>Content</Text>
 </View>
 ```
@@ -567,7 +557,7 @@ Access the parser and constants programmatically:
 import { parseClassName, COLORS, SPACING_SCALE } from "@mgcrea/react-native-tailwind";
 
 // Parse className strings
-const styles = parseClassName("m-4 p-2 bg-blue-500");
+const _twStyles = parseClassName("m-4 p-2 bg-blue-500");
 // Returns: { margin: 16, padding: 8, backgroundColor: '#3B82F6' }
 
 // Access default scales
