@@ -9,6 +9,20 @@
   "type": "module",
   "main": "./dist/index.js",
   "types": "./dist/index.d.ts",
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "import": "./dist/index.js",
+      "require": "./dist/index.js"
+    },
+    "./babel": {
+      "import": "./dist/babel/index.cjs",
+      "require": "./dist/babel/index.cjs"
+    },
+    "./react-native": {
+      "types": "./dist/react-native.d.ts"
+    }
+  },
   "files": [
     "*.podspec",
     "src",
@@ -17,8 +31,9 @@
   ],
   "scripts": {
     "dev": "cd example; npm run dev",
-    "build": "npm run build:babel && npm run build:types",
-    "build:babel": "babel src --out-dir dist --extensions \".ts,.tsx,.js,.jsx\" --copy-files",
+    "build": "npm run build:babel && npm run build:babel-plugin && npm run build:types",
+    "build:babel": "babel src --out-dir dist --extensions \".ts,.tsx,.js,.jsx\" --copy-files --ignore 'src/babel/**' --ignore '**/*.d.ts'",
+    "build:babel-plugin": "node scripts/bundle-babel-plugin.cjs",
     "build:types": "tsc --emitDeclarationOnly",
     "install:ios": "cd example; npm run install:ios",
     "open:ios": "cd example; npm run open:ios",
@@ -35,14 +50,20 @@
   "devDependencies": {
     "@babel/cli": "^7.28.3",
     "@babel/core": "^7.28.5",
+    "@babel/plugin-transform-modules-commonjs": "^7.27.1",
+    "@babel/preset-typescript": "^7.28.5",
     "@babel/runtime": "^7.28.4",
+    "@babel/types": "^7.28.5",
     "@mgcrea/eslint-config-react-native": "^0.14.0",
     "@react-native-community/cli": "^20.0.2",
     "@react-native/babel-preset": "0.82.1",
     "@react-native/typescript-config": "0.82.1",
     "@testing-library/react-native": "^13.3.3",
+    "@types/babel__core": "^7.20.5",
+    "@types/babel__traverse": "^7.28.0",
     "@types/react": "^19.2.5",
     "babel-plugin-module-resolver": "^5.0.2",
+    "esbuild": "^0.27.0",
     "eslint": "^9.39.1",
     "jest": "^30.2.0",
     "prettier": "^3.6.2",
