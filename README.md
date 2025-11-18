@@ -134,6 +134,8 @@ const _twStyles = StyleSheet.create({
 
 **Available sizes:** `0`, `0.5`, `1`, `1.5`, `2`, `2.5`, `3`, `3.5`, `4`, `5`, `6`, `7`, `8`, `9`, `10`, `11`, `12`, `14`, `16`, `20`, `24`, `28`, `32`, `36`, `40`, `44`, `48`, `52`, `56`, `60`, `64`, `72`, `80`, `96`
 
+**Arbitrary values:** `m-[16px]`, `p-[20]`, `mx-[24px]`, `gap-[12px]` — Custom spacing values (px only)
+
 ### Layout
 
 **Flexbox:**
@@ -554,24 +556,25 @@ For dynamic styling, use the `style` prop alongside `className`.
 
 ### Arbitrary Values
 
-Use arbitrary values for custom sizes and borders not in the preset scales:
+Use arbitrary values for custom sizes, spacing, and borders not in the preset scales:
 
 ```tsx
-<View className="w-[350px] h-[85%] border-[3px] rounded-[20px]" />
+<View className="w-[350px] h-[85%] m-[16px] p-[24px] border-[3px] rounded-[20px]" />
 ```
 
 **Supported:**
 
-- **Sizing:** `w-[...]`, `h-[...]`, `min-w-[...]`, `min-h-[...]`, `max-w-[...]`, `max-h-[...]`
-- **Border width:** `border-[...]`, `border-t-[...]`, `border-r-[...]`, `border-b-[...]`, `border-l-[...]`
-- **Border radius:** `rounded-[...]`, `rounded-t-[...]`, `rounded-tl-[...]`, etc.
+- **Spacing:** `m-[...]`, `mx-[...]`, `my-[...]`, `mt-[...]`, `p-[...]`, `px-[...]`, `gap-[...]`, etc. (px only)
+- **Sizing:** `w-[...]`, `h-[...]`, `min-w-[...]`, `min-h-[...]`, `max-w-[...]`, `max-h-[...]` (px and %)
+- **Border width:** `border-[...]`, `border-t-[...]`, `border-r-[...]`, `border-b-[...]`, `border-l-[...]` (px only)
+- **Border radius:** `rounded-[...]`, `rounded-t-[...]`, `rounded-tl-[...]`, etc. (px only)
 
 **Formats:**
 
-- Pixels: `[123px]` or `[123]`
-- Percentages: `[50%]`, `[33.333%]`
+- Pixels: `[123px]` or `[123]` — Supported by all utilities
+- Percentages: `[50%]`, `[33.333%]` — Only supported by sizing utilities (`w-*`, `h-*`, etc.)
 
-> **Note:** Only `px` and `%` units are supported. CSS units (`rem`, `em`, `vh`, `vw`) are not supported by React Native.
+> **Note:** CSS units (`rem`, `em`, `vh`, `vw`) are not supported by React Native.
 
 ### Custom Colors
 
