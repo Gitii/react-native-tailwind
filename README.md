@@ -38,15 +38,19 @@ module.exports = {
 };
 ```
 
-### 2. Import Type Definitions (TypeScript)
+### 2. Enable TypeScript Support (TypeScript)
 
-Add this import at the top of your App.tsx or any file using className props:
+Create a type declaration file in your project to enable `className` prop autocomplete:
+
+**Create `src/types/react-native-tailwind.d.ts`:**
 
 ```typescript
-import '@mgcrea/react-native-tailwind/src/react-native';
+import '@mgcrea/react-native-tailwind/react-native';
 ```
 
-This enables TypeScript autocomplete for the `className` prop on React Native components.
+This file will be automatically picked up by TypeScript and enables autocomplete for the `className` prop on all React Native components.
+
+> **Why is this needed?** TypeScript module augmentation requires the declaration file to be part of your project's compilation context. This one-time setup ensures the `className` prop is recognized throughout your codebase.
 
 ### 3. Start Using className
 
@@ -281,13 +285,15 @@ const StyledView = createTailwindViewComponent(View);
 ### After:
 
 ```tsx
-import '@mgcrea/react-native-tailwind/src/react-native';
 import { View } from 'react-native';
 
 <View className="m-4 p-2" />
 ```
 
-Simply add the Babel plugin to your config and use `className` directly on React Native components!
+Simply:
+1. Add the Babel plugin to your config
+2. Create the TypeScript declaration file (`src/types/react-native-tailwind.d.ts`)
+3. Use `className` directly on React Native components!
 
 ## Advanced Usage
 
@@ -318,12 +324,15 @@ const customSpacing = SPACING_SCALE[4]; // 16
 
 If you see TypeScript errors about `className` not being a valid prop:
 
-1. Make sure you've imported the type definitions:
+1. Make sure you've created the type declaration file:
    ```typescript
-   import '@mgcrea/react-native-tailwind/src/react-native';
+   // src/types/react-native-tailwind.d.ts
+   import '@mgcrea/react-native-tailwind/react-native';
    ```
 
-2. Restart your TypeScript server in VS Code (Cmd+Shift+P → "TypeScript: Restart TS Server")
+2. Verify the file is in a location covered by your `tsconfig.json` `include` pattern
+
+3. Restart your TypeScript server in VS Code (Cmd+Shift+P → "TypeScript: Restart TS Server")
 
 ### Babel Plugin Not Working
 
