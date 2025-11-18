@@ -2,7 +2,7 @@
  * Modifier parsing utilities for state-based class names (active:, hover:, focus:)
  */
 
-export type ModifierType = "active" | "hover" | "focus";
+export type ModifierType = "active" | "hover" | "focus" | "disabled";
 
 export type ParsedModifier = {
   modifier: ModifierType;
@@ -12,7 +12,7 @@ export type ParsedModifier = {
 /**
  * Supported modifiers that map to component states
  */
-const SUPPORTED_MODIFIERS: readonly ModifierType[] = ["active", "hover", "focus"] as const;
+const SUPPORTED_MODIFIERS: readonly ModifierType[] = ["active", "hover", "focus", "disabled"] as const;
 
 /**
  * Parse a class name to detect and extract modifiers

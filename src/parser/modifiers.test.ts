@@ -27,6 +27,14 @@ describe("parseModifier - basic functionality", () => {
     });
   });
 
+  it("should parse disabled modifier", () => {
+    const result = parseModifier("disabled:bg-gray-400");
+    expect(result).toEqual({
+      modifier: "disabled",
+      baseClass: "bg-gray-400",
+    });
+  });
+
   it("should return null for class without modifier", () => {
     expect(parseModifier("bg-blue-500")).toBeNull();
     expect(parseModifier("text-red-500")).toBeNull();
@@ -93,10 +101,10 @@ describe("parseModifier - various base classes", () => {
 
 describe("parseModifier - edge cases", () => {
   it("should return null for unsupported modifiers", () => {
-    expect(parseModifier("disabled:bg-gray-500")).toBeNull();
     expect(parseModifier("selected:bg-blue-500")).toBeNull();
     expect(parseModifier("pressed:bg-red-500")).toBeNull();
     expect(parseModifier("custom:bg-green-500")).toBeNull();
+    expect(parseModifier("unknown:bg-gray-500")).toBeNull();
   });
 
   it("should return null for nested modifiers", () => {
@@ -156,6 +164,7 @@ describe("hasModifier", () => {
     expect(hasModifier("active:bg-blue-500")).toBe(true);
     expect(hasModifier("hover:text-red-500")).toBe(true);
     expect(hasModifier("focus:border-green-500")).toBe(true);
+    expect(hasModifier("disabled:bg-gray-400")).toBe(true);
   });
 
   it("should return false for classes without modifiers", () => {
@@ -165,7 +174,7 @@ describe("hasModifier", () => {
   });
 
   it("should return false for unsupported modifiers", () => {
-    expect(hasModifier("disabled:bg-gray-500")).toBe(false);
+    expect(hasModifier("selected:bg-gray-500")).toBe(false);
     expect(hasModifier("pressed:bg-blue-500")).toBe(false);
   });
 
@@ -285,22 +294,25 @@ describe("splitModifierClasses - complex scenarios", () => {
     });
   });
 
-  it("should handle all three modifier types", () => {
-    const result = splitModifierClasses("bg-gray-500 active:bg-blue-700 hover:bg-green-700 focus:bg-red-700");
+  it("should handle all four modifier types", () => {
+    const result = splitModifierClasses(
+      "bg-gray-500 active:bg-blue-700 hover:bg-green-700 focus:bg-red-700 disabled:bg-gray-400",
+    );
     expect(result).toEqual({
       baseClasses: ["bg-gray-500"],
       modifierClasses: [
         { modifier: "active", baseClass: "bg-blue-700" },
         { modifier: "hover", baseClass: "bg-green-700" },
         { modifier: "focus", baseClass: "bg-red-700" },
+        { modifier: "disabled", baseClass: "bg-gray-400" },
       ],
     });
   });
 
   it("should ignore unsupported modifiers in the base classes", () => {
-    const result = splitModifierClasses("bg-blue-500 disabled:bg-gray-500 active:bg-blue-700");
+    const result = splitModifierClasses("bg-blue-500 pressed:bg-gray-500 active:bg-blue-700");
     expect(result).toEqual({
-      baseClasses: ["bg-blue-500", "disabled:bg-gray-500"],
+      baseClasses: ["bg-blue-500", "pressed:bg-gray-500"],
       modifierClasses: [{ modifier: "active", baseClass: "bg-blue-700" }],
     });
   });
@@ -346,7 +358,7 @@ describe("type safety", () => {
     const result = parseModifier("active:bg-blue-500");
     if (result) {
       const modifier: ModifierType = result.modifier;
-      expect(["active", "hover", "focus"]).toContain(modifier);
+      expect(["active", "hover", "focus", "disabled"]).toContain(modifier);
     }
   });
 

@@ -21,5 +21,7 @@ export { SPACING_SCALE } from "./parser/spacing";
 export { FONT_SIZES, LETTER_SPACING_SCALE } from "./parser/typography";
 
 // Re-export enhanced components with modifier support
+export { Pressable } from "./components/Pressable";
+export type { PressableProps } from "./components/Pressable";
 export { TextInput } from "./components/TextInput";
 export type { TextInputProps } from "./components/TextInput";

@@ -95,9 +95,9 @@ function getComponentModifierSupport(
   // Map components to their supported modifiers
   switch (componentName) {
     case "Pressable":
-      return { component: "Pressable", supportedModifiers: ["active", "hover", "focus"] };
+      return { component: "Pressable", supportedModifiers: ["active", "hover", "focus", "disabled"] };
     case "TextInput":
-      return { component: "TextInput", supportedModifiers: ["focus"] };
+      return { component: "TextInput", supportedModifiers: ["focus", "disabled"] };
     default:
       return null;
   }
@@ -361,7 +361,7 @@ function processStaticClassNameWithModifiers(
 
 /**
  * Get the state property name for a modifier type
- * Maps modifier types to Pressable state parameter properties
+ * Maps modifier types to component state parameter properties
  */
 function getStatePropertyForModifier(modifier: ModifierType): string {
   switch (modifier) {
@@ -371,6 +371,8 @@ function getStatePropertyForModifier(modifier: ModifierType): string {
       return "hovered";
     case "focus":
       return "focused";
+    case "disabled":
+      return "disabled";
     default:
       return "pressed"; // fallback
   }
