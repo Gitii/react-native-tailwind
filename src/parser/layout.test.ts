@@ -319,6 +319,18 @@ describe("parseLayout - z-index utilities", () => {
     expect(parseLayout("z-auto")).toEqual({ zIndex: 0 });
   });
 
+  it("should parse arbitrary z-index values", () => {
+    expect(parseLayout("z-[999]")).toEqual({ zIndex: 999 });
+    expect(parseLayout("z-[100]")).toEqual({ zIndex: 100 });
+    expect(parseLayout("z-[1]")).toEqual({ zIndex: 1 });
+  });
+
+  it("should parse negative arbitrary z-index values", () => {
+    expect(parseLayout("z-[-1]")).toEqual({ zIndex: -1 });
+    expect(parseLayout("z-[-10]")).toEqual({ zIndex: -10 });
+    expect(parseLayout("z-[-999]")).toEqual({ zIndex: -999 });
+  });
+
   it("should return null for invalid z-index values", () => {
     expect(parseLayout("z-100")).toBeNull();
     expect(parseLayout("z-5")).toBeNull();
@@ -369,6 +381,50 @@ describe("parseLayout - positioning utilities", () => {
     expect(parseLayout("bottom-auto")).toEqual({});
     expect(parseLayout("left-auto")).toEqual({});
   });
+
+  it("should parse arbitrary top values with pixels", () => {
+    expect(parseLayout("top-[50px]")).toEqual({ top: 50 });
+    expect(parseLayout("top-[100px]")).toEqual({ top: 100 });
+    expect(parseLayout("top-[0px]")).toEqual({ top: 0 });
+  });
+
+  it("should parse arbitrary top values without unit (defaults to px)", () => {
+    expect(parseLayout("top-[50]")).toEqual({ top: 50 });
+    expect(parseLayout("top-[100]")).toEqual({ top: 100 });
+  });
+
+  it("should parse arbitrary top values with percentages", () => {
+    expect(parseLayout("top-[25%]")).toEqual({ top: "25%" });
+    expect(parseLayout("top-[50%]")).toEqual({ top: "50%" });
+    expect(parseLayout("top-[10.5%]")).toEqual({ top: "10.5%" });
+  });
+
+  it("should parse negative arbitrary top values", () => {
+    expect(parseLayout("top-[-10px]")).toEqual({ top: -10 });
+    expect(parseLayout("top-[-50]")).toEqual({ top: -50 });
+    expect(parseLayout("top-[-25%]")).toEqual({ top: "-25%" });
+  });
+
+  it("should parse arbitrary right values", () => {
+    expect(parseLayout("right-[30px]")).toEqual({ right: 30 });
+    expect(parseLayout("right-[20]")).toEqual({ right: 20 });
+    expect(parseLayout("right-[15%]")).toEqual({ right: "15%" });
+    expect(parseLayout("right-[-10px]")).toEqual({ right: -10 });
+  });
+
+  it("should parse arbitrary bottom values", () => {
+    expect(parseLayout("bottom-[40px]")).toEqual({ bottom: 40 });
+    expect(parseLayout("bottom-[25]")).toEqual({ bottom: 25 });
+    expect(parseLayout("bottom-[33.333%]")).toEqual({ bottom: "33.333%" });
+    expect(parseLayout("bottom-[-15px]")).toEqual({ bottom: -15 });
+  });
+
+  it("should parse arbitrary left values", () => {
+    expect(parseLayout("left-[60px]")).toEqual({ left: 60 });
+    expect(parseLayout("left-[45]")).toEqual({ left: 45 });
+    expect(parseLayout("left-[12.5%]")).toEqual({ left: "12.5%" });
+    expect(parseLayout("left-[-20px]")).toEqual({ left: -20 });
+  });
 });
 
 describe("parseLayout - inset utilities", () => {
@@ -400,6 +456,42 @@ describe("parseLayout - inset utilities", () => {
     expect(parseLayout("inset-100")).toBeNull();
     expect(parseLayout("inset-x-100")).toBeNull();
     expect(parseLayout("inset-y-100")).toBeNull();
+  });
+
+  it("should parse arbitrary inset (all sides) values with pixels", () => {
+    expect(parseLayout("inset-[10px]")).toEqual({ top: 10, right: 10, bottom: 10, left: 10 });
+    expect(parseLayout("inset-[25px]")).toEqual({ top: 25, right: 25, bottom: 25, left: 25 });
+    expect(parseLayout("inset-[0px]")).toEqual({ top: 0, right: 0, bottom: 0, left: 0 });
+  });
+
+  it("should parse arbitrary inset values without unit (defaults to px)", () => {
+    expect(parseLayout("inset-[15]")).toEqual({ top: 15, right: 15, bottom: 15, left: 15 });
+    expect(parseLayout("inset-[30]")).toEqual({ top: 30, right: 30, bottom: 30, left: 30 });
+  });
+
+  it("should parse arbitrary inset values with percentages", () => {
+    expect(parseLayout("inset-[10%]")).toEqual({ top: "10%", right: "10%", bottom: "10%", left: "10%" });
+    expect(parseLayout("inset-[25%]")).toEqual({ top: "25%", right: "25%", bottom: "25%", left: "25%" });
+    expect(parseLayout("inset-[5.5%]")).toEqual({ top: "5.5%", right: "5.5%", bottom: "5.5%", left: "5.5%" });
+  });
+
+  it("should parse arbitrary inset-x (horizontal) values", () => {
+    expect(parseLayout("inset-x-[20px]")).toEqual({ left: 20, right: 20 });
+    expect(parseLayout("inset-x-[15]")).toEqual({ left: 15, right: 15 });
+    expect(parseLayout("inset-x-[10%]")).toEqual({ left: "10%", right: "10%" });
+  });
+
+  it("should parse arbitrary inset-y (vertical) values", () => {
+    expect(parseLayout("inset-y-[30px]")).toEqual({ top: 30, bottom: 30 });
+    expect(parseLayout("inset-y-[25]")).toEqual({ top: 25, bottom: 25 });
+    expect(parseLayout("inset-y-[15%]")).toEqual({ top: "15%", bottom: "15%" });
+  });
+
+  it("should parse negative arbitrary inset values", () => {
+    expect(parseLayout("inset-[-5px]")).toEqual({ top: -5, right: -5, bottom: -5, left: -5 });
+    expect(parseLayout("inset-x-[-10px]")).toEqual({ left: -10, right: -10 });
+    expect(parseLayout("inset-y-[-15px]")).toEqual({ top: -15, bottom: -15 });
+    expect(parseLayout("inset-[-20%]")).toEqual({ top: "-20%", right: "-20%", bottom: "-20%", left: "-20%" });
   });
 });
 
