@@ -785,23 +785,26 @@ function mergeStyleFunctionAttribute(
   // If existing is already a function, we need to handle it specially
   if (t.isArrowFunctionExpression(existingStyle) || t.isFunctionExpression(existingStyle)) {
     // Both are functions - create wrapper that calls both
-    // ({ pressed }) => [newStyleFn({ pressed }), existingStyleFn({ pressed })]
-    const param = styleFunctionExpression.params[0]; // Reuse parameter from new function
+    // (_state) => [newStyleFn(_state), existingStyleFn(_state)]
+    // Create an identifier for the parameter to pass to the function calls
+    const paramIdentifier = t.identifier("_state");
 
-    const newFunctionCall = t.callExpression(styleFunctionExpression, [param]);
-    const existingFunctionCall = t.callExpression(existingStyle, [param]);
+    const newFunctionCall = t.callExpression(styleFunctionExpression, [paramIdentifier]);
+    const existingFunctionCall = t.callExpression(existingStyle, [paramIdentifier]);
 
     const mergedArray = t.arrayExpression([newFunctionCall, existingFunctionCall]);
-    const wrapperFunction = t.arrowFunctionExpression([param], mergedArray);
+    const wrapperFunction = t.arrowFunctionExpression([paramIdentifier], mergedArray);
 
     styleAttribute.value = t.jsxExpressionContainer(wrapperFunction);
   } else {
     // Existing is static - create function that returns array
-    // ({ pressed }) => [styleFunctionResult, existingStyle]
-    const param = styleFunctionExpression.params[0];
-    const functionCall = t.callExpression(styleFunctionExpression, [param]);
+    // (_state) => [styleFunctionResult, existingStyle]
+    // Create an identifier for the parameter to pass to the function call
+    const paramIdentifier = t.identifier("_state");
+
+    const functionCall = t.callExpression(styleFunctionExpression, [paramIdentifier]);
     const mergedArray = t.arrayExpression([functionCall, existingStyle]);
-    const wrapperFunction = t.arrowFunctionExpression([param], mergedArray);
+    const wrapperFunction = t.arrowFunctionExpression([paramIdentifier], mergedArray);
 
     styleAttribute.value = t.jsxExpressionContainer(wrapperFunction);
   }
