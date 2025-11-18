@@ -7,12 +7,14 @@ import type { NodePath, PluginObj, PluginPass } from "@babel/core";
 import * as BabelTypes from "@babel/types";
 import { parseClassName as parseClassNameFn } from "../parser/index.js";
 import { generateStyleKey as generateStyleKeyFn } from "../utils/styleKey.js";
+import { extractCustomColors } from "./config-loader.js";
 
-interface PluginState extends PluginPass {
+export type PluginState = PluginPass & {
   styleRegistry: Map<string, Record<string, string | number>>;
   hasClassNames: boolean;
   hasStyleSheetImport: boolean;
-}
+  customColors: Record<string, string>;
+};
 
 export default function reactNativeTailwindBabelPlugin({
   types: t,
@@ -29,6 +31,9 @@ export default function reactNativeTailwindBabelPlugin({
           state.styleRegistry = new Map();
           state.hasClassNames = false;
           state.hasStyleSheetImport = false;
+
+          // Load custom colors from tailwind.config.*
+          state.customColors = extractCustomColors(state.file.opts.filename ?? "");
         },
 
         exit(path: NodePath, state: PluginState) {
@@ -104,7 +109,7 @@ export default function reactNativeTailwindBabelPlugin({
         state.hasClassNames = true;
 
         // Parse className to React Native styles
-        const styleObject = parseClassName(className);
+        const styleObject = parseClassName(className, state.customColors);
 
         // Generate unique style key
         const styleKey = generateStyleKey(className);
@@ -224,8 +229,11 @@ function injectStyles(
 }
 
 // Helper functions that use the imported parser
-function parseClassName(className: string): Record<string, string | number> {
-  return parseClassNameFn(className);
+function parseClassName(
+  className: string,
+  customColors: Record<string, string>,
+): Record<string, string | number> {
+  return parseClassNameFn(className, customColors);
 }
 
 function generateStyleKey(className: string): string {
