@@ -23,6 +23,7 @@ Compile-time Tailwind CSS for React Native with zero runtime overhead. Transform
 - 🎨 **Custom colors** — Extend the default palette via `tailwind.config.*`
 - 📐 **Arbitrary values** — Use custom sizes and borders: `w-[123px]`, `rounded-[20px]`
 - 🔀 **Dynamic className** — Conditional styles with hybrid compile-time optimization
+- 🎯 **State modifiers** — `active:` modifier for Pressable press states
 - 📜 **Special style props** — Support for `contentContainerClassName`, `columnWrapperClassName`, and more
 
 ## Installation
@@ -369,6 +370,74 @@ The Babel plugin will merge them:
   <Text>Content</Text>
 </View>
 ```
+
+### Active State Modifier (Pressable)
+
+Use the `active:` modifier to apply styles when a `Pressable` component is pressed. The Babel plugin detects `active:` classes and automatically generates a style function that leverages Pressable's `pressed` state.
+
+**Basic Example:**
+
+```tsx
+import { Pressable, Text } from "react-native";
+
+export function MyButton() {
+  return (
+    <Pressable className="bg-blue-500 active:bg-blue-700 p-4 rounded-lg">
+      <Text className="text-white font-semibold">Press Me</Text>
+    </Pressable>
+  );
+}
+```
+
+**Transforms to:**
+
+```tsx
+<Pressable
+  style={({ pressed }) => [
+    _twStyles._bg_blue_500_p_4_rounded_lg,
+    pressed && _twStyles._active_bg_blue_700,
+  ]}
+>
+  <Text style={_twStyles._font_semibold_text_white}>Press Me</Text>
+</Pressable>
+
+// Generated styles:
+const _twStyles = StyleSheet.create({
+  _bg_blue_500_p_4_rounded_lg: { backgroundColor: '#3B82F6', padding: 16, borderRadius: 8 },
+  _active_bg_blue_700: { backgroundColor: '#1D4ED8' },
+  _font_semibold_text_white: { fontWeight: '600', color: '#FFFFFF' },
+});
+```
+
+**Multiple Active Modifiers:**
+
+```tsx
+<Pressable className="bg-green-500 active:bg-green-700 p-4 active:p-6 rounded-lg">
+  <Text className="text-white">Press for darker & larger padding</Text>
+</Pressable>
+```
+
+**Complex Styling:**
+
+```tsx
+<Pressable className="bg-purple-500 active:bg-purple-800 border-2 border-purple-700 active:border-purple-900 p-4 rounded-lg">
+  <Text className="text-white">Background + Border Changes</Text>
+</Pressable>
+```
+
+**Key Features:**
+
+- ✅ **Zero runtime overhead** — All parsing happens at compile-time
+- ✅ **Native Pressable API** — Uses Pressable's `style={({ pressed }) => ...}` pattern
+- ✅ **Type-safe** — Full TypeScript autocomplete for `active:` classes
+- ✅ **Optimized** — Styles deduplicated via `StyleSheet.create`
+- ✅ **Works with custom colors** — `active:bg-primary`, `active:bg-secondary`, etc.
+
+**Important Notes:**
+
+- ⚠️ **Pressable-only** — The `active:` modifier only works on `Pressable` components. Using it on other components (like `View`) will trigger a warning and the modifier will be ignored.
+- ℹ️ **Future support** — `hover:` and `focus:` modifiers may be added in the future (hover is web-only)
+- ℹ️ **No nested modifiers** — Combinations like `active:hover:bg-blue-500` are not currently supported
 
 ### ScrollView Content Container
 

@@ -11,7 +11,8 @@
 
 import type { NodePath, PluginObj, PluginPass } from "@babel/core";
 import * as BabelTypes from "@babel/types";
-import { parseClassName as parseClassNameFn } from "../parser/index.js";
+import type { ModifierType, ParsedModifier } from "../parser/index.js";
+import { parseClassName as parseClassNameFn, splitModifierClasses } from "../parser/index.js";
 import { generateStyleKey as generateStyleKeyFn } from "../utils/styleKey.js";
 import { extractCustomColors } from "./config-loader.js";
 
@@ -57,6 +58,34 @@ function getTargetStyleProp(attributeName: string): string {
     return "ListFooterComponentStyle";
   }
   return "style";
+}
+
+/**
+ * Check if a JSX element is a Pressable component (or compatible component)
+ * Currently supports: Pressable
+ * Future: Could be extended via plugin config for custom components
+ */
+function isPressableComponent(jsxElement: any, t: typeof BabelTypes): boolean {
+  if (!t.isJSXOpeningElement(jsxElement)) {
+    return false;
+  }
+
+  const name = jsxElement.name;
+
+  // Handle simple identifier: <Pressable>
+  if (t.isJSXIdentifier(name) && name.name === "Pressable") {
+    return true;
+  }
+
+  // Handle member expression: <ReactNative.Pressable>
+  if (t.isJSXMemberExpression(name)) {
+    const property = name.property;
+    if (t.isJSXIdentifier(property) && property.name === "Pressable") {
+      return true;
+    }
+  }
+
+  return false;
 }
 
 /**
@@ -246,6 +275,120 @@ function processStringOrExpression(node: any, state: PluginState, t: typeof Babe
   return null;
 }
 
+/**
+ * Process a static className string that contains modifiers
+ * Returns a style function expression for Pressable components
+ */
+function processStaticClassNameWithModifiers(
+  className: string,
+  state: PluginState,
+  t: typeof BabelTypes,
+): any {
+  const { baseClasses, modifierClasses } = splitModifierClasses(className);
+
+  // Parse and register base classes
+  let baseStyleExpression: any = null;
+  if (baseClasses.length > 0) {
+    const baseClassName = baseClasses.join(" ");
+    const baseStyleObject = parseClassName(baseClassName, state.customColors);
+    const baseStyleKey = generateStyleKey(baseClassName);
+    state.styleRegistry.set(baseStyleKey, baseStyleObject);
+    baseStyleExpression = t.memberExpression(t.identifier(STYLES_IDENTIFIER), t.identifier(baseStyleKey));
+  }
+
+  // Parse and register modifier classes
+  // Group by modifier type for better organization
+  const modifiersByType = new Map<ModifierType, ParsedModifier[]>();
+  for (const mod of modifierClasses) {
+    if (!modifiersByType.has(mod.modifier)) {
+      modifiersByType.set(mod.modifier, []);
+    }
+    const modGroup = modifiersByType.get(mod.modifier);
+    if (modGroup) {
+      modGroup.push(mod);
+    }
+  }
+
+  // Build style function: ({ pressed }) => [baseStyle, pressed && modifierStyle]
+  const styleArrayElements: any[] = [];
+
+  // Add base style first
+  if (baseStyleExpression) {
+    styleArrayElements.push(baseStyleExpression);
+  }
+
+  // Add conditional styles for each modifier type
+  for (const [modifierType, modifiers] of modifiersByType) {
+    // Parse all modifier classes together
+    const modifierClassNames = modifiers.map((m) => m.baseClass).join(" ");
+    const modifierStyleObject = parseClassName(modifierClassNames, state.customColors);
+    const modifierStyleKey = generateStyleKey(`${modifierType}_${modifierClassNames}`);
+    state.styleRegistry.set(modifierStyleKey, modifierStyleObject);
+
+    // Create conditional: pressed && styles._active_bg_blue_700
+    const stateProperty = getStatePropertyForModifier(modifierType);
+    const conditionalExpression = t.logicalExpression(
+      "&&",
+      t.identifier(stateProperty),
+      t.memberExpression(t.identifier(STYLES_IDENTIFIER), t.identifier(modifierStyleKey)),
+    );
+
+    styleArrayElements.push(conditionalExpression);
+  }
+
+  // If only base style, return it directly; otherwise return array
+  if (styleArrayElements.length === 1) {
+    return styleArrayElements[0];
+  }
+
+  return t.arrayExpression(styleArrayElements);
+}
+
+/**
+ * Get the state property name for a modifier type
+ * Maps modifier types to Pressable state parameter properties
+ */
+function getStatePropertyForModifier(modifier: ModifierType): string {
+  switch (modifier) {
+    case "active":
+      return "pressed";
+    case "hover":
+      return "hovered";
+    case "focus":
+      return "focused";
+    default:
+      return "pressed"; // fallback
+  }
+}
+
+/**
+ * Create a style function for Pressable: ({ pressed }) => styleExpression
+ */
+function createStyleFunction(
+  styleExpression: any,
+  modifierTypes: ModifierType[],
+  t: typeof BabelTypes,
+): any {
+  // Build parameter object: { pressed, hovered, focused }
+  const paramProperties: any[] = [];
+  const usedStateProps = new Set<string>();
+
+  for (const modifierType of modifierTypes) {
+    const stateProperty = getStatePropertyForModifier(modifierType);
+    if (!usedStateProps.has(stateProperty)) {
+      usedStateProps.add(stateProperty);
+      paramProperties.push(
+        t.objectProperty(t.identifier(stateProperty), t.identifier(stateProperty), false, true),
+      );
+    }
+  }
+
+  const param = t.objectPattern(paramProperties);
+
+  // Create arrow function: ({ pressed }) => styleExpression
+  return t.arrowFunctionExpression([param], styleExpression);
+}
+
 export default function reactNativeTailwindBabelPlugin({
   types: t,
 }: {
@@ -318,7 +461,7 @@ export default function reactNativeTailwindBabelPlugin({
         // Determine target style prop based on attribute name
         const targetStyleProp = getTargetStyleProp(attributeName);
 
-        // Handle static string literals (original behavior)
+        // Handle static string literals
         if (t.isStringLiteral(value)) {
           const className = value.value.trim();
 
@@ -330,13 +473,52 @@ export default function reactNativeTailwindBabelPlugin({
 
           state.hasClassNames = true;
 
-          // Parse className to React Native styles
+          // Check if className contains modifiers (active:, hover:, focus:)
+          const { baseClasses, modifierClasses } = splitModifierClasses(className);
+
+          // If there are modifiers, check if this is a Pressable component
+          if (modifierClasses.length > 0) {
+            // Get the JSX opening element (the direct parent of the attribute)
+            const jsxOpeningElement = path.parent;
+
+            if (isPressableComponent(jsxOpeningElement, t)) {
+              // Process className with modifiers for Pressable
+              const styleExpression = processStaticClassNameWithModifiers(className, state, t);
+
+              // Get modifier types for style function parameter
+              const modifierTypes = Array.from(new Set(modifierClasses.map((m) => m.modifier)));
+
+              // Create style function: ({ pressed }) => styleExpression
+              const styleFunctionExpression = createStyleFunction(styleExpression, modifierTypes, t);
+
+              // Check if there's already a style prop on this element
+              const parent = path.parent as any;
+              const styleAttribute = parent.attributes.find(
+                (attr: any) => t.isJSXAttribute(attr) && attr.name.name === targetStyleProp,
+              );
+
+              if (styleAttribute) {
+                // Merge with existing style prop
+                mergeStyleFunctionAttribute(path, styleAttribute, styleFunctionExpression, t);
+              } else {
+                // Replace className with style function prop
+                replaceWithStyleFunctionAttribute(path, styleFunctionExpression, targetStyleProp, t);
+              }
+              return;
+            } else {
+              // Warn: modifiers only work on Pressable components
+              if (process.env.NODE_ENV !== "production") {
+                console.warn(
+                  `[react-native-tailwind] Modifiers (${modifierClasses.map((m) => `${m.modifier}:`).join(", ")}) can only be used on Pressable components. Found on non-Pressable element at ${state.file.opts.filename ?? "unknown"}`,
+                );
+              }
+              // Fall through to normal processing (ignore modifiers)
+            }
+          }
+
+          // Normal processing without modifiers
           const styleObject = parseClassName(className, state.customColors);
-
-          // Generate unique style key
           const styleKey = generateStyleKey(className);
-
-          // Store in registry
           state.styleRegistry.set(styleKey, styleObject);
 
           // Check if there's already a style prop on this element
@@ -503,6 +685,66 @@ function mergeDynamicStyleAttribute(
   }
 
   styleAttribute.value = t.jsxExpressionContainer(styleArray);
+
+  // Remove the className attribute
+  classNamePath.remove();
+}
+
+/**
+ * Replace className with style function attribute (for Pressable with modifiers)
+ */
+function replaceWithStyleFunctionAttribute(
+  classNamePath: NodePath,
+  styleFunctionExpression: any,
+  targetStyleProp: string,
+  t: typeof BabelTypes,
+) {
+  const styleAttribute = t.jsxAttribute(
+    t.jsxIdentifier(targetStyleProp),
+    t.jsxExpressionContainer(styleFunctionExpression),
+  );
+
+  classNamePath.replaceWith(styleAttribute);
+}
+
+/**
+ * Merge className style function with existing style prop (for Pressable with modifiers)
+ */
+function mergeStyleFunctionAttribute(
+  classNamePath: NodePath,
+  styleAttribute: any,
+  styleFunctionExpression: any,
+  t: typeof BabelTypes,
+) {
+  const existingStyle = styleAttribute.value.expression;
+
+  // Create a wrapper function that merges both styles
+  // ({ pressed }) => [styleFunctionResult, existingStyle]
+  // We need to call the style function and merge results
+
+  // If existing is already a function, we need to handle it specially
+  if (t.isArrowFunctionExpression(existingStyle) || t.isFunctionExpression(existingStyle)) {
+    // Both are functions - create wrapper that calls both
+    // ({ pressed }) => [newStyleFn({ pressed }), existingStyleFn({ pressed })]
+    const param = styleFunctionExpression.params[0]; // Reuse parameter from new function
+
+    const newFunctionCall = t.callExpression(styleFunctionExpression, [param]);
+    const existingFunctionCall = t.callExpression(existingStyle, [param]);
+
+    const mergedArray = t.arrayExpression([newFunctionCall, existingFunctionCall]);
+    const wrapperFunction = t.arrowFunctionExpression([param], mergedArray);
+
+    styleAttribute.value = t.jsxExpressionContainer(wrapperFunction);
+  } else {
+    // Existing is static - create function that returns array
+    // ({ pressed }) => [styleFunctionResult, existingStyle]
+    const param = styleFunctionExpression.params[0];
+    const functionCall = t.callExpression(styleFunctionExpression, [param]);
+    const mergedArray = t.arrayExpression([functionCall, existingStyle]);
+    const wrapperFunction = t.arrowFunctionExpression([param], mergedArray);
+
+    styleAttribute.value = t.jsxExpressionContainer(wrapperFunction);
+  }
 
   // Remove the className attribute
   classNamePath.remove();
