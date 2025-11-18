@@ -3,13 +3,13 @@
  * Converts Tailwind-like class names to React Native style objects
  */
 
-import type { StyleObject, Parser } from '../types';
-import { parseSpacing } from './spacing';
-import { parseColor } from './colors';
-import { parseLayout } from './layout';
-import { parseTypography } from './typography';
-import { parseBorder } from './borders';
-import { parseSizing } from './sizing';
+import type { StyleObject } from "../types";
+import { parseBorder } from "./borders";
+import { parseColor } from "./colors";
+import { parseLayout } from "./layout";
+import { parseSizing } from "./sizing";
+import { parseSpacing } from "./spacing";
+import { parseTypography } from "./typography";
 
 /**
  * Parse a className string and return a React Native style object
@@ -55,7 +55,7 @@ export function parseClass(cls: string, customColors?: Record<string, string>): 
   }
 
   // Warn about unknown class in development
-  if (process.env.NODE_ENV !== 'production') {
+  if (process.env.NODE_ENV !== "production") {
     console.warn(`[react-native-tailwind] Unknown class: "${cls}"`);
   }
 
@@ -63,9 +63,9 @@ export function parseClass(cls: string, customColors?: Record<string, string>): 
 }
 
 // Re-export parsers for testing/advanced usage
-export { parseSpacing } from './spacing';
-export { parseColor } from './colors';
-export { parseLayout } from './layout';
-export { parseTypography } from './typography';
-export { parseBorder } from './borders';
-export { parseSizing } from './sizing';
+export { parseBorder } from "./borders";
+export { parseColor } from "./colors";
+export { parseLayout } from "./layout";
+export { parseSizing } from "./sizing";
+export { parseSpacing } from "./spacing";
+export { parseTypography } from "./typography";

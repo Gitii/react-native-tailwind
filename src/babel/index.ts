@@ -1,3 +1,9 @@
+/* eslint-disable @typescript-eslint/no-unsafe-argument */
+/* eslint-disable @typescript-eslint/no-unsafe-call */
+/* eslint-disable @typescript-eslint/no-unsafe-member-access */
+/* eslint-disable @typescript-eslint/no-explicit-any */
+/* eslint-disable @typescript-eslint/no-unsafe-assignment */
+
 /**
  * Babel plugin for react-native-tailwind
  * Transforms className props to style props at compile time
@@ -9,7 +15,7 @@ import { parseClassName as parseClassNameFn } from "../parser/index.js";
 import { generateStyleKey as generateStyleKeyFn } from "../utils/styleKey.js";
 import { extractCustomColors } from "./config-loader.js";
 
-export type PluginState = PluginPass & {
+type PluginState = PluginPass & {
   styleRegistry: Map<string, Record<string, string | number>>;
   hasClassNames: boolean;
   hasStyleSheetImport: boolean;
@@ -89,7 +95,7 @@ export default function reactNativeTailwindBabelPlugin({
         if (!t.isStringLiteral(value)) {
           // Warn about dynamic className in development
           if (process.env.NODE_ENV !== "production") {
-            const filename = state.file.opts.filename || "unknown";
+            const filename = state.file.opts.filename ?? "unknown";
             console.warn(
               `[react-native-tailwind] Dynamic className values are not supported at ${filename}. ` +
                 "Use the style prop for dynamic values.",

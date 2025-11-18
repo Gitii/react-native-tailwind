@@ -2,7 +2,7 @@
  * Sizing utilities (width, height, min/max)
  */
 
-import type { StyleObject } from '../types';
+import type { StyleObject } from "../types";
 
 // Size scale (in pixels/percentages)
 export const SIZE_SCALE: Record<string, number> = {
@@ -43,22 +43,22 @@ export const SIZE_SCALE: Record<string, number> = {
 };
 
 export const SIZE_PERCENTAGES: Record<string, string> = {
-  full: '100%',
-  '1/2': '50%',
-  '1/3': '33.333333%',
-  '2/3': '66.666667%',
-  '1/4': '25%',
-  '2/4': '50%',
-  '3/4': '75%',
-  '1/5': '20%',
-  '2/5': '40%',
-  '3/5': '60%',
-  '4/5': '80%',
-  '1/6': '16.666667%',
-  '2/6': '33.333333%',
-  '3/6': '50%',
-  '4/6': '66.666667%',
-  '5/6': '83.333333%',
+  full: "100%",
+  "1/2": "50%",
+  "1/3": "33.333333%",
+  "2/3": "66.666667%",
+  "1/4": "25%",
+  "2/4": "50%",
+  "3/4": "75%",
+  "1/5": "20%",
+  "2/5": "40%",
+  "3/5": "60%",
+  "4/5": "80%",
+  "1/6": "16.666667%",
+  "2/6": "33.333333%",
+  "3/6": "50%",
+  "4/6": "66.666667%",
+  "5/6": "83.333333%",
 };
 
 /**
@@ -66,7 +66,7 @@ export const SIZE_PERCENTAGES: Record<string, string> = {
  */
 export function parseSizing(cls: string): StyleObject | null {
   // Width
-  if (cls.startsWith('w-')) {
+  if (cls.startsWith("w-")) {
     const sizeKey = cls.substring(2);
 
     // Percentage widths: w-full, w-1/2, etc.
@@ -82,13 +82,13 @@ export function parseSizing(cls: string): StyleObject | null {
     }
 
     // Special values
-    if (sizeKey === 'auto') {
-      return { width: 'auto' };
+    if (sizeKey === "auto") {
+      return { width: "auto" };
     }
   }
 
   // Height
-  if (cls.startsWith('h-')) {
+  if (cls.startsWith("h-")) {
     const sizeKey = cls.substring(2);
 
     // Percentage heights: h-full, h-1/2, etc.
@@ -104,13 +104,13 @@ export function parseSizing(cls: string): StyleObject | null {
     }
 
     // Special values
-    if (sizeKey === 'auto') {
-      return { height: 'auto' };
+    if (sizeKey === "auto") {
+      return { height: "auto" };
     }
   }
 
   // Min width
-  if (cls.startsWith('min-w-')) {
+  if (cls.startsWith("min-w-")) {
     const sizeKey = cls.substring(6);
 
     const percentage = SIZE_PERCENTAGES[sizeKey];
@@ -125,7 +125,7 @@ export function parseSizing(cls: string): StyleObject | null {
   }
 
   // Min height
-  if (cls.startsWith('min-h-')) {
+  if (cls.startsWith("min-h-")) {
     const sizeKey = cls.substring(6);
 
     const percentage = SIZE_PERCENTAGES[sizeKey];
@@ -140,7 +140,7 @@ export function parseSizing(cls: string): StyleObject | null {
   }
 
   // Max width
-  if (cls.startsWith('max-w-')) {
+  if (cls.startsWith("max-w-")) {
     const sizeKey = cls.substring(6);
 
     const percentage = SIZE_PERCENTAGES[sizeKey];
@@ -155,7 +155,7 @@ export function parseSizing(cls: string): StyleObject | null {
   }
 
   // Max height
-  if (cls.startsWith('max-h-')) {
+  if (cls.startsWith("max-h-")) {
     const sizeKey = cls.substring(6);
 
     const percentage = SIZE_PERCENTAGES[sizeKey];

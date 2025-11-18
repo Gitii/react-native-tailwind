@@ -2,7 +2,7 @@
  * Spacing utilities (margin, padding, gap)
  */
 
-import type { StyleObject } from '../types';
+import type { StyleObject } from "../types";
 
 // Tailwind spacing scale (in pixels, converted to React Native units)
 export const SPACING_SCALE: Record<string, number> = {
@@ -48,17 +48,17 @@ export const SPACING_SCALE: Record<string, number> = {
  */
 export function parseSpacing(cls: string): StyleObject | null {
   // Margin
-  if (cls.startsWith('m-') || cls.startsWith('m')) {
+  if (cls.startsWith("m-") || cls.startsWith("m")) {
     return parseMargin(cls);
   }
 
   // Padding
-  if (cls.startsWith('p-') || cls.startsWith('p')) {
+  if (cls.startsWith("p-") || cls.startsWith("p")) {
     return parsePadding(cls);
   }
 
   // Gap
-  if (cls.startsWith('gap-')) {
+  if (cls.startsWith("gap-")) {
     return parseGap(cls);
   }
 
