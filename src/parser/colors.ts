@@ -121,6 +121,40 @@ export const COLORS: Record<string, string> = {
 };
 
 /**
+ * Parse arbitrary color value: [#ff0000], [#f00], [#FF0000AA]
+ * Supports 3-digit, 6-digit, and 8-digit (with alpha) hex colors
+ * Returns hex string if valid, null otherwise
+ */
+function parseArbitraryColor(value: string): string | null {
+  // Match: [#rgb], [#rrggbb], or [#rrggbbaa]
+  const hexMatch = value.match(/^\[#([0-9a-fA-F]{3}|[0-9a-fA-F]{6}|[0-9a-fA-F]{8})\]$/);
+  if (hexMatch) {
+    const hex = hexMatch[1];
+    // Expand 3-digit hex to 6-digit: #abc -> #aabbcc
+    if (hex.length === 3) {
+      const expanded = hex
+        .split("")
+        .map((char) => char + char)
+        .join("");
+      return `#${expanded}`;
+    }
+    return `#${hex}`;
+  }
+
+  // Warn about unsupported formats
+  if (value.startsWith("[") && value.endsWith("]")) {
+    if (process.env.NODE_ENV !== "production") {
+      console.warn(
+        `[react-native-tailwind] Unsupported arbitrary color value: ${value}. Only hex colors are supported (e.g., [#ff0000], [#f00], or [#ff0000aa]).`,
+      );
+    }
+    return null;
+  }
+
+  return null;
+}
+
+/**
  * Parse color classes (background, text, border)
  */
 export function parseColor(cls: string, customColors?: Record<string, string>): StyleObject | null {
@@ -129,27 +163,51 @@ export function parseColor(cls: string, customColors?: Record<string, string>): 
     return customColors?.[key] ?? COLORS[key];
   };
 
-  // Background color: bg-blue-500
+  // Background color: bg-blue-500, bg-[#ff0000]
   if (cls.startsWith("bg-")) {
     const colorKey = cls.substring(3);
+
+    // Try arbitrary value first
+    const arbitraryColor = parseArbitraryColor(colorKey);
+    if (arbitraryColor !== null) {
+      return { backgroundColor: arbitraryColor };
+    }
+
+    // Try preset/custom colors
     const color = getColor(colorKey);
     if (color) {
       return { backgroundColor: color };
     }
   }
 
-  // Text color: text-blue-500
+  // Text color: text-blue-500, text-[#ff0000]
   if (cls.startsWith("text-")) {
     const colorKey = cls.substring(5);
+
+    // Try arbitrary value first
+    const arbitraryColor = parseArbitraryColor(colorKey);
+    if (arbitraryColor !== null) {
+      return { color: arbitraryColor };
+    }
+
+    // Try preset/custom colors
     const color = getColor(colorKey);
     if (color) {
       return { color: color };
     }
   }
 
-  // Border color: border-blue-500
+  // Border color: border-blue-500, border-[#ff0000]
   if (cls.startsWith("border-") && !cls.match(/^border-[0-9]/)) {
     const colorKey = cls.substring(7);
+
+    // Try arbitrary value first
+    const arbitraryColor = parseArbitraryColor(colorKey);
+    if (arbitraryColor !== null) {
+      return { borderColor: arbitraryColor };
+    }
+
+    // Try preset/custom colors
     const color = getColor(colorKey);
     if (color) {
       return { borderColor: color };
