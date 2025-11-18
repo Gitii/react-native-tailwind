@@ -21,6 +21,58 @@ export const FONT_SIZES: Record<string, number> = {
   "9xl": 128,
 };
 
+// Font weight utilities
+const FONT_WEIGHT_MAP: Record<string, StyleObject> = {
+  "font-thin": { fontWeight: "100" },
+  "font-extralight": { fontWeight: "200" },
+  "font-light": { fontWeight: "300" },
+  "font-normal": { fontWeight: "400" },
+  "font-medium": { fontWeight: "500" },
+  "font-semibold": { fontWeight: "600" },
+  "font-bold": { fontWeight: "700" },
+  "font-extrabold": { fontWeight: "800" },
+  "font-black": { fontWeight: "900" },
+};
+
+// Font style utilities
+const FONT_STYLE_MAP: Record<string, StyleObject> = {
+  italic: { fontStyle: "italic" },
+  "not-italic": { fontStyle: "normal" },
+};
+
+// Text alignment utilities
+const TEXT_ALIGN_MAP: Record<string, StyleObject> = {
+  "text-left": { textAlign: "left" },
+  "text-center": { textAlign: "center" },
+  "text-right": { textAlign: "right" },
+  "text-justify": { textAlign: "justify" },
+};
+
+// Text decoration utilities
+const TEXT_DECORATION_MAP: Record<string, StyleObject> = {
+  underline: { textDecorationLine: "underline" },
+  "line-through": { textDecorationLine: "line-through" },
+  "no-underline": { textDecorationLine: "none" },
+};
+
+// Text transform utilities
+const TEXT_TRANSFORM_MAP: Record<string, StyleObject> = {
+  uppercase: { textTransform: "uppercase" },
+  lowercase: { textTransform: "lowercase" },
+  capitalize: { textTransform: "capitalize" },
+  "normal-case": { textTransform: "none" },
+};
+
+// Line height utilities
+const LINE_HEIGHT_MAP: Record<string, StyleObject> = {
+  "leading-none": { lineHeight: 16 },
+  "leading-tight": { lineHeight: 20 },
+  "leading-snug": { lineHeight: 22 },
+  "leading-normal": { lineHeight: 24 },
+  "leading-relaxed": { lineHeight: 28 },
+  "leading-loose": { lineHeight: 32 },
+};
+
 /**
  * Parse typography classes
  */
@@ -34,123 +86,14 @@ export function parseTypography(cls: string): StyleObject | null {
     }
   }
 
-  // Font weight
-  if (cls === "font-thin") {
-    return { fontWeight: "100" };
-  }
-
-  if (cls === "font-extralight") {
-    return { fontWeight: "200" };
-  }
-
-  if (cls === "font-light") {
-    return { fontWeight: "300" };
-  }
-
-  if (cls === "font-normal") {
-    return { fontWeight: "400" };
-  }
-
-  if (cls === "font-medium") {
-    return { fontWeight: "500" };
-  }
-
-  if (cls === "font-semibold") {
-    return { fontWeight: "600" };
-  }
-
-  if (cls === "font-bold") {
-    return { fontWeight: "700" };
-  }
-
-  if (cls === "font-extrabold") {
-    return { fontWeight: "800" };
-  }
-
-  if (cls === "font-black") {
-    return { fontWeight: "900" };
-  }
-
-  // Font style
-  if (cls === "italic") {
-    return { fontStyle: "italic" };
-  }
-
-  if (cls === "not-italic") {
-    return { fontStyle: "normal" };
-  }
-
-  // Text align
-  if (cls === "text-left") {
-    return { textAlign: "left" };
-  }
-
-  if (cls === "text-center") {
-    return { textAlign: "center" };
-  }
-
-  if (cls === "text-right") {
-    return { textAlign: "right" };
-  }
-
-  if (cls === "text-justify") {
-    return { textAlign: "justify" };
-  }
-
-  // Text decoration
-  if (cls === "underline") {
-    return { textDecorationLine: "underline" };
-  }
-
-  if (cls === "line-through") {
-    return { textDecorationLine: "line-through" };
-  }
-
-  if (cls === "no-underline") {
-    return { textDecorationLine: "none" };
-  }
-
-  // Text transform
-  if (cls === "uppercase") {
-    return { textTransform: "uppercase" };
-  }
-
-  if (cls === "lowercase") {
-    return { textTransform: "lowercase" };
-  }
-
-  if (cls === "capitalize") {
-    return { textTransform: "capitalize" };
-  }
-
-  if (cls === "normal-case") {
-    return { textTransform: "none" };
-  }
-
-  // Line height
-  if (cls === "leading-none") {
-    return { lineHeight: 16 };
-  }
-
-  if (cls === "leading-tight") {
-    return { lineHeight: 20 };
-  }
-
-  if (cls === "leading-snug") {
-    return { lineHeight: 22 };
-  }
-
-  if (cls === "leading-normal") {
-    return { lineHeight: 24 };
-  }
-
-  if (cls === "leading-relaxed") {
-    return { lineHeight: 28 };
-  }
-
-  if (cls === "leading-loose") {
-    return { lineHeight: 32 };
-  }
-
-  return null;
+  // Try each lookup table in order
+  return (
+    FONT_WEIGHT_MAP[cls] ??
+    FONT_STYLE_MAP[cls] ??
+    TEXT_ALIGN_MAP[cls] ??
+    TEXT_DECORATION_MAP[cls] ??
+    TEXT_TRANSFORM_MAP[cls] ??
+    LINE_HEIGHT_MAP[cls] ??
+    null
+  );
 }
