@@ -1,0 +1,9 @@
+// Vitest Snapshot v1, https://vitest.dev/guide/snapshot.html
+
+exports[`ASPECT_RATIO_PRESETS > should export aspect ratio presets 1`] = `
+{
+  "aspect-auto": undefined,
+  "aspect-square": 1,
+  "aspect-video": 1.7777777777777777,
+}
+`;
