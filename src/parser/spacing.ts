@@ -43,180 +43,135 @@ export const SPACING_SCALE: Record<string, number> = {
 };
 
 /**
+ * Parse arbitrary spacing value: [16px], [20]
+ * Returns number for px values, null for unsupported formats
+ */
+function parseArbitrarySpacing(value: string): number | null {
+  // Match: [16px] or [16] (pixels only)
+  const pxMatch = value.match(/^\[(\d+)(?:px)?\]$/);
+  if (pxMatch) {
+    return parseInt(pxMatch[1], 10);
+  }
+
+  // Warn about unsupported formats
+  if (value.startsWith("[") && value.endsWith("]")) {
+    if (process.env.NODE_ENV !== "production") {
+      console.warn(
+        `[react-native-tailwind] Unsupported arbitrary spacing value: ${value}. Only px values are supported (e.g., [16px] or [16]).`,
+      );
+    }
+    return null;
+  }
+
+  return null;
+}
+
+/**
  * Parse spacing classes (margin, padding, gap)
- * Examples: m-4, mx-2, mt-8, p-4, px-2, pt-8, gap-4
+ * Examples: m-4, mx-2, mt-8, p-4, px-2, pt-8, gap-4, m-[16px]
  */
 export function parseSpacing(cls: string): StyleObject | null {
-  // Margin
-  if (cls.startsWith("m-") || cls.startsWith("m")) {
-    return parseMargin(cls);
+  // Margin: m-4, mx-2, mt-8, m-[16px], etc.
+  const marginMatch = cls.match(/^m([xytrbls]?)-(.+)$/);
+  if (marginMatch) {
+    const [, dir, valueStr] = marginMatch;
+
+    // Try arbitrary value first
+    const arbitraryValue = parseArbitrarySpacing(valueStr);
+    if (arbitraryValue !== null) {
+      return getMarginStyle(dir, arbitraryValue);
+    }
+
+    // Try preset scale
+    const scaleValue = SPACING_SCALE[valueStr];
+    if (scaleValue !== undefined) {
+      return getMarginStyle(dir, scaleValue);
+    }
   }
 
-  // Padding
-  if (cls.startsWith("p-") || cls.startsWith("p")) {
-    return parsePadding(cls);
+  // Padding: p-4, px-2, pt-8, p-[16px], etc.
+  const paddingMatch = cls.match(/^p([xytrbls]?)-(.+)$/);
+  if (paddingMatch) {
+    const [, dir, valueStr] = paddingMatch;
+
+    // Try arbitrary value first
+    const arbitraryValue = parseArbitrarySpacing(valueStr);
+    if (arbitraryValue !== null) {
+      return getPaddingStyle(dir, arbitraryValue);
+    }
+
+    // Try preset scale
+    const scaleValue = SPACING_SCALE[valueStr];
+    if (scaleValue !== undefined) {
+      return getPaddingStyle(dir, scaleValue);
+    }
   }
 
-  // Gap
-  if (cls.startsWith("gap-")) {
-    return parseGap(cls);
+  // Gap: gap-4, gap-[16px]
+  const gapMatch = cls.match(/^gap-(.+)$/);
+  if (gapMatch) {
+    const valueStr = gapMatch[1];
+
+    // Try arbitrary value first
+    const arbitraryValue = parseArbitrarySpacing(valueStr);
+    if (arbitraryValue !== null) {
+      return { gap: arbitraryValue };
+    }
+
+    // Try preset scale
+    const scaleValue = SPACING_SCALE[valueStr];
+    if (scaleValue !== undefined) {
+      return { gap: scaleValue };
+    }
   }
 
   return null;
 }
 
 /**
- * Parse margin classes
+ * Get margin style object based on direction
  */
-function parseMargin(cls: string): StyleObject | null {
-  // m-4 -> margin: 16
-  const allMatch = cls.match(/^m-(\d+(?:\.\d+)?)$/);
-  if (allMatch) {
-    const value = SPACING_SCALE[allMatch[1]];
-    if (value !== undefined) {
+function getMarginStyle(dir: string, value: number): StyleObject {
+  switch (dir) {
+    case "":
       return { margin: value };
-    }
-  }
-
-  // mx-4 -> marginHorizontal: 16
-  const xMatch = cls.match(/^mx-(\d+(?:\.\d+)?)$/);
-  if (xMatch) {
-    const value = SPACING_SCALE[xMatch[1]];
-    if (value !== undefined) {
+    case "x":
       return { marginHorizontal: value };
-    }
-  }
-
-  // my-4 -> marginVertical: 16
-  const yMatch = cls.match(/^my-(\d+(?:\.\d+)?)$/);
-  if (yMatch) {
-    const value = SPACING_SCALE[yMatch[1]];
-    if (value !== undefined) {
+    case "y":
       return { marginVertical: value };
-    }
-  }
-
-  // mt-4 -> marginTop: 16
-  const tMatch = cls.match(/^mt-(\d+(?:\.\d+)?)$/);
-  if (tMatch) {
-    const value = SPACING_SCALE[tMatch[1]];
-    if (value !== undefined) {
+    case "t":
       return { marginTop: value };
-    }
-  }
-
-  // mr-4 -> marginRight: 16
-  const rMatch = cls.match(/^mr-(\d+(?:\.\d+)?)$/);
-  if (rMatch) {
-    const value = SPACING_SCALE[rMatch[1]];
-    if (value !== undefined) {
+    case "r":
       return { marginRight: value };
-    }
-  }
-
-  // mb-4 -> marginBottom: 16
-  const bMatch = cls.match(/^mb-(\d+(?:\.\d+)?)$/);
-  if (bMatch) {
-    const value = SPACING_SCALE[bMatch[1]];
-    if (value !== undefined) {
+    case "b":
       return { marginBottom: value };
-    }
-  }
-
-  // ml-4 -> marginLeft: 16
-  const lMatch = cls.match(/^ml-(\d+(?:\.\d+)?)$/);
-  if (lMatch) {
-    const value = SPACING_SCALE[lMatch[1]];
-    if (value !== undefined) {
+    case "l":
       return { marginLeft: value };
-    }
+    default:
+      return {};
   }
-
-  return null;
 }
 
 /**
- * Parse padding classes
+ * Get padding style object based on direction
  */
-function parsePadding(cls: string): StyleObject | null {
-  // p-4 -> padding: 16
-  const allMatch = cls.match(/^p-(\d+(?:\.\d+)?)$/);
-  if (allMatch) {
-    const value = SPACING_SCALE[allMatch[1]];
-    if (value !== undefined) {
+function getPaddingStyle(dir: string, value: number): StyleObject {
+  switch (dir) {
+    case "":
       return { padding: value };
-    }
-  }
-
-  // px-4 -> paddingHorizontal: 16
-  const xMatch = cls.match(/^px-(\d+(?:\.\d+)?)$/);
-  if (xMatch) {
-    const value = SPACING_SCALE[xMatch[1]];
-    if (value !== undefined) {
+    case "x":
       return { paddingHorizontal: value };
-    }
-  }
-
-  // py-4 -> paddingVertical: 16
-  const yMatch = cls.match(/^py-(\d+(?:\.\d+)?)$/);
-  if (yMatch) {
-    const value = SPACING_SCALE[yMatch[1]];
-    if (value !== undefined) {
+    case "y":
       return { paddingVertical: value };
-    }
-  }
-
-  // pt-4 -> paddingTop: 16
-  const tMatch = cls.match(/^pt-(\d+(?:\.\d+)?)$/);
-  if (tMatch) {
-    const value = SPACING_SCALE[tMatch[1]];
-    if (value !== undefined) {
+    case "t":
       return { paddingTop: value };
-    }
-  }
-
-  // pr-4 -> paddingRight: 16
-  const rMatch = cls.match(/^pr-(\d+(?:\.\d+)?)$/);
-  if (rMatch) {
-    const value = SPACING_SCALE[rMatch[1]];
-    if (value !== undefined) {
+    case "r":
       return { paddingRight: value };
-    }
-  }
-
-  // pb-4 -> paddingBottom: 16
-  const bMatch = cls.match(/^pb-(\d+(?:\.\d+)?)$/);
-  if (bMatch) {
-    const value = SPACING_SCALE[bMatch[1]];
-    if (value !== undefined) {
+    case "b":
       return { paddingBottom: value };
-    }
-  }
-
-  // pl-4 -> paddingLeft: 16
-  const lMatch = cls.match(/^pl-(\d+(?:\.\d+)?)$/);
-  if (lMatch) {
-    const value = SPACING_SCALE[lMatch[1]];
-    if (value !== undefined) {
+    case "l":
       return { paddingLeft: value };
-    }
+    default:
+      return {};
   }
-
-  return null;
-}
-
-/**
- * Parse gap classes
- */
-function parseGap(cls: string): StyleObject | null {
-  // gap-4 -> gap: 16
-  const match = cls.match(/^gap-(\d+(?:\.\d+)?)$/);
-  if (match) {
-    const value = SPACING_SCALE[match[1]];
-    if (value !== undefined) {
-      return { gap: value };
-    }
-  }
-
-  return null;
 }
