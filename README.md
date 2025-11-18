@@ -5,7 +5,7 @@
 [![npm version](https://img.shields.io/npm/v/@mgcrea/react-native-tailwind.svg?style=for-the-badge)](https://www.npmjs.com/package/@mgcrea/react-native-tailwind)
 [![npm downloads](https://img.shields.io/npm/dt/@mgcrea/react-native-tailwind.svg?style=for-the-badge)](https://www.npmjs.com/package/@mgcrea/react-native-tailwind)
 [![license](https://img.shields.io/github/license/mgcrea/react-native-tailwind.svg?style=for-the-badge)](https://github.com/mgcrea/react-native-tailwind/blob/main/LICENSE)
-[![build status]("https://img.shields.io/github/actions/workflow/status/mgcrea/react-native-tailwind/main.yaml?style=for-the-badge&branch=master")](https://github.com/mgcrea/react-native-tailwind/actions/workflows/main.yaml)
+[![build status](https://img.shields.io/github/actions/workflow/status/mgcrea/react-native-tailwind/main.yaml?style=for-the-badge&branch=master)](https://github.com/mgcrea/react-native-tailwind/actions/workflows/main.yaml)
 
 </div>
 
