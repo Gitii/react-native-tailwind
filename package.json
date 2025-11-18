@@ -37,7 +37,7 @@
     "build:types": "tsc --emitDeclarationOnly && node scripts/post-build-types.cjs",
     "install:ios": "cd example; npm run install:ios",
     "open:ios": "cd example; npm run open:ios",
-    "lint": "eslint .",
+    "lint": "eslint src/",
     "prettify": "prettier --write src/",
     "check": "tsc --noEmit",
     "spec": "vitest",
