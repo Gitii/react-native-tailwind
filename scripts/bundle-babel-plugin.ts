@@ -1,12 +1,16 @@
-#!/usr/bin/env node
+#!/usr/bin/env node --experimental-strip-types
 /**
  * Bundle the Babel plugin with all dependencies into a single CommonJS file
  */
 
-const esbuild = require('esbuild');
-const path = require('path');
+import esbuild from 'esbuild';
+import path from 'path';
+import { fileURLToPath } from 'url';
 
-async function bundle() {
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
+
+async function bundle(): Promise<void> {
   try {
     await esbuild.build({
       entryPoints: [path.join(__dirname, '..', 'src', 'babel', 'index.ts')],
