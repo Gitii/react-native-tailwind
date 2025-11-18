@@ -1,12 +1,5 @@
-import { setPlatform } from "test/mocks/react-native";
-import { beforeEach, describe, expect, it } from "vitest";
-import { SHADOW_SCALE, parseShadow, rebuildShadowScale } from "./shadows";
-
-// Reset to iOS before each test
-beforeEach(() => {
-  setPlatform("ios");
-  rebuildShadowScale();
-});
+import { describe, expect, it } from "vitest";
+import { SHADOW_SCALE, parseShadow } from "./shadows";
 
 describe("SHADOW_SCALE", () => {
   it("should export complete shadow scale", () => {
@@ -71,10 +64,6 @@ describe("parseShadow - basic shadows", () => {
 });
 
 describe("parseShadow - shadow properties (iOS)", () => {
-  beforeEach(() => {
-    setPlatform("ios");
-  });
-
   it("should have increasing shadow values for larger shadows", () => {
     const sm = parseShadow("shadow-sm");
     const md = parseShadow("shadow-md");
@@ -104,24 +93,28 @@ describe("parseShadow - shadow properties (iOS)", () => {
 
   it("should have proper shadowOffset structure", () => {
     const result = parseShadow("shadow");
-    expect(result?.shadowOffset).toHaveProperty("width");
-    expect(result?.shadowOffset).toHaveProperty("height");
-    expect(typeof result?.shadowOffset?.width).toBe("number");
-    expect(typeof result?.shadowOffset?.height).toBe("number");
+    const shadowOffset = result?.shadowOffset;
+    expect(shadowOffset).toHaveProperty("width");
+    expect(shadowOffset).toHaveProperty("height");
+    if (typeof shadowOffset === "object" && shadowOffset !== null) {
+      expect(typeof shadowOffset.width).toBe("number");
+      expect(typeof shadowOffset.height).toBe("number");
+    }
   });
 
-  it("should not have elevation property on iOS", () => {
+  it("should include both iOS shadow and Android elevation properties", () => {
     const result = parseShadow("shadow");
-    expect(result).not.toHaveProperty("elevation");
+    // iOS properties
+    expect(result).toHaveProperty("shadowColor");
+    expect(result).toHaveProperty("shadowOffset");
+    expect(result).toHaveProperty("shadowOpacity");
+    expect(result).toHaveProperty("shadowRadius");
+    // Android property
+    expect(result).toHaveProperty("elevation");
   });
 });
 
 describe("parseShadow - shadow properties (Android)", () => {
-  beforeEach(() => {
-    setPlatform("android");
-    rebuildShadowScale();
-  });
-
   it("should have increasing elevation values for larger shadows", () => {
     const sm = parseShadow("shadow-sm");
     const md = parseShadow("shadow-md");
@@ -136,12 +129,10 @@ describe("parseShadow - shadow properties (Android)", () => {
     expect(xxl?.elevation).toBeGreaterThan(xl?.elevation as number);
   });
 
-  it("should not have shadow properties on Android", () => {
+  it("should include elevation property for Android", () => {
     const result = parseShadow("shadow");
-    expect(result).not.toHaveProperty("shadowColor");
-    expect(result).not.toHaveProperty("shadowOffset");
-    expect(result).not.toHaveProperty("shadowOpacity");
-    expect(result).not.toHaveProperty("shadowRadius");
+    expect(result).toHaveProperty("elevation");
+    expect(typeof result?.elevation).toBe("number");
   });
 });
 
