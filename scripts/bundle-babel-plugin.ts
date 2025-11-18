@@ -19,7 +19,7 @@ async function bundle(): Promise<void> {
       target: "node18",
       format: "cjs",
       outfile: path.join(__dirname, "..", "dist", "babel", "index.cjs"),
-      external: ["@babel/core", "@babel/types", "@babel/runtime"],
+      external: ["@babel/core", "@babel/types", "@babel/runtime", "react-native"],
       minify: false,
       sourcemap: false,
     });
