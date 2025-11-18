@@ -23,7 +23,7 @@ Compile-time Tailwind CSS for React Native with zero runtime overhead. Transform
 - 🎨 **Custom colors** — Extend the default palette via `tailwind.config.*`
 - 📐 **Arbitrary values** — Use custom sizes and borders: `w-[123px]`, `rounded-[20px]`
 - 🔀 **Dynamic className** — Conditional styles with hybrid compile-time optimization
-- 🎯 **State modifiers** — `active:` modifier for Pressable press states
+- 🎯 **State modifiers** — `active:`, `hover:`, `focus:`, and `disabled:` modifiers for interactive components
 - 📜 **Special style props** — Support for `contentContainerClassName`, `columnWrapperClassName`, and more
 
 ## Installation
@@ -238,14 +238,18 @@ export function MyComponent() {
 ### Card Component
 
 ```tsx
-import { View, Text, Pressable } from "react-native";
+import { View, Text } from "react-native";
+import { Pressable } from "@mgcrea/react-native-tailwind";
 
 export function Card({ title, description, onPress }) {
   return (
     <View className="bg-white rounded-lg p-6 mb-4 border border-gray-200">
       <Text className="text-xl font-semibold text-gray-900 mb-2">{title}</Text>
       <Text className="text-base text-gray-600 mb-4">{description}</Text>
-      <Pressable className="bg-blue-500 px-4 py-2 rounded-lg items-center" onPress={onPress}>
+      <Pressable
+        className="bg-blue-500 active:bg-blue-700 px-4 py-2 rounded-lg items-center"
+        onPress={onPress}
+      >
         <Text className="text-white font-semibold">Learn More</Text>
       </Pressable>
     </View>
@@ -377,12 +381,13 @@ Apply styles based on component state with zero runtime overhead. The Babel plug
 
 #### Active Modifier (Pressable)
 
-Use the `active:` modifier to apply styles when a `Pressable` component is pressed.
+Use the `active:` modifier to apply styles when a `Pressable` component is pressed. **Requires using the enhanced `Pressable` component from this package.**
 
 **Basic Example:**
 
 ```tsx
-import { Pressable, Text } from "react-native";
+import { Text } from "react-native";
+import { Pressable } from "@mgcrea/react-native-tailwind";
 
 export function MyButton() {
   return (
@@ -469,20 +474,79 @@ The package exports an enhanced `TextInput` component that:
 
 **Supported Modifiers by Component:**
 
-| Component              | Supported Modifiers                      | Notes                                      |
-| ---------------------- | ---------------------------------------- | ------------------------------------------ |
-| `Pressable`            | `active:`, `focus:`, `hover:` (web only) | Built into React Native                    |
-| `TextInput` (enhanced) | `focus:`                                 | Use `@mgcrea/react-native-tailwind` export |
+| Component              | Supported Modifiers                          | Notes                                      |
+| ---------------------- | -------------------------------------------- | ------------------------------------------ |
+| `Pressable` (enhanced) | `active:`, `hover:`, `focus:`, `disabled:`   | Use `@mgcrea/react-native-tailwind` export |
+| `TextInput` (enhanced) | `focus:`, `disabled:`                        | Use `@mgcrea/react-native-tailwind` export |
+
+#### Disabled Modifier (Pressable & TextInput)
+
+Use the `disabled:` modifier to apply styles when a component is disabled. **Requires using the enhanced components from this package.**
+
+**Pressable Example:**
+
+```tsx
+import { Pressable, Text } from "@mgcrea/react-native-tailwind";
+
+export function SubmitButton({ isLoading }) {
+  return (
+    <Pressable
+      disabled={isLoading}
+      className="bg-blue-500 active:bg-blue-700 disabled:bg-gray-400 p-4 rounded-lg"
+    >
+      <Text className="text-white font-semibold disabled:text-gray-600">
+        {isLoading ? "Loading..." : "Submit"}
+      </Text>
+    </Pressable>
+  );
+}
+```
+
+**TextInput Example:**
+
+```tsx
+import { TextInput } from "@mgcrea/react-native-tailwind";
+
+export function MyInput({ isEditing }) {
+  return (
+    <TextInput
+      disabled={!isEditing}
+      className="border-2 border-gray-300 focus:border-blue-500 disabled:bg-gray-100 disabled:border-gray-200 p-3 rounded-lg"
+      placeholder="Enter text"
+    />
+  );
+}
+```
+
+**How it works:**
+
+The enhanced components inject the `disabled` prop value into the style function context:
+
+- **Pressable**: Extends the existing `{ pressed, hovered, focused }` state with `disabled`
+- **TextInput**: Provides `{ focused, disabled }` state to style functions
+
+**TextInput `disabled` Prop:**
+
+The enhanced `TextInput` also provides a convenient `disabled` prop that overrides React Native's `editable` prop:
+
+```tsx
+// These are equivalent:
+<TextInput disabled={true} />
+<TextInput editable={false} />
+
+// If both are provided, disabled takes precedence:
+<TextInput disabled={true} editable={true} /> // Component is disabled
+```
 
 **Important Notes:**
 
-- ⚠️ **Enhanced component required** — The `focus:` modifier requires using the enhanced `TextInput` from this package
+- ⚠️ **Enhanced components required** — State modifiers require using the enhanced components from this package
 - ℹ️ **Component-specific** — Each modifier only works on compatible components
 - ℹ️ **No nested modifiers** — Combinations like `active:focus:bg-blue-500` are not currently supported
 - ✅ **Zero styling overhead** — All className parsing happens at compile-time
-- ✅ **Minimal runtime cost** — Only adds focus state management (`useState` + 2 callbacks)
+- ✅ **Minimal runtime cost** — Only adds state management (focus tracking, disabled injection)
 - ✅ **Type-safe** — Full TypeScript autocomplete for all modifiers
-- ✅ **Works with custom colors** — `focus:border-primary`, `active:bg-secondary`, etc.
+- ✅ **Works with custom colors** — `focus:border-primary`, `active:bg-secondary`, `disabled:bg-gray-200`, etc.
 
 ### ScrollView Content Container
 
