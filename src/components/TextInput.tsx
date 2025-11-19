@@ -30,6 +30,7 @@ export type TextInputProps = Omit<RNTextInputProps, "style"> & {
   style?:
     | RNTextInputProps["style"]
     | ((state: { focused: boolean; disabled: boolean }) => RNTextInputProps["style"]);
+  className?: string; // compile-time only
   /**
    * Convenience prop for disabled state (overrides editable if provided)
    * When true, sets editable to false
