@@ -17,22 +17,46 @@ import { parseClassName as parseClassNameFn, splitModifierClasses } from "../par
 import { generateStyleKey as generateStyleKeyFn } from "../utils/styleKey.js";
 import { extractCustomColors } from "./config-loader.js";
 
+/**
+ * Plugin options
+ */
+export type PluginOptions = {
+  /**
+   * List of JSX attribute names to transform (in addition to or instead of 'className')
+   * Supports exact matches and glob patterns:
+   * - Exact: 'className', 'containerClassName'
+   * - Glob: '*ClassName' (matches any attribute ending in 'ClassName')
+   *
+   * @default ['className', 'contentContainerClassName', 'columnWrapperClassName', 'ListHeaderComponentClassName', 'ListFooterComponentClassName']
+   */
+  attributes?: string[];
+
+  /**
+   * Custom identifier name for the generated StyleSheet constant
+   *
+   * @default '_twStyles'
+   */
+  stylesIdentifier?: string;
+};
+
 type PluginState = PluginPass & {
   styleRegistry: Map<string, StyleObject>;
   hasClassNames: boolean;
   hasStyleSheetImport: boolean;
   customColors: Record<string, string>;
+  supportedAttributes: Set<string>;
+  attributePatterns: RegExp[];
+  stylesIdentifier: string;
 };
 
-// Use a unique identifier to avoid conflicts with user's own styles
-const STYLES_IDENTIFIER = "_twStyles";
+// Default identifier for the generated StyleSheet constant
+const DEFAULT_STYLES_IDENTIFIER = "_twStyles";
 
 /**
- * Supported className-like attributes
+ * Default className-like attributes (used when no custom attributes are provided)
  */
-const SUPPORTED_CLASS_ATTRIBUTES = [
+const DEFAULT_CLASS_ATTRIBUTES = [
   "className",
-  "containerClassName",
   "contentContainerClassName",
   "columnWrapperClassName",
   "ListHeaderComponentClassName",
@@ -40,25 +64,56 @@ const SUPPORTED_CLASS_ATTRIBUTES = [
 ] as const;
 
 /**
+ * Build attribute matching structures from plugin options
+ * Separates exact matches from pattern-based matches
+ */
+function buildAttributeMatchers(attributes: string[]): {
+  exactMatches: Set<string>;
+  patterns: RegExp[];
+} {
+  const exactMatches = new Set<string>();
+  const patterns: RegExp[] = [];
+
+  for (const attr of attributes) {
+    if (attr.includes("*")) {
+      // Convert glob pattern to regex
+      // *ClassName -> /^.*ClassName$/
+      // container* -> /^container.*$/
+      const regexPattern = "^" + attr.replace(/\*/g, ".*") + "$";
+      patterns.push(new RegExp(regexPattern));
+    } else {
+      // Exact match
+      exactMatches.add(attr);
+    }
+  }
+
+  return { exactMatches, patterns };
+}
+
+/**
+ * Check if an attribute name matches the configured attributes
+ */
+function isAttributeSupported(attributeName: string, exactMatches: Set<string>, patterns: RegExp[]): boolean {
+  // Check exact matches first (faster)
+  if (exactMatches.has(attributeName)) {
+    return true;
+  }
+
+  // Check pattern matches
+  for (const pattern of patterns) {
+    if (pattern.test(attributeName)) {
+      return true;
+    }
+  }
+
+  return false;
+}
+
+/**
  * Get the target style prop name based on the className attribute
  */
 function getTargetStyleProp(attributeName: string): string {
-  if (attributeName === "containerClassName") {
-    return "containerStyle";
-  }
-  if (attributeName === "contentContainerClassName") {
-    return "contentContainerStyle";
-  }
-  if (attributeName === "columnWrapperClassName") {
-    return "columnWrapperStyle";
-  }
-  if (attributeName === "ListHeaderComponentClassName") {
-    return "ListHeaderComponentStyle";
-  }
-  if (attributeName === "ListFooterComponentClassName") {
-    return "ListFooterComponentStyle";
-  }
-  return "style";
+  return attributeName.endsWith("ClassName") ? attributeName.replace("ClassName", "Style") : "style";
 }
 
 /**
@@ -169,7 +224,7 @@ function processTemplateLiteral(
         staticParts.push(cls);
 
         // Add to parts array
-        parts.push(t.memberExpression(t.identifier(STYLES_IDENTIFIER), t.identifier(styleKey)));
+        parts.push(t.memberExpression(t.identifier(state.stylesIdentifier), t.identifier(styleKey)));
       }
     }
 
@@ -268,7 +323,7 @@ function processStringOrExpression(node: any, state: PluginState, t: typeof Babe
     const styleKey = generateStyleKey(className);
     state.styleRegistry.set(styleKey, styleObject);
 
-    return t.memberExpression(t.identifier(STYLES_IDENTIFIER), t.identifier(styleKey));
+    return t.memberExpression(t.identifier(state.stylesIdentifier), t.identifier(styleKey));
   }
 
   // Handle nested expressions recursively
@@ -309,7 +364,7 @@ function processStaticClassNameWithModifiers(
     const baseStyleObject = parseClassName(baseClassName, state.customColors);
     const baseStyleKey = generateStyleKey(baseClassName);
     state.styleRegistry.set(baseStyleKey, baseStyleObject);
-    baseStyleExpression = t.memberExpression(t.identifier(STYLES_IDENTIFIER), t.identifier(baseStyleKey));
+    baseStyleExpression = t.memberExpression(t.identifier(state.stylesIdentifier), t.identifier(baseStyleKey));
   }
 
   // Parse and register modifier classes
@@ -346,7 +401,7 @@ function processStaticClassNameWithModifiers(
     const conditionalExpression = t.logicalExpression(
       "&&",
       t.identifier(stateProperty),
-      t.memberExpression(t.identifier(STYLES_IDENTIFIER), t.identifier(modifierStyleKey)),
+      t.memberExpression(t.identifier(state.stylesIdentifier), t.identifier(modifierStyleKey)),
     );
 
     styleArrayElements.push(conditionalExpression);
@@ -403,11 +458,15 @@ function createStyleFunction(styleExpression: any, modifierTypes: ModifierType[]
   return t.arrowFunctionExpression([param], styleExpression);
 }
 
-export default function reactNativeTailwindBabelPlugin({
-  types: t,
-}: {
-  types: typeof BabelTypes;
-}): PluginObj<PluginState> {
+export default function reactNativeTailwindBabelPlugin(
+  { types: t }: { types: typeof BabelTypes },
+  options?: PluginOptions,
+): PluginObj<PluginState> {
+  // Build attribute matchers from options
+  const attributes = options?.attributes ?? [...DEFAULT_CLASS_ATTRIBUTES];
+  const { exactMatches, patterns } = buildAttributeMatchers(attributes);
+  const stylesIdentifier = options?.stylesIdentifier ?? DEFAULT_STYLES_IDENTIFIER;
+
   return {
     name: "react-native-tailwind",
 
@@ -418,6 +477,9 @@ export default function reactNativeTailwindBabelPlugin({
           state.styleRegistry = new Map();
           state.hasClassNames = false;
           state.hasStyleSheetImport = false;
+          state.supportedAttributes = exactMatches;
+          state.attributePatterns = patterns;
+          state.stylesIdentifier = stylesIdentifier;
 
           // Load custom colors from tailwind.config.*
           state.customColors = extractCustomColors(state.file.opts.filename ?? "");
@@ -435,7 +497,7 @@ export default function reactNativeTailwindBabelPlugin({
           }
 
           // Generate and inject StyleSheet.create at the end of the file
-          injectStyles(path, state.styleRegistry, t);
+          injectStyles(path, state.styleRegistry, state.stylesIdentifier, t);
         },
       },
 
@@ -465,8 +527,8 @@ export default function reactNativeTailwindBabelPlugin({
         const node = path.node as any;
         const attributeName = node.name.name;
 
-        // Only process className-like attributes
-        if (!SUPPORTED_CLASS_ATTRIBUTES.includes(attributeName)) {
+        // Only process configured className-like attributes
+        if (!isAttributeSupported(attributeName, state.supportedAttributes, state.attributePatterns)) {
           return;
         }
 
@@ -590,10 +652,10 @@ export default function reactNativeTailwindBabelPlugin({
 
           if (styleAttribute) {
             // Merge with existing style prop
-            mergeStyleAttribute(path, styleAttribute, styleKey, t);
+            mergeStyleAttribute(path, styleAttribute, styleKey, state.stylesIdentifier, t);
           } else {
             // Replace className with style prop
-            replaceWithStyleAttribute(path, styleKey, targetStyleProp, t);
+            replaceWithStyleAttribute(path, styleKey, targetStyleProp, state.stylesIdentifier, t);
           }
           return;
         }
@@ -672,11 +734,12 @@ function replaceWithStyleAttribute(
   classNamePath: NodePath,
   styleKey: string,
   targetStyleProp: string,
+  stylesIdentifier: string,
   t: typeof BabelTypes,
 ) {
   const styleAttribute = t.jsxAttribute(
     t.jsxIdentifier(targetStyleProp),
-    t.jsxExpressionContainer(t.memberExpression(t.identifier(STYLES_IDENTIFIER), t.identifier(styleKey))),
+    t.jsxExpressionContainer(t.memberExpression(t.identifier(stylesIdentifier), t.identifier(styleKey))),
   );
 
   classNamePath.replaceWith(styleAttribute);
@@ -689,6 +752,7 @@ function mergeStyleAttribute(
   classNamePath: NodePath,
   styleAttribute: any,
   styleKey: string,
+  stylesIdentifier: string,
   t: typeof BabelTypes,
 ) {
   const existingStyle = styleAttribute.value.expression;
@@ -696,7 +760,7 @@ function mergeStyleAttribute(
   // Create array with className styles first, then existing styles
   // This allows existing styles to override className styles
   const styleArray = t.arrayExpression([
-    t.memberExpression(t.identifier(STYLES_IDENTIFIER), t.identifier(styleKey)),
+    t.memberExpression(t.identifier(stylesIdentifier), t.identifier(styleKey)),
     existingStyle,
   ]);
 
@@ -817,7 +881,12 @@ function mergeStyleFunctionAttribute(
 /**
  * Inject StyleSheet.create with all collected styles
  */
-function injectStyles(path: NodePath, styleRegistry: Map<string, StyleObject>, t: typeof BabelTypes) {
+function injectStyles(
+  path: NodePath,
+  styleRegistry: Map<string, StyleObject>,
+  stylesIdentifier: string,
+  t: typeof BabelTypes,
+) {
   // Build style object properties
   const styleProperties: any[] = [];
 
@@ -843,7 +912,7 @@ function injectStyles(path: NodePath, styleRegistry: Map<string, StyleObject>, t
   // Create: const _tailwindStyles = StyleSheet.create({ ... })
   const styleSheet = t.variableDeclaration("const", [
     t.variableDeclarator(
-      t.identifier(STYLES_IDENTIFIER),
+      t.identifier(stylesIdentifier),
       t.callExpression(t.memberExpression(t.identifier("StyleSheet"), t.identifier("create")), [
         t.objectExpression(styleProperties),
       ]),
