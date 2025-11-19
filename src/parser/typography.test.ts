@@ -41,6 +41,14 @@ describe("parseTypography - font size", () => {
   });
 });
 
+describe("parseTypography - font family", () => {
+  it("should parse font family values", () => {
+    expect(parseTypography("font-sans")).toEqual({ fontFamily: "System" });
+    expect(parseTypography("font-serif")).toEqual({ fontFamily: "serif" });
+    expect(parseTypography("font-mono")).toEqual({ fontFamily: "Courier" });
+  });
+});
+
 describe("parseTypography - font weight", () => {
   it("should parse font weight values", () => {
     expect(parseTypography("font-thin")).toEqual({ fontWeight: "100" });
@@ -177,6 +185,8 @@ describe("parseTypography - comprehensive coverage", () => {
   it("should handle all typography categories independently", () => {
     // Font size
     expect(parseTypography("text-base")).toEqual({ fontSize: 16 });
+    // Font family
+    expect(parseTypography("font-mono")).toEqual({ fontFamily: "Courier" });
     // Font weight
     expect(parseTypography("font-bold")).toEqual({ fontWeight: "700" });
     // Font style

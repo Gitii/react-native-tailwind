@@ -31,6 +31,13 @@ export const LETTER_SPACING_SCALE: Record<string, number> = {
   widest: 1.6,
 };
 
+// Font family utilities
+const FONT_FAMILY_MAP: Record<string, StyleObject> = {
+  "font-sans": { fontFamily: "System" },
+  "font-serif": { fontFamily: "serif" },
+  "font-mono": { fontFamily: "Courier" },
+};
+
 // Font weight utilities
 const FONT_WEIGHT_MAP: Record<string, StyleObject> = {
   "font-thin": { fontWeight: "100" },
@@ -175,6 +182,7 @@ export function parseTypography(cls: string): StyleObject | null {
 
   // Try each lookup table in order
   return (
+    FONT_FAMILY_MAP[cls] ??
     FONT_WEIGHT_MAP[cls] ??
     FONT_STYLE_MAP[cls] ??
     TEXT_ALIGN_MAP[cls] ??
