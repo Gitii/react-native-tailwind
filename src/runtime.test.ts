@@ -45,9 +45,9 @@ describe("runtime", () => {
       });
     });
 
-    it("should return undefined for empty className", () => {
+    it("should return empty style object for empty className", () => {
       const result = tw``;
-      expect(result).toBeUndefined();
+      expect(result).toEqual({ style: {} });
     });
 
     it("should normalize whitespace", () => {

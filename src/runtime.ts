@@ -1,6 +1,7 @@
 import type { ImageStyle, TextStyle, ViewStyle } from "react-native";
 import { parseClassName } from "./parser/index.js";
 import { flattenColors } from "./utils/flattenColors.js";
+import { hasModifiers, splitModifierClasses } from "./utils/modifiers.js";
 
 /**
  * Union type for all React Native style types
@@ -36,53 +37,6 @@ let globalCustomColors: Record<string, string> | undefined;
 
 // Simple memoization cache
 const styleCache = new Map<string, TwStyle>();
-
-// Supported state modifiers for Pressable components
-const SUPPORTED_MODIFIERS = ["active", "focus", "disabled"] as const;
-
-/**
- * Detect if a className contains any state modifiers (active:, focus:, disabled:)
- */
-function hasModifiers(className: string): boolean {
-  return SUPPORTED_MODIFIERS.some((modifier) => className.includes(`${modifier}:`));
-}
-
-/**
- * Split className into base classes and modifier-specific classes
- * Returns: { base: string, modifiers: Map<modifier, classes[]> }
- */
-function splitModifierClasses(className: string): {
-  base: string[];
-  modifiers: Map<string, string[]>;
-} {
-  const classes = className.split(/\s+/).filter(Boolean);
-  const base: string[] = [];
-  const modifiers = new Map<string, string[]>();
-
-  for (const cls of classes) {
-    let matched = false;
-    for (const modifier of SUPPORTED_MODIFIERS) {
-      const prefix = `${modifier}:`;
-      if (cls.startsWith(prefix)) {
-        const cleanClass = cls.slice(prefix.length);
-        if (!modifiers.has(modifier)) {
-          modifiers.set(modifier, []);
-        }
-        const modifierClasses = modifiers.get(modifier);
-        if (modifierClasses) {
-          modifierClasses.push(cleanClass);
-        }
-        matched = true;
-        break;
-      }
-    }
-    if (!matched) {
-      base.push(cls);
-    }
-  }
-
-  return { base, modifiers };
-}
 
 /**
  * Configure runtime Tailwind settings
@@ -264,7 +218,10 @@ function parseAndCache(className: string): TwStyle {
  * }));
  * ```
  */
-export function tw<T extends NativeStyle>(strings: TemplateStringsArray, ...values: unknown[]): TwStyle<T> {
+export function tw<T extends NativeStyle = NativeStyle>(
+  strings: TemplateStringsArray,
+  ...values: unknown[]
+): TwStyle<T> {
   // Combine template strings and values into a single className string
   const className = strings.reduce((acc, str, i) => {
     const value = values[i];
@@ -279,10 +236,10 @@ export function tw<T extends NativeStyle>(strings: TemplateStringsArray, ...valu
 
   // Handle empty className
   if (!normalizedClassName) {
-    return { style: {} };
+    return { style: {} as T };
   }
 
-  return parseAndCache(normalizedClassName);
+  return parseAndCache(normalizedClassName) as TwStyle<T>;
 }
 
 /**
@@ -312,12 +269,12 @@ export function tw<T extends NativeStyle>(strings: TemplateStringsArray, ...valu
  * </Pressable>
  * ```
  */
-export function twStyle(className: string): TwStyle | undefined {
+export function twStyle<T extends NativeStyle = NativeStyle>(className: string): TwStyle<T> | undefined {
   const normalizedClassName = className.trim().replace(/\s+/g, " ");
 
   if (!normalizedClassName) {
     return undefined;
   }
 
-  return parseAndCache(normalizedClassName);
+  return parseAndCache(normalizedClassName) as TwStyle<T>;
 }

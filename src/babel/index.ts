@@ -47,6 +47,9 @@ type PluginState = PluginPass & {
   supportedAttributes: Set<string>;
   attributePatterns: RegExp[];
   stylesIdentifier: string;
+  // Track tw/twStyle imports from main package
+  twImportNames: Set<string>; // e.g., ['tw', 'twStyle'] or ['tw as customTw']
+  hasTwImport: boolean;
 };
 
 // Default identifier for the generated StyleSheet constant
@@ -458,6 +461,69 @@ function createStyleFunction(styleExpression: any, modifierTypes: ModifierType[]
   return t.arrowFunctionExpression([param], styleExpression);
 }
 
+/**
+ * Process tw`...` or twStyle('...') call and replace with TwStyle object
+ * Generates: { style: styles._base, activeStyle: styles._active, ... }
+ */
+function processTwCall(className: string, path: NodePath, state: PluginState, t: typeof BabelTypes): void {
+  const { baseClasses, modifierClasses } = splitModifierClasses(className);
+
+  // Build TwStyle object properties
+  const objectProperties: any[] = [];
+
+  // Parse and add base styles
+  if (baseClasses.length > 0) {
+    const baseClassName = baseClasses.join(" ");
+    const baseStyleObject = parseClassName(baseClassName, state.customColors);
+    const baseStyleKey = generateStyleKey(baseClassName);
+    state.styleRegistry.set(baseStyleKey, baseStyleObject);
+
+    objectProperties.push(
+      t.objectProperty(
+        t.identifier("style"),
+        t.memberExpression(t.identifier(state.stylesIdentifier), t.identifier(baseStyleKey)),
+      ),
+    );
+  } else {
+    // No base classes - add empty style object
+    objectProperties.push(t.objectProperty(t.identifier("style"), t.objectExpression([])));
+  }
+
+  // Group modifiers by type
+  const modifiersByType = new Map<ModifierType, ParsedModifier[]>();
+  for (const mod of modifierClasses) {
+    if (!modifiersByType.has(mod.modifier)) {
+      modifiersByType.set(mod.modifier, []);
+    }
+    const modGroup = modifiersByType.get(mod.modifier);
+    if (modGroup) {
+      modGroup.push(mod);
+    }
+  }
+
+  // Add modifier styles
+  for (const [modifierType, modifiers] of modifiersByType) {
+    const modifierClassNames = modifiers.map((m) => m.baseClass).join(" ");
+    const modifierStyleObject = parseClassName(modifierClassNames, state.customColors);
+    const modifierStyleKey = generateStyleKey(`${modifierType}_${modifierClassNames}`);
+    state.styleRegistry.set(modifierStyleKey, modifierStyleObject);
+
+    // Map modifier type to property name: active -> activeStyle
+    const propertyName = `${modifierType}Style`;
+
+    objectProperties.push(
+      t.objectProperty(
+        t.identifier(propertyName),
+        t.memberExpression(t.identifier(state.stylesIdentifier), t.identifier(modifierStyleKey)),
+      ),
+    );
+  }
+
+  // Replace the tw`...` or twStyle('...') with the object
+  const twStyleObject = t.objectExpression(objectProperties);
+  path.replaceWith(twStyleObject);
+}
+
 export default function reactNativeTailwindBabelPlugin(
   { types: t }: { types: typeof BabelTypes },
   options?: PluginOptions,
@@ -480,12 +546,19 @@ export default function reactNativeTailwindBabelPlugin(
           state.supportedAttributes = exactMatches;
           state.attributePatterns = patterns;
           state.stylesIdentifier = stylesIdentifier;
+          state.twImportNames = new Set();
+          state.hasTwImport = false;
 
           // Load custom colors from tailwind.config.*
           state.customColors = extractCustomColors(state.file.opts.filename ?? "");
         },
 
         exit(path: NodePath, state: PluginState) {
+          // Remove tw/twStyle imports if they were used (and transformed)
+          if (state.hasTwImport) {
+            removeTwImports(path, t);
+          }
+
           // If no classNames were found, skip StyleSheet generation
           if (!state.hasClassNames || state.styleRegistry.size === 0) {
             return;
@@ -496,14 +569,17 @@ export default function reactNativeTailwindBabelPlugin(
             addStyleSheetImport(path, t);
           }
 
-          // Generate and inject StyleSheet.create at the end of the file
-          injectStyles(path, state.styleRegistry, state.stylesIdentifier, t);
+          // Generate and inject StyleSheet.create at the beginning of the file (after imports)
+          // This ensures _twStyles is defined before any code that references it
+          injectStylesAtTop(path, state.styleRegistry, state.stylesIdentifier, t);
         },
       },
 
-      // Check if StyleSheet is already imported
+      // Check if StyleSheet is already imported and track tw/twStyle imports
       ImportDeclaration(path: NodePath, state: PluginState) {
         const node = path.node as any;
+
+        // Track react-native StyleSheet import
         if (node.source.value === "react-native") {
           const specifiers = node.specifiers;
           const hasStyleSheet = specifiers.some((spec: any) => {
@@ -521,6 +597,119 @@ export default function reactNativeTailwindBabelPlugin(
             state.hasStyleSheetImport = true;
           }
         }
+
+        // Track tw/twStyle imports from main package (for compile-time transformation)
+        if (node.source.value === "@mgcrea/react-native-tailwind") {
+          const specifiers = node.specifiers;
+          specifiers.forEach((spec: any) => {
+            if (t.isImportSpecifier(spec) && t.isIdentifier(spec.imported)) {
+              const importedName = spec.imported.name;
+              if (importedName === "tw" || importedName === "twStyle") {
+                // Track the local name (could be renamed: import { tw as customTw })
+                const localName = spec.local.name;
+                state.twImportNames.add(localName);
+                state.hasTwImport = true;
+              }
+            }
+          });
+        }
+      },
+
+      // Handle tw`...` tagged template expressions
+      TaggedTemplateExpression(path: NodePath, state: PluginState) {
+        const node = path.node as any;
+
+        // Check if the tag is a tracked tw import
+        if (!t.isIdentifier(node.tag)) {
+          return;
+        }
+
+        const tagName = node.tag.name;
+        if (!state.twImportNames.has(tagName)) {
+          return;
+        }
+
+        // Extract static className from template literal
+        const quasi = node.quasi;
+        if (!t.isTemplateLiteral(quasi)) {
+          return;
+        }
+
+        // Only support static strings (no interpolations)
+        if (quasi.expressions.length > 0) {
+          if (process.env.NODE_ENV !== "production") {
+            console.warn(
+              `[react-native-tailwind] Dynamic tw\`...\` with interpolations is not supported at ${state.file.opts.filename ?? "unknown"}. ` +
+                `Use style prop for dynamic values.`,
+            );
+          }
+          return;
+        }
+
+        // Get the static className string
+        const className = quasi.quasis[0]?.value.cooked?.trim() ?? "";
+        if (!className) {
+          // Replace with empty object
+          path.replaceWith(
+            t.objectExpression([t.objectProperty(t.identifier("style"), t.objectExpression([]))]),
+          );
+          return;
+        }
+
+        state.hasClassNames = true;
+
+        // Process the className with modifiers
+        processTwCall(className, path, state, t);
+      },
+
+      // Handle twStyle('...') call expressions
+      CallExpression(path: NodePath, state: PluginState) {
+        const node = path.node as any;
+
+        // Check if the callee is a tracked twStyle import
+        if (!t.isIdentifier(node.callee)) {
+          return;
+        }
+
+        const calleeName = node.callee.name;
+        if (!state.twImportNames.has(calleeName)) {
+          return;
+        }
+
+        // Must have exactly one argument
+        if (node.arguments.length !== 1) {
+          if (process.env.NODE_ENV !== "production") {
+            console.warn(
+              `[react-native-tailwind] twStyle() expects exactly one argument at ${state.file.opts.filename ?? "unknown"}`,
+            );
+          }
+          return;
+        }
+
+        const arg = node.arguments[0];
+
+        // Only support static string literals
+        if (!t.isStringLiteral(arg)) {
+          if (process.env.NODE_ENV !== "production") {
+            console.warn(
+              `[react-native-tailwind] twStyle() only supports static string literals at ${state.file.opts.filename ?? "unknown"}. ` +
+                `Use style prop for dynamic values.`,
+            );
+          }
+          return;
+        }
+
+        const className = arg.value.trim();
+        if (!className) {
+          // Replace with undefined
+          path.replaceWith(t.identifier("undefined"));
+          return;
+        }
+
+        state.hasClassNames = true;
+
+        // Process the className with modifiers
+        processTwCall(className, path, state, t);
       },
 
       JSXAttribute(path: NodePath, state: PluginState) {
@@ -728,6 +917,41 @@ function addStyleSheetImport(path: NodePath, t: typeof BabelTypes) {
 }
 
 /**
+ * Remove tw/twStyle imports from @mgcrea/react-native-tailwind
+ * This is called after all tw calls have been transformed
+ */
+function removeTwImports(path: NodePath, t: typeof BabelTypes) {
+  // Traverse the program to find and remove tw/twStyle imports
+  path.traverse({
+    ImportDeclaration(importPath: NodePath) {
+      const node = importPath.node as any;
+
+      // Only process imports from main package
+      if (node.source.value !== "@mgcrea/react-native-tailwind") {
+        return;
+      }
+
+      // Filter out tw/twStyle specifiers
+      const remainingSpecifiers = node.specifiers.filter((spec: any) => {
+        if (t.isImportSpecifier(spec) && t.isIdentifier(spec.imported)) {
+          const importedName = spec.imported.name;
+          return importedName !== "tw" && importedName !== "twStyle";
+        }
+        return true;
+      });
+
+      if (remainingSpecifiers.length === 0) {
+        // Remove entire import if no specifiers remain
+        importPath.remove();
+      } else if (remainingSpecifiers.length < node.specifiers.length) {
+        // Update import with remaining specifiers
+        node.specifiers = remainingSpecifiers;
+      }
+    },
+  });
+}
+
+/**
  * Replace className with style attribute
  */
 function replaceWithStyleAttribute(
@@ -879,9 +1103,10 @@ function mergeStyleFunctionAttribute(
 }
 
 /**
- * Inject StyleSheet.create with all collected styles
+ * Inject StyleSheet.create with all collected styles at the top of the file
+ * This ensures the styles object is defined before any code that references it
  */
-function injectStyles(
+function injectStylesAtTop(
   path: NodePath,
   styleRegistry: Map<string, StyleObject>,
   stylesIdentifier: string,
@@ -909,7 +1134,7 @@ function injectStyles(
     styleProperties.push(t.objectProperty(t.identifier(key), t.objectExpression(properties)));
   }
 
-  // Create: const _tailwindStyles = StyleSheet.create({ ... })
+  // Create: const _twStyles = StyleSheet.create({ ... })
   const styleSheet = t.variableDeclaration("const", [
     t.variableDeclarator(
       t.identifier(stylesIdentifier),
@@ -919,8 +1144,22 @@ function injectStyles(
     ),
   ]);
 
-  // Add StyleSheet.create at the end of the file
-  (path as any).pushContainer("body", styleSheet);
+  // Find the index to insert after all imports
+  const body = (path as any).node.body;
+  let insertIndex = 0;
+
+  // Find the last import statement
+  for (let i = 0; i < body.length; i++) {
+    if (t.isImportDeclaration(body[i])) {
+      insertIndex = i + 1;
+    } else {
+      // Stop at the first non-import statement
+      break;
+    }
+  }
+
+  // Insert StyleSheet.create after imports
+  body.splice(insertIndex, 0, styleSheet);
 }
 
 // Helper functions that use the imported parser
