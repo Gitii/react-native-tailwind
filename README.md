@@ -45,6 +45,7 @@ Compile-time Tailwind CSS for React Native with zero runtime overhead. Transform
 - 🔀 **Dynamic className** — Conditional styles with hybrid compile-time optimization
 - 🎯 **State modifiers** — `active:`, `hover:`, `focus:`, and `disabled:` modifiers for interactive components
 - 📜 **Special style props** — Support for `contentContainerClassName`, `columnWrapperClassName`, and more
+- 🎛️ **Custom attributes** — Configure which props to transform with exact matching or glob patterns
 
 ## Demo
 
@@ -71,6 +72,28 @@ module.exports = {
   presets: ["module:@react-native/babel-preset"],
   plugins: [
     "@mgcrea/react-native-tailwind/babel", // Add this line
+  ],
+};
+```
+
+**Advanced:** You can customize which attributes are transformed and the generated styles identifier:
+
+```javascript
+module.exports = {
+  presets: ["module:@react-native/babel-preset"],
+  plugins: [
+    [
+      "@mgcrea/react-native-tailwind/babel",
+      {
+        // Specify which attributes to transform
+        // Default: ['className', 'contentContainerClassName', 'columnWrapperClassName', 'ListHeaderComponentClassName', 'ListFooterComponentClassName']
+        attributes: ["className", "buttonClassName", "containerClassName"],
+
+        // Custom identifier for the generated StyleSheet constant
+        // Default: '_twStyles'
+        stylesIdentifier: "styles",
+      },
+    ],
   ],
 };
 ```
@@ -999,6 +1022,173 @@ This limitation exists because the current parser architecture uses `Object.assi
 > **Note:** Arbitrary sizing supports pixel values (`[123px]` or `[123]`) and percentages (`[50%]`). Other units (`rem`, `em`, `vh`, `vw`) are not supported in React Native.
 
 ## Advanced
+
+### Custom Attributes
+
+By default, the Babel plugin transforms these className-like attributes to their corresponding style props:
+
+- `className` → `style`
+- `contentContainerClassName` → `contentContainerStyle` (ScrollView, FlatList)
+- `columnWrapperClassName` → `columnWrapperStyle` (FlatList)
+- `ListHeaderComponentClassName` → `ListHeaderComponentStyle` (FlatList)
+- `ListFooterComponentClassName` → `ListFooterComponentStyle` (FlatList)
+
+You can customize which attributes are transformed using the `attributes` plugin option:
+
+**Exact Matches:**
+
+```javascript
+// babel.config.js
+module.exports = {
+  plugins: [
+    [
+      "@mgcrea/react-native-tailwind/babel",
+      {
+        attributes: ["className", "buttonClassName", "containerClassName"],
+      },
+    ],
+  ],
+};
+```
+
+**Pattern Matching:**
+
+Use glob patterns to match multiple attributes:
+
+```javascript
+// babel.config.js
+module.exports = {
+  plugins: [
+    [
+      "@mgcrea/react-native-tailwind/babel",
+      {
+        // Matches any attribute ending in 'ClassName'
+        attributes: ["*ClassName"],
+      },
+    ],
+  ],
+};
+```
+
+**Combined:**
+
+```javascript
+// babel.config.js
+module.exports = {
+  plugins: [
+    [
+      "@mgcrea/react-native-tailwind/babel",
+      {
+        // Mix exact matches and patterns
+        attributes: [
+          "className",
+          "*ClassName", // containerClassName, buttonClassName, etc.
+          "custom*", // customButton, customHeader, etc.
+        ],
+      },
+    ],
+  ],
+};
+```
+
+**Usage Example:**
+
+```tsx
+// With custom attributes configured
+function Button({ title, onPress, buttonClassName, containerClassName }) {
+  return (
+    <View containerClassName="p-2 bg-gray-100">
+      <Pressable buttonClassName="bg-blue-500 px-6 py-4 rounded-lg" onPress={onPress}>
+        <Text className="text-white font-semibold">{title}</Text>
+      </Pressable>
+    </View>
+  );
+}
+
+// Transforms to:
+function Button({ title, onPress, buttonStyle, containerStyle }) {
+  return (
+    <View style={[_twStyles._bg_gray_100_p_2, containerStyle]}>
+      <Pressable style={[_twStyles._bg_blue_500_px_6_py_4_rounded_lg, buttonStyle]} onPress={onPress}>
+        <Text style={_twStyles._font_semibold_text_white}>{title}</Text>
+      </Pressable>
+    </View>
+  );
+}
+```
+
+**Naming Convention:**
+
+Attributes ending in `ClassName` are automatically converted to their `Style` equivalent:
+
+- `buttonClassName` → `buttonStyle`
+- `containerClassName` → `containerStyle`
+- `headerClassName` → `headerStyle`
+
+For attributes not ending in `ClassName`, the `style` prop is used.
+
+**TypeScript Support:**
+
+When using custom attributes, you'll need to augment the component types to include your custom className props. See the [TypeScript section](#2-enable-typescript-support-typescript) for details on module augmentation.
+
+### Custom Styles Identifier
+
+By default, the Babel plugin generates a StyleSheet constant named `_twStyles`. You can customize this identifier to avoid conflicts or match your project's naming conventions:
+
+```javascript
+// babel.config.js
+module.exports = {
+  plugins: [
+    [
+      "@mgcrea/react-native-tailwind/babel",
+      {
+        stylesIdentifier: "styles", // or 'tw', 'tailwind', etc.
+      },
+    ],
+  ],
+};
+```
+
+**Default behavior:**
+
+```tsx
+// Input
+<View className="p-4 bg-blue-500" />
+
+// Output
+<View style={_twStyles._bg_blue_500_p_4} />
+
+const _twStyles = StyleSheet.create({
+  _bg_blue_500_p_4: { padding: 16, backgroundColor: '#3B82F6' }
+});
+```
+
+**With custom identifier:**
+
+```tsx
+// Input (with stylesIdentifier: "styles")
+<View className="p-4 bg-blue-500" />
+
+// Output
+<View style={styles._bg_blue_500_p_4} />
+
+const styles = StyleSheet.create({
+  _bg_blue_500_p_4: { padding: 16, backgroundColor: '#3B82F6' }
+});
+```
+
+**Use Cases:**
+
+- **Avoid conflicts:** If you already have a `_twStyles` variable in your code
+- **Consistency:** Match your existing StyleSheet naming convention (`styles`, `styleSheet`, etc.)
+- **Shorter names:** Use a shorter identifier like `tw` or `s` for more compact code
+- **Team conventions:** Align with your team's coding standards
+
+**Important Notes:**
+
+- The identifier must be a valid JavaScript variable name
+- Choose a name that won't conflict with existing variables in your files
+- The same identifier is used across all files in your project
 
 ### Arbitrary Values
 
