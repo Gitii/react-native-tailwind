@@ -21,6 +21,7 @@ export type PressableProps = Omit<RNPressableProps, "style"> & {
    * Style can be a static style object/array or a function that receives Pressable state + disabled
    */
   style?: StyleProp<ViewStyle> | ((state: EnhancedPressableState) => StyleProp<ViewStyle>);
+  className?: string; // compile-time only
 };
 
 /**
