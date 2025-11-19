@@ -325,9 +325,89 @@ The Babel plugin will merge them:
 </View>
 ```
 
+### Compile-Time `tw` Template Tag
+
+For static or compile-time determinable styles, you can use the `tw` template tag that gets transformed by the Babel plugin. This provides **zero runtime overhead** as all styles are compiled to `StyleSheet.create` calls.
+
+#### Import
+
+```typescript
+import { tw } from "@mgcrea/react-native-tailwind";
+```
+
+#### Basic Usage
+
+```tsx
+import { View, Text, Pressable } from "react-native";
+import { tw } from "@mgcrea/react-native-tailwind";
+
+// Static styles - transformed at compile time
+const containerStyles = tw`flex-1 p-4 bg-gray-100`;
+const buttonStyles = tw`p-4 rounded-lg bg-blue-500`;
+const textStyles = tw`text-white font-bold text-center`;
+
+export function Example() {
+  return (
+    <View style={containerStyles.style}>
+      <Pressable style={buttonStyles.style}>
+        <Text style={textStyles.style}>Click me</Text>
+      </Pressable>
+    </View>
+  );
+}
+```
+
+#### With State Modifiers
+
+The compile-time `tw` supports state modifiers (`active:`, `focus:`, `disabled:`) that return a `TwStyle` object with separate style properties:
+
+```tsx
+import { Pressable, Text } from "react-native";
+import { tw } from "@mgcrea/react-native-tailwind";
+
+const buttonStyles = tw`bg-blue-500 active:bg-blue-700 disabled:bg-gray-300`;
+
+export function Button({ disabled }) {
+  return (
+    <Pressable
+      disabled={disabled}
+      style={(state) => [
+        buttonStyles.style,
+        state.pressed && buttonStyles.activeStyle,
+        disabled && buttonStyles.disabledStyle,
+      ]}
+    >
+      <Text style={tw`text-white font-bold`.style}>Press me</Text>
+    </Pressable>
+  );
+}
+```
+
+#### Transformation Example
+
+The Babel plugin transforms your code at compile time:
+
+```tsx
+// Input
+const styles = tw`bg-blue-500 active:bg-blue-700 m-4`;
+
+// Compiled Output
+const styles = {
+  style: _twStyles._bg_blue_500_m_4,
+  activeStyle: _twStyles._active_bg_blue_700,
+};
+
+const _twStyles = StyleSheet.create({
+  _bg_blue_500_m_4: { backgroundColor: "#2b7fff", margin: 16 },
+  _active_bg_blue_700: { backgroundColor: "#1854d6" },
+});
+```
+
 ### Runtime `tw` Template Tag
 
-For cases where you need fully dynamic styling (not possible at compile-time), you can use the runtime `tw` template tag function. This provides runtime parsing of Tailwind classes with memoization for performance.
+For cases where you need **fully dynamic styling** (values only known at runtime), you can use the runtime `tw` template tag function. This provides runtime parsing of Tailwind classes with memoization for performance.
+
+> **Note:** Use the compile-time `tw` (imported from `@mgcrea/react-native-tailwind`) when possible for zero runtime overhead. Only use the runtime version (imported from `@mgcrea/react-native-tailwind/runtime`) when styles must be determined at runtime.
 
 #### Installation
 
@@ -389,21 +469,28 @@ setConfig({
 
 #### API Reference
 
-**`tw`tagged template**
+**`tw` tagged template**
 
 ```typescript
-function tw(strings: TemplateStringsArray, ...values: unknown[]): StyleObject;
+function tw(strings: TemplateStringsArray, ...values: unknown[]): TwStyle;
+
+type TwStyle = {
+  style: ViewStyle | TextStyle | ImageStyle;
+  activeStyle?: ViewStyle | TextStyle | ImageStyle;
+  focusStyle?: ViewStyle | TextStyle | ImageStyle;
+  disabledStyle?: ViewStyle | TextStyle | ImageStyle;
+};
 ```
 
-Parses Tailwind classes at runtime and returns a StyleSheet reference. Results are automatically memoized for performance.
+Parses Tailwind classes at runtime and returns a `TwStyle` object with separate properties for base styles and state modifiers. Results are automatically memoized for performance.
 
 **`twStyle(className: string)`**
 
 ```typescript
-function twStyle(className: string): StyleObject;
+function twStyle(className: string): TwStyle | undefined;
 ```
 
-String version for cases where template literals aren't needed.
+String version for cases where template literals aren't needed. Returns `undefined` for empty strings.
 
 **`setConfig(config: RuntimeConfig)`**
 
