@@ -7,6 +7,7 @@
 
 import * as fs from "fs";
 import * as path from "path";
+import { flattenColors } from "../utils/flattenColors";
 
 export type TailwindConfig = {
   theme?: {
@@ -77,29 +78,6 @@ export function loadTailwindConfig(configPath: string): TailwindConfig | null {
     configCache.set(configPath, null);
     return null;
   }
-}
-
-/**
- * Flatten nested color objects into dot notation
- * Example: { brand: { light: '#fff', dark: '#000' } } -> { 'brand-light': '#fff', 'brand-dark': '#000' }
- */
-function flattenColors(
-  colors: Record<string, string | Record<string, string>>,
-  prefix = "",
-): Record<string, string> {
-  const result: Record<string, string> = {};
-
-  for (const [key, value] of Object.entries(colors)) {
-    const newKey = prefix ? `${prefix}-${key}` : key;
-
-    if (typeof value === "string") {
-      result[newKey] = value;
-    } else if (typeof value === "object" && value !== null) {
-      Object.assign(result, flattenColors(value, newKey));
-    }
-  }
-
-  return result;
 }
 
 /**

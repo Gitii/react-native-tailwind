@@ -6,6 +6,7 @@
 // Main parser functions
 export { parseClass, parseClassName } from "./parser";
 export { generateStyleKey } from "./utils/styleKey";
+export { flattenColors } from "./utils/flattenColors";
 
 // Re-export types
 export type { RNStyle, StyleObject } from "./types";

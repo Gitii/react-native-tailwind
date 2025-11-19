@@ -4,30 +4,16 @@
 
 import { TAILWIND_PALETTES } from "../config/palettes";
 import type { StyleObject } from "../types";
-
-/**
- * Flatten TAILWIND_PALETTES nested structure into flat color map
- * Converts { red: { "50": "#fff", "100": "#eee" } } to { "red-50": "#fff", "red-100": "#eee" }
- */
-function flattenColors(): Record<string, string> {
-  const flat: Record<string, string> = {};
-
-  for (const [colorName, shades] of Object.entries(TAILWIND_PALETTES)) {
-    for (const [shade, hex] of Object.entries(shades)) {
-      flat[`${colorName}-${shade}`] = hex;
-    }
-  }
-
-  // Add basic colors
-  flat.white = "#FFFFFF";
-  flat.black = "#000000";
-  flat.transparent = "transparent";
-
-  return flat;
-}
+import { flattenColors } from "../utils/flattenColors";
 
 // Tailwind color palette (flattened from config)
-export const COLORS: Record<string, string> = flattenColors();
+export const COLORS: Record<string, string> = {
+  ...flattenColors(TAILWIND_PALETTES),
+  // Add basic colors
+  white: "#FFFFFF",
+  black: "#000000",
+  transparent: "transparent",
+};
 
 /**
  * Apply opacity to hex color by appending alpha channel
