@@ -43,6 +43,7 @@ Compile-time Tailwind CSS for React Native with zero runtime overhead. Transform
 - 🎨 **Custom colors** — Extend the default palette via `tailwind.config.*`
 - 📐 **Arbitrary values** — Use custom sizes and borders: `w-[123px]`, `rounded-[20px]`
 - 🔀 **Dynamic className** — Conditional styles with hybrid compile-time optimization
+- 🏃 **Runtime option** — Optional `tw` template tag for fully dynamic styling (~25KB)
 - 🎯 **State modifiers** — `active:`, `hover:`, `focus:`, and `disabled:` modifiers for interactive components
 - 📜 **Special style props** — Support for `contentContainerClassName`, `columnWrapperClassName`, and more
 - 🎛️ **Custom attributes** — Configure which props to transform with exact matching or glob patterns
@@ -323,6 +324,132 @@ The Babel plugin will merge them:
   <Text>Content</Text>
 </View>
 ```
+
+### Runtime `tw` Template Tag
+
+For cases where you need fully dynamic styling (not possible at compile-time), you can use the runtime `tw` template tag function. This provides runtime parsing of Tailwind classes with memoization for performance.
+
+#### Installation
+
+The runtime module is already included in the package. Import it separately:
+
+```typescript
+import { tw, setConfig } from "@mgcrea/react-native-tailwind/runtime";
+```
+
+#### Basic Usage
+
+```tsx
+import { View, Text, Pressable } from "react-native";
+import { tw } from "@mgcrea/react-native-tailwind/runtime";
+
+export function RuntimeExample() {
+  const [isActive, setIsActive] = useState(false);
+
+  return (
+    <View style={tw`flex-1 p-4 bg-gray-100`}>
+      <Pressable
+        onPress={() => setIsActive(!isActive)}
+        style={tw`p-4 rounded-lg ${isActive ? "bg-green-500" : "bg-red-500"}`}
+      >
+        <Text style={tw`text-white font-bold text-center`}>{isActive ? "Active" : "Inactive"}</Text>
+      </Pressable>
+    </View>
+  );
+}
+```
+
+#### Configuration
+
+Configure custom colors and other theme options using `setConfig()`:
+
+```typescript
+import { setConfig } from '@mgcrea/react-native-tailwind/runtime';
+
+// Match your tailwind.config structure
+setConfig({
+  theme: {
+    extend: {
+      colors: {
+        primary: '#007AFF',
+        secondary: '#5856D6',
+        brand: {
+          light: '#FF6B6B',
+          dark: '#CC0000',
+        },
+      },
+    },
+  },
+});
+
+// Now you can use custom colors
+<View style={tw`bg-primary p-4`} />
+<Text style={tw`text-brand-light`}>Custom color</Text>
+```
+
+#### API Reference
+
+**`tw`tagged template**
+
+```typescript
+function tw(strings: TemplateStringsArray, ...values: unknown[]): StyleObject;
+```
+
+Parses Tailwind classes at runtime and returns a StyleSheet reference. Results are automatically memoized for performance.
+
+**`twStyle(className: string)`**
+
+```typescript
+function twStyle(className: string): StyleObject;
+```
+
+String version for cases where template literals aren't needed.
+
+**`setConfig(config: RuntimeConfig)`**
+
+```typescript
+function setConfig(config: RuntimeConfig): void;
+```
+
+Configure runtime theme settings (colors, etc.). Matches `tailwind.config.mjs` structure.
+
+**`clearCache()`**
+
+```typescript
+function clearCache(): void;
+```
+
+Clears the internal memoization cache. Useful for testing.
+
+**`getCacheStats()`**
+
+```typescript
+function getCacheStats(): { size: number; keys: string[] };
+```
+
+Returns cache statistics for debugging/monitoring.
+
+#### Performance Considerations
+
+- **Bundle Size**: The runtime module adds ~25KB minified (~15-20KB gzipped) to your bundle
+- **Caching**: All parsed styles are automatically memoized, so repeated className strings have minimal overhead
+- **When to Use**:
+  - ✅ Truly dynamic values that can't be determined at compile-time
+  - ✅ Prototyping and rapid development
+  - ❌ Static styles (use compile-time `className` instead for zero overhead)
+  - ❌ Performance-critical hot paths (compile-time is faster)
+
+#### Runtime vs Compile-Time
+
+| Feature        | Compile-Time (`className`)      | Runtime (`tw` tag)      |
+| -------------- | ------------------------------- | ----------------------- |
+| Bundle Size    | Only used styles (~4KB typical) | Full parser (~25KB)     |
+| Performance    | Zero overhead (pre-compiled)    | Fast (memoized parsing) |
+| Dynamic Values | Conditional only                | Fully dynamic           |
+| Custom Colors  | Via `tailwind.config.*`         | Via `setConfig()`       |
+| Type Safety    | Full TypeScript support         | Full TypeScript support |
+
+**Recommendation**: Use compile-time `className` by default for best performance. Use runtime `tw` only when you need fully dynamic styling that can't be expressed with conditional logic.
 
 ### State Modifiers
 
