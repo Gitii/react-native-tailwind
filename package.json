@@ -46,7 +46,7 @@
     "lint": "eslint src/",
     "prettify": "prettier --write src/",
     "check": "tsc --noEmit",
-    "spec": "vitest",
+    "spec": "vitest --run",
     "test": "npm run lint && npm run check && npm run spec",
     "prepare": "npm run build"
   },
