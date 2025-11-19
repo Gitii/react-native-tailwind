@@ -19,6 +19,11 @@
       "import": "./dist/babel/index.cjs",
       "require": "./dist/babel/index.cjs"
     },
+    "./runtime": {
+      "types": "./dist/runtime.d.ts",
+      "import": "./dist/runtime.js",
+      "require": "./dist/runtime.cjs"
+    },
     "./react-native": {
       "types": "./dist/react-native.d.ts"
     }
@@ -31,9 +36,10 @@
   ],
   "scripts": {
     "dev": "cd example; npm run dev",
-    "build": "npm run build:babel && npm run build:babel-plugin && npm run build:types",
+    "build": "npm run build:babel && npm run build:babel-plugin && npm run build:runtime && npm run build:types",
     "build:babel": "babel src --out-dir dist --extensions \".ts,.tsx,.js,.jsx\" --copy-files --ignore 'src/babel/**' --ignore '**/*.d.ts'",
     "build:babel-plugin": "node --experimental-strip-types scripts/bundle-babel-plugin.ts",
+    "build:runtime": "node --experimental-strip-types scripts/bundle-runtime.ts",
     "build:types": "tsc --project tsconfig.build.json --emitDeclarationOnly && node --experimental-strip-types scripts/post-build-types.ts",
     "install:ios": "cd example; npm run install:ios",
     "open:ios": "cd example; npm run open:ios",
