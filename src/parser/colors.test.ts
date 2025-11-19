@@ -1,6 +1,22 @@
 import { describe, expect, it } from "vitest";
 import { COLORS, parseColor } from "./colors";
 
+// Helper to apply opacity to hex color for testing
+function applyOpacity(hex: string, opacity: number): string {
+  if (hex === "transparent") return "transparent";
+  const cleanHex = hex.replace(/^#/, "");
+  const fullHex =
+    cleanHex.length === 3
+      ? cleanHex
+          .split("")
+          .map((char) => char + char)
+          .join("")
+      : cleanHex;
+  const alpha = Math.round((opacity / 100) * 255);
+  const alphaHex = alpha.toString(16).padStart(2, "0").toUpperCase();
+  return `#${fullHex.toUpperCase()}${alphaHex}`;
+}
+
 describe("COLORS", () => {
   it("should export complete color palette", () => {
     expect(COLORS).toMatchSnapshot();
@@ -9,10 +25,10 @@ describe("COLORS", () => {
 
 describe("parseColor - background colors", () => {
   it("should parse background colors with preset values", () => {
-    expect(parseColor("bg-blue-500")).toEqual({ backgroundColor: "#3B82F6" });
-    expect(parseColor("bg-red-500")).toEqual({ backgroundColor: "#EF4444" });
-    expect(parseColor("bg-green-500")).toEqual({ backgroundColor: "#22C55E" });
-    expect(parseColor("bg-gray-300")).toEqual({ backgroundColor: "#D1D5DB" });
+    expect(parseColor("bg-blue-500")).toEqual({ backgroundColor: COLORS["blue-500"] });
+    expect(parseColor("bg-red-500")).toEqual({ backgroundColor: COLORS["red-500"] });
+    expect(parseColor("bg-green-500")).toEqual({ backgroundColor: COLORS["green-500"] });
+    expect(parseColor("bg-gray-300")).toEqual({ backgroundColor: COLORS["gray-300"] });
   });
 
   it("should parse background colors with basic values", () => {
@@ -57,10 +73,10 @@ describe("parseColor - background colors", () => {
 
 describe("parseColor - text colors", () => {
   it("should parse text colors with preset values", () => {
-    expect(parseColor("text-blue-500")).toEqual({ color: "#3B82F6" });
-    expect(parseColor("text-red-500")).toEqual({ color: "#EF4444" });
-    expect(parseColor("text-green-500")).toEqual({ color: "#22C55E" });
-    expect(parseColor("text-gray-700")).toEqual({ color: "#374151" });
+    expect(parseColor("text-blue-500")).toEqual({ color: COLORS["blue-500"] });
+    expect(parseColor("text-red-500")).toEqual({ color: COLORS["red-500"] });
+    expect(parseColor("text-green-500")).toEqual({ color: COLORS["green-500"] });
+    expect(parseColor("text-gray-700")).toEqual({ color: COLORS["gray-700"] });
   });
 
   it("should parse text colors with basic values", () => {
@@ -88,10 +104,10 @@ describe("parseColor - text colors", () => {
 
 describe("parseColor - border colors", () => {
   it("should parse border colors with preset values", () => {
-    expect(parseColor("border-blue-500")).toEqual({ borderColor: "#3B82F6" });
-    expect(parseColor("border-red-500")).toEqual({ borderColor: "#EF4444" });
-    expect(parseColor("border-green-500")).toEqual({ borderColor: "#22C55E" });
-    expect(parseColor("border-gray-200")).toEqual({ borderColor: "#E5E7EB" });
+    expect(parseColor("border-blue-500")).toEqual({ borderColor: COLORS["blue-500"] });
+    expect(parseColor("border-red-500")).toEqual({ borderColor: COLORS["red-500"] });
+    expect(parseColor("border-green-500")).toEqual({ borderColor: COLORS["green-500"] });
+    expect(parseColor("border-gray-200")).toEqual({ borderColor: COLORS["gray-200"] });
   });
 
   it("should parse border colors with basic values", () => {
@@ -153,7 +169,7 @@ describe("parseColor - custom colors", () => {
   });
 
   it("should fallback to preset colors when custom color not found", () => {
-    expect(parseColor("bg-red-500", customColors)).toEqual({ backgroundColor: "#EF4444" });
+    expect(parseColor("bg-red-500", customColors)).toEqual({ backgroundColor: COLORS["red-500"] });
   });
 });
 
@@ -220,9 +236,9 @@ describe("parseColor - edge cases", () => {
 
 describe("parseColor - comprehensive coverage", () => {
   it("should parse all color types with same preset color", () => {
-    expect(parseColor("bg-blue-500")).toEqual({ backgroundColor: "#3B82F6" });
-    expect(parseColor("text-blue-500")).toEqual({ color: "#3B82F6" });
-    expect(parseColor("border-blue-500")).toEqual({ borderColor: "#3B82F6" });
+    expect(parseColor("bg-blue-500")).toEqual({ backgroundColor: COLORS["blue-500"] });
+    expect(parseColor("text-blue-500")).toEqual({ color: COLORS["blue-500"] });
+    expect(parseColor("border-blue-500")).toEqual({ borderColor: COLORS["blue-500"] });
   });
 
   it("should parse all color types with same arbitrary hex", () => {
@@ -261,23 +277,23 @@ describe("parseColor - comprehensive coverage", () => {
 
 describe("parseColor - opacity modifiers", () => {
   it("should parse background colors with opacity modifiers", () => {
-    expect(parseColor("bg-black/50")).toEqual({ backgroundColor: "#00000080" });
-    expect(parseColor("bg-white/50")).toEqual({ backgroundColor: "#FFFFFF80" });
-    expect(parseColor("bg-blue-500/80")).toEqual({ backgroundColor: "#3B82F6CC" });
-    expect(parseColor("bg-red-500/30")).toEqual({ backgroundColor: "#EF44444D" });
+    expect(parseColor("bg-black/50")).toEqual({ backgroundColor: applyOpacity(COLORS.black, 50) });
+    expect(parseColor("bg-white/50")).toEqual({ backgroundColor: applyOpacity(COLORS.white, 50) });
+    expect(parseColor("bg-blue-500/80")).toEqual({ backgroundColor: applyOpacity(COLORS["blue-500"], 80) });
+    expect(parseColor("bg-red-500/30")).toEqual({ backgroundColor: applyOpacity(COLORS["red-500"], 30) });
   });
 
   it("should parse text colors with opacity modifiers", () => {
-    expect(parseColor("text-black/80")).toEqual({ color: "#000000CC" });
-    expect(parseColor("text-white/90")).toEqual({ color: "#FFFFFFE6" });
-    expect(parseColor("text-gray-900/70")).toEqual({ color: "#111827B3" });
-    expect(parseColor("text-blue-500/50")).toEqual({ color: "#3B82F680" });
+    expect(parseColor("text-black/80")).toEqual({ color: applyOpacity(COLORS.black, 80) });
+    expect(parseColor("text-white/90")).toEqual({ color: applyOpacity(COLORS.white, 90) });
+    expect(parseColor("text-gray-900/70")).toEqual({ color: applyOpacity(COLORS["gray-900"], 70) });
+    expect(parseColor("text-blue-500/50")).toEqual({ color: applyOpacity(COLORS["blue-500"], 50) });
   });
 
   it("should parse border colors with opacity modifiers", () => {
-    expect(parseColor("border-black/25")).toEqual({ borderColor: "#00000040" });
-    expect(parseColor("border-red-500/60")).toEqual({ borderColor: "#EF444499" });
-    expect(parseColor("border-gray-200/40")).toEqual({ borderColor: "#E5E7EB66" });
+    expect(parseColor("border-black/25")).toEqual({ borderColor: applyOpacity(COLORS.black, 25) });
+    expect(parseColor("border-red-500/60")).toEqual({ borderColor: applyOpacity(COLORS["red-500"], 60) });
+    expect(parseColor("border-gray-200/40")).toEqual({ borderColor: applyOpacity(COLORS["gray-200"], 40) });
   });
 
   it("should handle opacity modifier with arbitrary hex colors", () => {
@@ -293,13 +309,13 @@ describe("parseColor - opacity modifiers", () => {
   });
 
   it("should handle opacity 0 (fully transparent)", () => {
-    expect(parseColor("bg-black/0")).toEqual({ backgroundColor: "#00000000" });
-    expect(parseColor("text-red-500/0")).toEqual({ color: "#EF444400" });
+    expect(parseColor("bg-black/0")).toEqual({ backgroundColor: applyOpacity(COLORS.black, 0) });
+    expect(parseColor("text-red-500/0")).toEqual({ color: applyOpacity(COLORS["red-500"], 0) });
   });
 
   it("should handle opacity 100 (fully opaque)", () => {
-    expect(parseColor("bg-black/100")).toEqual({ backgroundColor: "#000000FF" });
-    expect(parseColor("text-blue-500/100")).toEqual({ color: "#3B82F6FF" });
+    expect(parseColor("bg-black/100")).toEqual({ backgroundColor: applyOpacity(COLORS.black, 100) });
+    expect(parseColor("text-blue-500/100")).toEqual({ color: applyOpacity(COLORS["blue-500"], 100) });
   });
 
   it("should handle transparent color with opacity modifier", () => {
