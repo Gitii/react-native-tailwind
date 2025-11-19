@@ -1,4 +1,4 @@
-# React Native Tailwind
+<!-- # React Native Tailwind -->
 
 <!-- markdownlint-disable MD033 -->
 <p align="center">
@@ -6,15 +6,27 @@
     <img src="./.github/assets/logo.png" alt="logo" width="480" height="300"/>
   </a>
 </p>
-
-<div align="center">
-
-[![npm version](https://img.shields.io/npm/v/@mgcrea/react-native-tailwind.svg?style=for-the-badge)](https://www.npmjs.com/package/@mgcrea/react-native-tailwind)
-[![npm downloads](https://img.shields.io/npm/dt/@mgcrea/react-native-tailwind.svg?style=for-the-badge)](https://www.npmjs.com/package/@mgcrea/react-native-tailwind)
-[![license](https://img.shields.io/github/license/mgcrea/react-native-tailwind.svg?style=for-the-badge)](https://github.com/mgcrea/react-native-tailwind/blob/main/LICENSE)
-[![build status](https://img.shields.io/github/actions/workflow/status/mgcrea/react-native-tailwind/main.yaml?style=for-the-badge&branch=master)](https://github.com/mgcrea/react-native-tailwind/actions/workflows/main.yaml)
-
-</div>
+<p align="center">
+  <a href="https://www.npmjs.com/package/@mgcrea/react-native-tailwind">
+    <img src="https://img.shields.io/npm/v/@mgcrea/react-native-tailwind.svg?style=for-the-badge" alt="npm version" />
+  </a>
+  <a href="https://www.npmjs.com/package/@mgcrea/react-native-tailwind">
+    <img src="https://img.shields.io/npm/dt/@mgcrea/react-native-tailwind.svg?style=for-the-badge" alt="npm total downloads" />
+  </a>
+  <a href="https://www.npmjs.com/package/@mgcrea/react-native-tailwind">
+    <img src="https://img.shields.io/npm/dm/@mgcrea/react-native-tailwind.svg?style=for-the-badge" alt="npm monthly downloads" />
+  </a>
+  <a href="https://www.npmjs.com/package/@mgcrea/react-native-tailwind">
+    <img src="https://img.shields.io/npm/l/@mgcrea/react-native-tailwind.svg?style=for-the-badge" alt="npm license" />
+  </a>
+  <br />
+  <a href="https://github.com/mgcrea/react-native-tailwind/actions/workflows/main.yaml">
+    <img src="https://img.shields.io/github/actions/workflow/status/mgcrea/react-native-tailwind/main.yaml?style=for-the-badge&branch=main" alt="build status" />
+  </a>
+  <a href="https://depfu.com/github/mgcrea/react-native-tailwind">
+    <img src="https://img.shields.io/depfu/dependencies/github/mgcrea/react-native-tailwind?style=for-the-badge" alt="dependencies status" />
+  </a>
+</p>
 
 ## Overview
 
