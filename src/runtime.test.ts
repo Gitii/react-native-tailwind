@@ -10,17 +10,19 @@ describe("runtime", () => {
   describe("tw template tag", () => {
     it("should parse static classes", () => {
       const result = tw`m-4 p-2 bg-blue-500`;
-      expect(result).toEqual({
+      expect(result?.style).toEqual({
         margin: 16,
         padding: 8,
         backgroundColor: "#2b7fff",
       });
+      expect(result?.activeStyle).toBeUndefined();
+      expect(result?.disabledStyle).toBeUndefined();
     });
 
     it("should handle interpolated values", () => {
       const isActive = true;
       const result = tw`m-4 ${isActive && "bg-blue-500"}`;
-      expect(result).toEqual({
+      expect(result?.style).toEqual({
         margin: 16,
         backgroundColor: "#2b7fff",
       });
@@ -29,7 +31,7 @@ describe("runtime", () => {
     it("should handle conditional classes", () => {
       const isLarge = true;
       const result = tw`p-4 ${isLarge ? "text-xl" : "text-sm"}`;
-      expect(result).toEqual({
+      expect(result?.style).toEqual({
         padding: 16,
         fontSize: 20,
       });
@@ -37,7 +39,7 @@ describe("runtime", () => {
 
     it("should handle falsy values", () => {
       const result = tw`m-4 ${false} ${null} ${undefined} p-2`;
-      expect(result).toEqual({
+      expect(result?.style).toEqual({
         margin: 16,
         padding: 8,
       });
@@ -50,7 +52,7 @@ describe("runtime", () => {
 
     it("should normalize whitespace", () => {
       const result = tw`m-4    p-2   bg-blue-500`;
-      expect(result).toEqual({
+      expect(result?.style).toEqual({
         margin: 16,
         padding: 8,
         backgroundColor: "#2b7fff",
@@ -61,11 +63,12 @@ describe("runtime", () => {
   describe("twStyle function", () => {
     it("should parse className string", () => {
       const result = twStyle("m-4 p-2 bg-blue-500");
-      expect(result).toEqual({
+      expect(result?.style).toEqual({
         margin: 16,
         padding: 8,
         backgroundColor: "#2b7fff",
       });
+      expect(result?.activeStyle).toBeUndefined();
     });
 
     it("should return undefined for empty string", () => {
@@ -75,7 +78,7 @@ describe("runtime", () => {
 
     it("should normalize whitespace", () => {
       const result = twStyle("m-4    p-2   bg-blue-500");
-      expect(result).toEqual({
+      expect(result?.style).toEqual({
         margin: 16,
         padding: 8,
         backgroundColor: "#2b7fff",
@@ -175,7 +178,7 @@ describe("runtime", () => {
       });
 
       const result = tw`bg-primary`;
-      expect(result).toEqual({
+      expect(result?.style).toEqual({
         backgroundColor: "#007AFF",
       });
     });
@@ -214,6 +217,109 @@ describe("runtime", () => {
 
       clearCache();
       expect(getCacheStats().size).toBe(0);
+    });
+  });
+
+  describe("state modifiers", () => {
+    it("should return activeStyle when active: modifier is used", () => {
+      const result = tw`bg-blue-500 active:bg-blue-700`;
+      expect(result?.style).toEqual({
+        backgroundColor: "#2b7fff",
+      });
+      expect(result?.activeStyle).toEqual({
+        backgroundColor: "#1447e6",
+      });
+      expect(result?.disabledStyle).toBeUndefined();
+    });
+
+    it("should return disabledStyle when disabled: modifier is used", () => {
+      const result = tw`bg-blue-500 disabled:bg-gray-300`;
+      expect(result?.style).toEqual({
+        backgroundColor: "#2b7fff",
+      });
+      expect(result?.disabledStyle).toEqual({
+        backgroundColor: "#d1d5dc",
+      });
+      expect(result?.activeStyle).toBeUndefined();
+    });
+
+    it("should return both activeStyle and disabledStyle when both modifiers are used", () => {
+      const result = tw`bg-blue-500 active:bg-blue-700 disabled:bg-gray-300`;
+      expect(result?.style).toEqual({
+        backgroundColor: "#2b7fff",
+      });
+      expect(result?.activeStyle).toEqual({
+        backgroundColor: "#1447e6",
+      });
+      expect(result?.disabledStyle).toEqual({
+        backgroundColor: "#d1d5dc",
+      });
+    });
+
+    it("should merge base and active styles with multiple properties", () => {
+      const result = tw`p-4 m-2 bg-blue-500 active:bg-blue-700 active:p-6`;
+      expect(result?.style).toEqual({
+        padding: 16,
+        margin: 8,
+        backgroundColor: "#2b7fff",
+      });
+      expect(result?.activeStyle).toEqual({
+        backgroundColor: "#1447e6",
+        padding: 24,
+      });
+    });
+
+    it("should handle only modifier classes (no base)", () => {
+      const result = tw`active:bg-blue-700`;
+      expect(result?.style).toEqual({});
+      expect(result?.activeStyle).toEqual({
+        backgroundColor: "#1447e6",
+      });
+    });
+
+    it("should work with twStyle function", () => {
+      const result = twStyle("bg-blue-500 active:bg-blue-700");
+      expect(result?.style).toEqual({
+        backgroundColor: "#2b7fff",
+      });
+      expect(result?.activeStyle).toEqual({
+        backgroundColor: "#1447e6",
+      });
+    });
+
+    it("should provide raw hex values for animations", () => {
+      const result = tw`bg-blue-500 active:bg-blue-700`;
+      // Access raw backgroundColor value for use with reanimated
+      expect(result?.style.backgroundColor).toBe("#2b7fff");
+      expect(result?.activeStyle?.backgroundColor).toBe("#1447e6");
+    });
+
+    it("should return focusStyle when focus: modifier is used", () => {
+      const result = tw`bg-blue-500 focus:bg-blue-800`;
+      expect(result?.style).toEqual({
+        backgroundColor: "#2b7fff",
+      });
+      expect(result?.focusStyle).toEqual({
+        backgroundColor: "#193cb8",
+      });
+      expect(result?.activeStyle).toBeUndefined();
+      expect(result?.disabledStyle).toBeUndefined();
+    });
+
+    it("should return all three modifier styles when all are used", () => {
+      const result = tw`bg-blue-500 active:bg-blue-700 focus:bg-blue-800 disabled:bg-gray-300`;
+      expect(result?.style).toEqual({
+        backgroundColor: "#2b7fff",
+      });
+      expect(result?.activeStyle).toEqual({
+        backgroundColor: "#1447e6",
+      });
+      expect(result?.focusStyle).toEqual({
+        backgroundColor: "#193cb8",
+      });
+      expect(result?.disabledStyle).toEqual({
+        backgroundColor: "#d1d5dc",
+      });
     });
   });
 });

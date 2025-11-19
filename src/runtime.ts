@@ -1,6 +1,21 @@
-import { StyleSheet, type ImageStyle, type TextStyle, type ViewStyle } from "react-native";
+import type { ImageStyle, TextStyle, ViewStyle } from "react-native";
 import { parseClassName } from "./parser/index.js";
 import { flattenColors } from "./utils/flattenColors.js";
+
+/**
+ * Union type for all React Native style types
+ */
+export type NativeStyle = ViewStyle | TextStyle | ImageStyle;
+
+/**
+ * Return type for tw/twStyle functions with separate style properties for modifiers
+ */
+export type TwStyle = {
+  style: NativeStyle;
+  activeStyle?: NativeStyle;
+  focusStyle?: NativeStyle;
+  disabledStyle?: NativeStyle;
+};
 
 /**
  * Runtime configuration type matching Tailwind config structure
@@ -20,7 +35,54 @@ export type RuntimeConfig = {
 let globalCustomColors: Record<string, string> | undefined;
 
 // Simple memoization cache
-const styleCache = new Map<string, ViewStyle | TextStyle | ImageStyle>();
+const styleCache = new Map<string, TwStyle>();
+
+// Supported state modifiers for Pressable components
+const SUPPORTED_MODIFIERS = ["active", "focus", "disabled"] as const;
+
+/**
+ * Detect if a className contains any state modifiers (active:, focus:, disabled:)
+ */
+function hasModifiers(className: string): boolean {
+  return SUPPORTED_MODIFIERS.some((modifier) => className.includes(`${modifier}:`));
+}
+
+/**
+ * Split className into base classes and modifier-specific classes
+ * Returns: { base: string, modifiers: Map<modifier, classes[]> }
+ */
+function splitModifierClasses(className: string): {
+  base: string[];
+  modifiers: Map<string, string[]>;
+} {
+  const classes = className.split(/\s+/).filter(Boolean);
+  const base: string[] = [];
+  const modifiers = new Map<string, string[]>();
+
+  for (const cls of classes) {
+    let matched = false;
+    for (const modifier of SUPPORTED_MODIFIERS) {
+      const prefix = `${modifier}:`;
+      if (cls.startsWith(prefix)) {
+        const cleanClass = cls.slice(prefix.length);
+        if (!modifiers.has(modifier)) {
+          modifiers.set(modifier, []);
+        }
+        const modifierClasses = modifiers.get(modifier);
+        if (modifierClasses) {
+          modifierClasses.push(cleanClass);
+        }
+        matched = true;
+        break;
+      }
+    }
+    if (!matched) {
+      base.push(cls);
+    }
+  }
+
+  return { base, modifiers };
+}
 
 /**
  * Configure runtime Tailwind settings
@@ -86,55 +148,123 @@ export function getCacheStats(): { size: number; keys: string[] } {
 }
 
 /**
- * Parse className string and return a StyleSheet reference
+ * Parse className string and return a TwStyle object with separate modifier properties
  * Internal helper that handles caching and StyleSheet.create wrapping
  */
-function parseAndCache(className: string) {
+function parseAndCache(className: string): TwStyle {
   // Check cache first
-  if (styleCache.has(className)) {
-    return styleCache.get(className);
+  const cached = styleCache.get(className);
+  if (cached) {
+    return cached;
   }
 
-  // Parse the className
-  const styleObject = parseClassName(className, globalCustomColors);
+  // Check if className contains modifiers
+  if (!hasModifiers(className)) {
+    // No modifiers - simple case
+    const styleObject = parseClassName(className, globalCustomColors);
 
-  // Wrap in StyleSheet.create for React Native optimization
-  // Type cast needed because StyleObject has broader transform types than React Native's strict types
-  // @ts-expect-error - StyleObject transform types are broader than React Native's ViewStyle
-  const styleSheet = StyleSheet.create({ style: styleObject });
-  const styleRef = styleSheet.style;
+    const result: TwStyle = {
+      // @ts-expect-error - StyleObject transform types are broader than React Native's strict types
+      style: styleObject,
+    };
+
+    // Cache the result
+    styleCache.set(className, result);
+
+    return result;
+  }
+
+  // Has modifiers - split and parse separately
+  const { base, modifiers } = splitModifierClasses(className);
+
+  // Parse base styles
+  const baseClassName = base.join(" ");
+  const baseStyle = baseClassName ? parseClassName(baseClassName, globalCustomColors) : {};
+
+  // Build result object
+  const result: TwStyle = {
+    // @ts-expect-error - StyleObject transform types are broader than React Native's strict types
+    style: baseStyle,
+  };
+
+  // Parse and add modifier styles
+  if (modifiers.has("active")) {
+    const activeClasses = modifiers.get("active");
+    if (activeClasses && activeClasses.length > 0) {
+      const activeClassName = activeClasses.join(" ");
+      // @ts-expect-error - StyleObject transform types are broader than React Native's strict types
+      result.activeStyle = parseClassName(activeClassName, globalCustomColors);
+    }
+  }
+
+  if (modifiers.has("focus")) {
+    const focusClasses = modifiers.get("focus");
+    if (focusClasses && focusClasses.length > 0) {
+      const focusClassName = focusClasses.join(" ");
+      // @ts-expect-error - StyleObject transform types are broader than React Native's strict types
+      result.focusStyle = parseClassName(focusClassName, globalCustomColors);
+    }
+  }
+
+  if (modifiers.has("disabled")) {
+    const disabledClasses = modifiers.get("disabled");
+    if (disabledClasses && disabledClasses.length > 0) {
+      const disabledClassName = disabledClasses.join(" ");
+      // @ts-expect-error - StyleObject transform types are broader than React Native's strict types
+      result.disabledStyle = parseClassName(disabledClassName, globalCustomColors);
+    }
+  }
 
   // Cache the result
-  styleCache.set(className, styleRef);
+  styleCache.set(className, result);
 
-  return styleRef;
+  return result;
 }
 
 /**
  * Runtime Tailwind CSS template tag for React Native
  *
- * Parses Tailwind class names at runtime and returns a StyleSheet reference.
+ * Parses Tailwind class names at runtime and returns a TwStyle object with separate
+ * properties for base styles and modifier styles (active, focus, disabled).
  * Results are memoized for performance.
  *
  * @param strings - Template string parts
  * @param values - Interpolated values
- * @returns StyleSheet reference that can be used in style prop
+ * @returns TwStyle object with style, activeStyle, focusStyle, and disabledStyle properties
  *
  * @example
  * ```tsx
  * import { tw } from '@mgcrea/react-native-tailwind/runtime';
  *
- * // Static classes
- * <View style={tw`m-4 p-2 bg-blue-500`} />
+ * // Simple usage - access .style property
+ * <View style={tw`m-4 p-2 bg-blue-500`.style} />
  *
  * // With interpolations
- * <View style={tw`flex-1 ${isActive && 'bg-blue-500'} p-4`} />
+ * <View style={tw`flex-1 ${isActive && 'bg-blue-500'} p-4`.style} />
  *
- * // Conditional classes
- * <View style={tw`p-4 ${isLarge ? 'text-xl' : 'text-sm'}`} />
+ * // With state modifiers - access activeStyle/focusStyle for animations
+ * const styles = tw`bg-blue-500 active:bg-blue-700 focus:bg-blue-800`;
+ * <Pressable style={(state) => [
+ *   styles.style,
+ *   state.pressed && styles.activeStyle,
+ *   state.focused && styles.focusStyle
+ * ]}>
+ *   <Text>Press me</Text>
+ * </Pressable>
+ *
+ * // Use with reanimated for animations with raw values
+ * const styles = tw`bg-blue-500 active:bg-blue-700`;
+ * const animatedStyles = useAnimatedStyle(() => ({
+ *   ...styles.style,
+ *   backgroundColor: interpolateColor(
+ *     progress.value,
+ *     [0, 1],
+ *     [styles.style.backgroundColor, styles.activeStyle?.backgroundColor]
+ *   )
+ * }));
  * ```
  */
-export function tw(strings: TemplateStringsArray, ...values: unknown[]) {
+export function tw(strings: TemplateStringsArray, ...values: unknown[]): TwStyle {
   // Combine template strings and values into a single className string
   const className = strings.reduce((acc, str, i) => {
     const value = values[i];
@@ -149,7 +279,7 @@ export function tw(strings: TemplateStringsArray, ...values: unknown[]) {
 
   // Handle empty className
   if (!normalizedClassName) {
-    return undefined;
+    return { style: {} };
   }
 
   return parseAndCache(normalizedClassName);
@@ -158,17 +288,31 @@ export function tw(strings: TemplateStringsArray, ...values: unknown[]) {
 /**
  * String version of tw for cases where template literals aren't needed
  *
+ * Parses Tailwind class names at runtime and returns a TwStyle object with separate
+ * properties for base styles and modifier styles (active, focus, disabled).
+ *
  * @param className - Space-separated Tailwind class names
- * @returns StyleSheet reference that can be used in style prop
+ * @returns TwStyle object with style, activeStyle, focusStyle, and disabledStyle properties
  *
  * @example
  * ```tsx
  * import { twStyle } from '@mgcrea/react-native-tailwind/runtime';
  *
- * <View style={twStyle('m-4 p-2 bg-blue-500')} />
+ * // Simple usage - access .style property
+ * <View style={twStyle('m-4 p-2 bg-blue-500').style} />
+ *
+ * // With state modifiers
+ * const styles = twStyle('bg-blue-500 active:bg-blue-700 focus:bg-blue-800');
+ * <Pressable style={(state) => [
+ *   styles.style,
+ *   state.pressed && styles.activeStyle,
+ *   state.focused && styles.focusStyle
+ * ]}>
+ *   <Text>Press me</Text>
+ * </Pressable>
  * ```
  */
-export function twStyle(className: string) {
+export function twStyle(className: string): TwStyle | undefined {
   const normalizedClassName = className.trim().replace(/\s+/g, " ");
 
   if (!normalizedClassName) {

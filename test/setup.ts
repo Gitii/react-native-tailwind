@@ -3,7 +3,4 @@ import { mockPlatform } from "./mocks/react-native";
 
 vi.mock("react-native", () => ({
   Platform: mockPlatform,
-  StyleSheet: {
-    create: (styles: Record<string, unknown>) => styles,
-  },
 }));
