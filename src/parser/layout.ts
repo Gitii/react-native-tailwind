@@ -146,6 +146,31 @@ const OVERFLOW_MAP: Record<string, StyleObject> = {
   "overflow-scroll": { overflow: "scroll" },
 };
 
+// Opacity utilities
+const OPACITY_MAP: Record<string, StyleObject> = {
+  "opacity-0": { opacity: 0 },
+  "opacity-5": { opacity: 0.05 },
+  "opacity-10": { opacity: 0.1 },
+  "opacity-15": { opacity: 0.15 },
+  "opacity-20": { opacity: 0.2 },
+  "opacity-25": { opacity: 0.25 },
+  "opacity-30": { opacity: 0.3 },
+  "opacity-35": { opacity: 0.35 },
+  "opacity-40": { opacity: 0.4 },
+  "opacity-45": { opacity: 0.45 },
+  "opacity-50": { opacity: 0.5 },
+  "opacity-55": { opacity: 0.55 },
+  "opacity-60": { opacity: 0.6 },
+  "opacity-65": { opacity: 0.65 },
+  "opacity-70": { opacity: 0.7 },
+  "opacity-75": { opacity: 0.75 },
+  "opacity-80": { opacity: 0.8 },
+  "opacity-85": { opacity: 0.85 },
+  "opacity-90": { opacity: 0.9 },
+  "opacity-95": { opacity: 0.95 },
+  "opacity-100": { opacity: 1 },
+};
+
 // Z-index scale
 export const Z_INDEX_SCALE: Record<string, number> = {
   0: 0,
@@ -343,6 +368,7 @@ export function parseLayout(cls: string): StyleObject | null {
     ALIGN_CONTENT_MAP[cls] ??
     POSITION_MAP[cls] ??
     OVERFLOW_MAP[cls] ??
+    OPACITY_MAP[cls] ??
     null
   );
 }

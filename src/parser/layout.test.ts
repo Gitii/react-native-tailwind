@@ -199,6 +199,41 @@ describe("parseLayout - overflow utilities", () => {
   });
 });
 
+describe("parseLayout - opacity utilities", () => {
+  it("should parse opacity-0 (fully transparent)", () => {
+    expect(parseLayout("opacity-0")).toEqual({ opacity: 0 });
+  });
+
+  it("should parse opacity-50 (half transparent)", () => {
+    expect(parseLayout("opacity-50")).toEqual({ opacity: 0.5 });
+  });
+
+  it("should parse opacity-100 (fully opaque)", () => {
+    expect(parseLayout("opacity-100")).toEqual({ opacity: 1 });
+  });
+
+  it("should parse all opacity values", () => {
+    expect(parseLayout("opacity-5")).toEqual({ opacity: 0.05 });
+    expect(parseLayout("opacity-10")).toEqual({ opacity: 0.1 });
+    expect(parseLayout("opacity-15")).toEqual({ opacity: 0.15 });
+    expect(parseLayout("opacity-20")).toEqual({ opacity: 0.2 });
+    expect(parseLayout("opacity-25")).toEqual({ opacity: 0.25 });
+    expect(parseLayout("opacity-30")).toEqual({ opacity: 0.3 });
+    expect(parseLayout("opacity-35")).toEqual({ opacity: 0.35 });
+    expect(parseLayout("opacity-40")).toEqual({ opacity: 0.4 });
+    expect(parseLayout("opacity-45")).toEqual({ opacity: 0.45 });
+    expect(parseLayout("opacity-55")).toEqual({ opacity: 0.55 });
+    expect(parseLayout("opacity-60")).toEqual({ opacity: 0.6 });
+    expect(parseLayout("opacity-65")).toEqual({ opacity: 0.65 });
+    expect(parseLayout("opacity-70")).toEqual({ opacity: 0.7 });
+    expect(parseLayout("opacity-75")).toEqual({ opacity: 0.75 });
+    expect(parseLayout("opacity-80")).toEqual({ opacity: 0.8 });
+    expect(parseLayout("opacity-85")).toEqual({ opacity: 0.85 });
+    expect(parseLayout("opacity-90")).toEqual({ opacity: 0.9 });
+    expect(parseLayout("opacity-95")).toEqual({ opacity: 0.95 });
+  });
+});
+
 describe("parseLayout - edge cases", () => {
   it("should return null for invalid classes", () => {
     expect(parseLayout("invalid")).toBeNull();
