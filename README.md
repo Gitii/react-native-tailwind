@@ -1,5 +1,12 @@
 # React Native Tailwind
 
+<!-- markdownlint-disable MD033 -->
+<p align="center">
+  <a href="https://mgcrea.github.io/react-native-swiftui">
+    <img src="./.github/assets/logo.png" alt="logo" width="480" height="300"/>
+  </a>
+</p>
+
 <div align="center">
 
 [![npm version](https://img.shields.io/npm/v/@mgcrea/react-native-tailwind.svg?style=for-the-badge)](https://www.npmjs.com/package/@mgcrea/react-native-tailwind)
@@ -26,6 +33,10 @@ Compile-time Tailwind CSS for React Native with zero runtime overhead. Transform
 - 🔀 **Dynamic className** — Conditional styles with hybrid compile-time optimization
 - 🎯 **State modifiers** — `active:`, `hover:`, `focus:`, and `disabled:` modifiers for interactive components
 - 📜 **Special style props** — Support for `contentContainerClassName`, `columnWrapperClassName`, and more
+
+## Demo
+
+![demo](./.github/assets/demo.gif)
 
 ## Installation
 
