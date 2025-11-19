@@ -10,11 +10,11 @@ export type NativeStyle = ViewStyle | TextStyle | ImageStyle;
 /**
  * Return type for tw/twStyle functions with separate style properties for modifiers
  */
-export type TwStyle = {
-  style: NativeStyle;
-  activeStyle?: NativeStyle;
-  focusStyle?: NativeStyle;
-  disabledStyle?: NativeStyle;
+export type TwStyle<T extends NativeStyle = NativeStyle> = {
+  style: T;
+  activeStyle?: T;
+  focusStyle?: T;
+  disabledStyle?: T;
 };
 
 /**
@@ -264,7 +264,7 @@ function parseAndCache(className: string): TwStyle {
  * }));
  * ```
  */
-export function tw(strings: TemplateStringsArray, ...values: unknown[]): TwStyle {
+export function tw<T extends NativeStyle>(strings: TemplateStringsArray, ...values: unknown[]): TwStyle<T> {
   // Combine template strings and values into a single className string
   const className = strings.reduce((acc, str, i) => {
     const value = values[i];
