@@ -3,6 +3,10 @@
  * Compile-time Tailwind CSS for React Native
  */
 
+// Compile-time tw/twStyle functions (transformed by Babel plugin)
+export { tw, twStyle } from "./stubs/tw.js";
+export type { NativeStyle, TwStyle } from "./stubs/tw.js";
+
 // Main parser functions
 export { parseClass, parseClassName } from "./parser";
 export { flattenColors } from "./utils/flattenColors";
