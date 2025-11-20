@@ -6,6 +6,7 @@ const config = [
     rules: {
       "@typescript-eslint/prefer-regexp-exec": "off",
       "@typescript-eslint/no-unnecessary-condition": "off",
+      "@typescript-eslint/array-type": ["error", { default: "array-simple" }],
     },
   },
   {
