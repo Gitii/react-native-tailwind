@@ -22,6 +22,20 @@ function getStyleExpression(
 }
 
 /**
+ * Helper to find existing style attribute on parent JSX element
+ */
+export function findStyleAttribute(
+  path: NodePath,
+  targetStyleProp: string,
+  t: typeof BabelTypes,
+): BabelTypes.JSXAttribute | undefined {
+  const parent = path.parent as BabelTypes.JSXOpeningElement;
+  return parent.attributes.find(
+    (attr) => t.isJSXAttribute(attr) && t.isJSXIdentifier(attr.name) && attr.name.name === targetStyleProp,
+  ) as BabelTypes.JSXAttribute | undefined;
+}
+
+/**
  * Replace className with style attribute
  */
 export function replaceWithStyleAttribute(
