@@ -1,9 +1,3 @@
-/* eslint-disable @typescript-eslint/no-unsafe-argument */
-/* eslint-disable @typescript-eslint/no-unsafe-call */
-/* eslint-disable @typescript-eslint/no-unsafe-member-access */
-/* eslint-disable @typescript-eslint/no-explicit-any */
-/* eslint-disable @typescript-eslint/no-unsafe-assignment */
-
 /**
  * Babel plugin for react-native-tailwind
  * Transforms className props to style props at compile time
@@ -29,6 +23,7 @@ import { createStyleFunction, processStaticClassNameWithModifiers } from "./util
 import { addStyleSheetImport, injectStylesAtTop } from "./utils/styleInjection.js";
 import {
   addOrMergePlaceholderTextColorProp,
+  findStyleAttribute,
   mergeDynamicStyleAttribute,
   mergeStyleAttribute,
   mergeStyleFunctionAttribute,
@@ -128,13 +123,13 @@ export default function reactNativeTailwindBabelPlugin(
       },
 
       // Check if StyleSheet is already imported and track tw/twStyle imports
-      ImportDeclaration(path: NodePath, state: PluginState) {
-        const node = path.node as any;
+      ImportDeclaration(path, state) {
+        const node = path.node;
 
         // Track react-native StyleSheet import
         if (node.source.value === "react-native") {
           const specifiers = node.specifiers;
-          const hasStyleSheet = specifiers.some((spec: any) => {
+          const hasStyleSheet = specifiers.some((spec) => {
             if (t.isImportSpecifier(spec) && t.isIdentifier(spec.imported)) {
               return spec.imported.name === "StyleSheet";
             }
@@ -153,7 +148,7 @@ export default function reactNativeTailwindBabelPlugin(
         // Track tw/twStyle imports from main package (for compile-time transformation)
         if (node.source.value === "@mgcrea/react-native-tailwind") {
           const specifiers = node.specifiers;
-          specifiers.forEach((spec: any) => {
+          specifiers.forEach((spec) => {
             if (t.isImportSpecifier(spec) && t.isIdentifier(spec.imported)) {
               const importedName = spec.imported.name;
               if (importedName === "tw" || importedName === "twStyle") {
@@ -168,8 +163,8 @@ export default function reactNativeTailwindBabelPlugin(
       },
 
       // Handle tw`...` tagged template expressions
-      TaggedTemplateExpression(path: NodePath, state: PluginState) {
-        const node = path.node as any;
+      TaggedTemplateExpression(path, state) {
+        const node = path.node;
 
         // Check if the tag is a tracked tw import
         if (!t.isIdentifier(node.tag)) {
@@ -215,8 +210,8 @@ export default function reactNativeTailwindBabelPlugin(
       },
 
       // Handle twStyle('...') call expressions
-      CallExpression(path: NodePath, state: PluginState) {
-        const node = path.node as any;
+      CallExpression(path, state) {
+        const node = path.node;
 
         // Check if the callee is a tracked twStyle import
         if (!t.isIdentifier(node.callee)) {
@@ -264,8 +259,14 @@ export default function reactNativeTailwindBabelPlugin(
         processTwCall(className, path, state, parseClassName, generateStyleKey, splitModifierClasses, t);
       },
 
-      JSXAttribute(path: NodePath, state: PluginState) {
-        const node = path.node as any;
+      JSXAttribute(path, state) {
+        const node = path.node;
+
+        // Ensure we have a JSXIdentifier name (not JSXNamespacedName)
+        if (!t.isJSXIdentifier(node.name)) {
+          return;
+        }
+
         const attributeName = node.name.name;
 
         // Only process configured className-like attributes
@@ -300,7 +301,7 @@ export default function reactNativeTailwindBabelPlugin(
           // Handle placeholder modifiers first (they generate placeholderTextColor prop, not style)
           if (placeholderModifiers.length > 0) {
             // Check if this is a TextInput component (placeholder only works on TextInput)
-            const jsxOpeningElement = path.parent;
+            const jsxOpeningElement = path.parent as BabelTypes.JSXOpeningElement;
             const componentSupport = getComponentModifierSupport(jsxOpeningElement, t);
 
             if (componentSupport?.supportedModifiers.includes("placeholder")) {
@@ -309,8 +310,7 @@ export default function reactNativeTailwindBabelPlugin(
 
               if (placeholderColor) {
                 // Add or merge placeholderTextColor prop
-                const parent = path.parent as any;
-                addOrMergePlaceholderTextColorProp(parent, placeholderColor, t);
+                addOrMergePlaceholderTextColorProp(jsxOpeningElement, placeholderColor, t);
               }
             } else {
               // Warn if placeholder modifier used on non-TextInput element
@@ -370,10 +370,7 @@ export default function reactNativeTailwindBabelPlugin(
                   const modifierTypes = Array.from(new Set(supportedModifierClasses.map((m) => m.modifier)));
                   const styleFunctionExpression = createStyleFunction(styleExpression, modifierTypes, t);
 
-                  const parent = path.parent as any;
-                  const styleAttribute = parent.attributes.find(
-                    (attr: any) => t.isJSXAttribute(attr) && attr.name.name === targetStyleProp,
-                  );
+                  const styleAttribute = findStyleAttribute(path, targetStyleProp, t);
 
                   if (styleAttribute) {
                     mergeStyleFunctionAttribute(path, styleAttribute, styleFunctionExpression, t);
@@ -395,10 +392,7 @@ export default function reactNativeTailwindBabelPlugin(
                 const modifierTypes = usedModifiers;
                 const styleFunctionExpression = createStyleFunction(styleExpression, modifierTypes, t);
 
-                const parent = path.parent as any;
-                const styleAttribute = parent.attributes.find(
-                  (attr: any) => t.isJSXAttribute(attr) && attr.name.name === targetStyleProp,
-                );
+                const styleAttribute = findStyleAttribute(path, targetStyleProp, t);
 
                 if (styleAttribute) {
                   mergeStyleFunctionAttribute(path, styleAttribute, styleFunctionExpression, t);
@@ -433,10 +427,7 @@ export default function reactNativeTailwindBabelPlugin(
           state.styleRegistry.set(styleKey, styleObject);
 
           // Check if there's already a style prop on this element
-          const parent = path.parent as any;
-          const styleAttribute = parent.attributes.find(
-            (attr: any) => t.isJSXAttribute(attr) && attr.name.name === targetStyleProp,
-          );
+          const styleAttribute = findStyleAttribute(path, targetStyleProp, t);
 
           if (styleAttribute) {
             // Merge with existing style prop
@@ -465,10 +456,7 @@ export default function reactNativeTailwindBabelPlugin(
               state.hasClassNames = true;
 
               // Check if there's already a style prop on this element
-              const parent = path.parent as any;
-              const styleAttribute = parent.attributes.find(
-                (attr: any) => t.isJSXAttribute(attr) && attr.name.name === targetStyleProp,
-              );
+              const styleAttribute = findStyleAttribute(path, targetStyleProp, t);
 
               if (styleAttribute) {
                 // Merge with existing style prop
