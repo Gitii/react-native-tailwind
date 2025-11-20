@@ -1,6 +1,6 @@
 import { transformSync } from "@babel/core";
 import { describe, expect, it, vi } from "vitest";
-import babelPlugin, { type PluginOptions } from "./index.js";
+import babelPlugin, { type PluginOptions } from "./plugin.js";
 
 /**
  * Helper to transform code with the Babel plugin
