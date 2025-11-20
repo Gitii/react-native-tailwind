@@ -118,6 +118,17 @@ describe("parseTypography - line height", () => {
     expect(parseTypography("leading-loose")).toEqual({ lineHeight: 32 });
   });
 
+  it("should parse line height with numeric scale", () => {
+    expect(parseTypography("leading-3")).toEqual({ lineHeight: 12 });
+    expect(parseTypography("leading-4")).toEqual({ lineHeight: 16 });
+    expect(parseTypography("leading-5")).toEqual({ lineHeight: 20 });
+    expect(parseTypography("leading-6")).toEqual({ lineHeight: 24 });
+    expect(parseTypography("leading-7")).toEqual({ lineHeight: 28 });
+    expect(parseTypography("leading-8")).toEqual({ lineHeight: 32 });
+    expect(parseTypography("leading-9")).toEqual({ lineHeight: 36 });
+    expect(parseTypography("leading-10")).toEqual({ lineHeight: 40 });
+  });
+
   it("should parse line height with arbitrary pixel values", () => {
     expect(parseTypography("leading-[24px]")).toEqual({ lineHeight: 24 });
     expect(parseTypography("leading-[24]")).toEqual({ lineHeight: 24 });

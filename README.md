@@ -951,7 +951,8 @@ Apply transparency to any color using the `/` operator with a percentage value (
 - `text-left`, `text-center`, `text-right`, `text-justify` — Text alignment
 - `underline`, `line-through`, `no-underline` — Text decoration
 - `uppercase`, `lowercase`, `capitalize`, `normal-case` — Text transform
-- `leading-none`, `leading-tight`, `leading-snug`, `leading-normal`, `leading-relaxed`, `leading-loose` — Line height
+- `leading-{3-10}` — Line height numeric scale (12px to 40px)
+- `leading-none`, `leading-tight`, `leading-snug`, `leading-normal`, `leading-relaxed`, `leading-loose` — Line height named values
 
 ### Borders
 

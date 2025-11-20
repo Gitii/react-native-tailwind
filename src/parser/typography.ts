@@ -80,7 +80,19 @@ const TEXT_TRANSFORM_MAP: Record<string, StyleObject> = {
   "normal-case": { textTransform: "none" },
 };
 
-// Line height utilities
+// Line height scale (numeric)
+export const LINE_HEIGHT_SCALE: Record<string, number> = {
+  3: 12,
+  4: 16,
+  5: 20,
+  6: 24,
+  7: 28,
+  8: 32,
+  9: 36,
+  10: 40,
+};
+
+// Line height utilities (named)
 const LINE_HEIGHT_MAP: Record<string, StyleObject> = {
   "leading-none": { lineHeight: 16 },
   "leading-tight": { lineHeight: 20 },
@@ -169,7 +181,7 @@ export function parseTypography(cls: string): StyleObject | null {
     }
   }
 
-  // Line height: leading-normal, leading-[24px], etc.
+  // Line height: leading-normal, leading-6, leading-[24px], etc.
   if (cls.startsWith("leading-")) {
     const heightKey = cls.substring(8);
 
@@ -177,6 +189,12 @@ export function parseTypography(cls: string): StyleObject | null {
     const arbitraryValue = parseArbitraryLineHeight(heightKey);
     if (arbitraryValue !== null) {
       return { lineHeight: arbitraryValue };
+    }
+
+    // Try numeric scale (leading-3, leading-6, etc.)
+    const lineHeight = LINE_HEIGHT_SCALE[heightKey];
+    if (lineHeight !== undefined) {
+      return { lineHeight };
     }
   }
 
