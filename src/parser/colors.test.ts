@@ -168,6 +168,38 @@ describe("parseColor - custom colors", () => {
     expect(parseColor("bg-blue-500", overrideColors)).toEqual({ backgroundColor: "#FF0000" });
   });
 
+  it("should support custom colors with DEFAULT key from tailwind.config", () => {
+    // Simulates what flattenColors() produces from:
+    // { primary: { DEFAULT: "#1bacb5", 50: "#eefdfd", ... } }
+    const customColorsWithDefault = {
+      primary: "#1bacb5", // DEFAULT becomes the parent key
+      "primary-50": "#eefdfd",
+      "primary-100": "#d4f9f9",
+      "primary-500": "#1bacb5",
+      "primary-900": "#1e4f5b",
+    };
+
+    // Test that bg-primary uses the DEFAULT value
+    expect(parseColor("bg-primary", customColorsWithDefault)).toEqual({
+      backgroundColor: "#1bacb5",
+    });
+
+    // Test that bg-primary-50 uses the shade value
+    expect(parseColor("bg-primary-50", customColorsWithDefault)).toEqual({
+      backgroundColor: "#eefdfd",
+    });
+
+    // Test with text colors
+    expect(parseColor("text-primary", customColorsWithDefault)).toEqual({
+      color: "#1bacb5",
+    });
+
+    // Test with border colors
+    expect(parseColor("border-primary", customColorsWithDefault)).toEqual({
+      borderColor: "#1bacb5",
+    });
+  });
+
   it("should fallback to preset colors when custom color not found", () => {
     expect(parseColor("bg-red-500", customColors)).toEqual({ backgroundColor: COLORS["red-500"] });
   });
