@@ -80,37 +80,15 @@ export function mergeStyleAttribute(
     const wrapperFunction = t.arrowFunctionExpression([paramIdentifier], mergedArray);
 
     styleAttribute.value = t.jsxExpressionContainer(wrapperFunction);
-  } else if (t.isIdentifier(existingStyle) || t.isMemberExpression(existingStyle)) {
-    // Existing style is an identifier or member expression (e.g., styleFn, props.style)
-    // It might be a function, so generate runtime check: typeof x === 'function' ? wrapper : array
-    // (_state) => typeof existingStyle === 'function'
-    //   ? [styles._key, existingStyle(_state)]
-    //   : [styles._key, existingStyle]
-    const paramIdentifier = t.identifier("_state");
-    const classNameStyleRef = t.memberExpression(t.identifier(stylesIdentifier), t.identifier(styleKey));
-
-    // Check: typeof existingStyle === 'function'
-    const typeofCheck = t.binaryExpression(
-      "===",
-      t.unaryExpression("typeof", existingStyle, true),
-      t.stringLiteral("function"),
-    );
-
-    // Consequent: [styles._key, existingStyle(_state)]
-    const functionCall = t.callExpression(existingStyle, [paramIdentifier]);
-    const consequent = t.arrayExpression([classNameStyleRef, functionCall]);
-
-    // Alternate: [styles._key, existingStyle]
-    const alternate = t.arrayExpression([t.cloneNode(classNameStyleRef), t.cloneNode(existingStyle)]);
-
-    // Build conditional: typeof x === 'function' ? [...] : [...]
-    const conditionalExpression = t.conditionalExpression(typeofCheck, consequent, alternate);
-    const wrapperFunction = t.arrowFunctionExpression([paramIdentifier], conditionalExpression);
-
-    styleAttribute.value = t.jsxExpressionContainer(wrapperFunction);
   } else {
-    // Existing style is static - create array with className styles first, then existing styles
-    // This allows existing styles to override className styles
+    // For identifiers, member expressions, and other static values:
+    // Always use simple array merge - don't generate function wrappers
+    // React Native components (except Pressable) don't accept style functions,
+    // and even for Pressable, if the user passes a variable, we should trust
+    // their type and merge it as-is rather than wrapping in a runtime check.
+    //
+    // This fixes the issue where `style={myStyle}` would be incorrectly wrapped
+    // in a function when used with className.
     const styleArray = t.arrayExpression([
       t.memberExpression(t.identifier(stylesIdentifier), t.identifier(styleKey)),
       existingStyle,
@@ -163,36 +141,10 @@ export function mergeDynamicStyleAttribute(
     const wrapperFunction = t.arrowFunctionExpression([paramIdentifier], mergedArray);
 
     styleAttribute.value = t.jsxExpressionContainer(wrapperFunction);
-  } else if (t.isIdentifier(existingStyle) || t.isMemberExpression(existingStyle)) {
-    // Existing style is an identifier or member expression (e.g., styleFn, props.style)
-    // It might be a function, so generate runtime check
-    // (_state) => typeof existingStyle === 'function'
-    //   ? [dynamicStyles, existingStyle(_state)]
-    //   : [dynamicStyles, existingStyle]
-    const paramIdentifier = t.identifier("_state");
-
-    // Check: typeof existingStyle === 'function'
-    const typeofCheck = t.binaryExpression(
-      "===",
-      t.unaryExpression("typeof", existingStyle, true),
-      t.stringLiteral("function"),
-    );
-
-    // Consequent: [dynamicStyles, existingStyle(_state)]
-    const functionCall = t.callExpression(existingStyle, [paramIdentifier]);
-    const consequent = t.arrayExpression([result.expression, functionCall]);
-
-    // Alternate: [dynamicStyles, existingStyle]
-    const alternate = t.arrayExpression([t.cloneNode(result.expression), t.cloneNode(existingStyle)]);
-
-    // Build conditional
-    const conditionalExpression = t.conditionalExpression(typeofCheck, consequent, alternate);
-    const wrapperFunction = t.arrowFunctionExpression([paramIdentifier], conditionalExpression);
-
-    styleAttribute.value = t.jsxExpressionContainer(wrapperFunction);
   } else {
-    // Merge dynamic expression with existing styles
-    // If existing is already an array, append to it; otherwise create new array
+    // For identifiers, member expressions, and other values:
+    // Always use simple array merge - don't generate function wrappers
+    // This matches the behavior of mergeStyleAttribute for consistency
     let styleArray;
     if (t.isArrayExpression(existingStyle)) {
       // Prepend dynamic styles to existing array
