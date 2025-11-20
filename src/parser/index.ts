@@ -42,7 +42,7 @@ export function parseClass(cls: string, customColors?: Record<string, string>): 
   // Try each parser in order
   // Note: parseBorder must come before parseColor to avoid border-[3px] being parsed as a color
   // parseColor gets custom colors, others don't need it
-  const parsers: ((cls: string) => StyleObject | null)[] = [
+  const parsers: Array<(cls: string) => StyleObject | null> = [
     parseSpacing,
     parseBorder,
     (cls: string) => parseColor(cls, customColors),

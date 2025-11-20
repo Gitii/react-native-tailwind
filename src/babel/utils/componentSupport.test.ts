@@ -22,14 +22,15 @@ function createJSXElement(code: string): t.JSXOpeningElement {
   // Find the JSXOpeningElement in the AST
   let element: t.JSXOpeningElement | null = null;
 
-  const traverse = (node: any) => {
+  const traverse = (node: t.Node) => {
     if (t.isJSXOpeningElement(node)) {
       element = node;
       return;
     }
     for (const key in node) {
+      // @ts-expect-error - Dynamic key access
       if (node[key] && typeof node[key] === "object") {
-        traverse(node[key]);
+        traverse(node[key] as t.Node);
       }
     }
   };
@@ -212,9 +213,9 @@ describe("getComponentModifierSupport", () => {
         openingFragment: {},
         closingFragment: {},
         children: [],
-      } as any;
+      };
 
-      const result = getComponentModifierSupport(fragment, t);
+      const result = getComponentModifierSupport(fragment as t.Node, t);
       expect(result).toBeNull();
     });
   });
@@ -386,7 +387,7 @@ describe("Integration - Real-world scenarios", () => {
     expect(result).not.toBeNull();
 
     // Test each supported modifier maps correctly
-    const modifiers = result!.supportedModifiers as Array<"active" | "hover" | "focus" | "disabled">;
+    const modifiers = result?.supportedModifiers as Array<"active" | "hover" | "focus" | "disabled">;
     for (const modifier of modifiers) {
       const stateProp = getStatePropertyForModifier(modifier);
       expect(stateProp).toBeTruthy();
@@ -407,9 +408,9 @@ describe("Integration - Real-world scenarios", () => {
     expect(result).not.toBeNull();
 
     // Filter out placeholder as it doesn't have a state property
-    const stateModifiers = result!.supportedModifiers.filter(
-      (m) => m !== "placeholder",
-    ) as Array<"focus" | "disabled">;
+    const stateModifiers = result?.supportedModifiers.filter((m) => m !== "placeholder") as Array<
+      "focus" | "disabled"
+    >;
 
     for (const modifier of stateModifiers) {
       const stateProp = getStatePropertyForModifier(modifier);
