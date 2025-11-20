@@ -1,22 +1,7 @@
-import type { ImageStyle, TextStyle, ViewStyle } from "react-native";
 import { parseClassName } from "./parser/index.js";
+import type { NativeStyle, TwStyle } from "./types/runtime.js";
 import { flattenColors } from "./utils/flattenColors.js";
 import { hasModifiers, splitModifierClasses } from "./utils/modifiers.js";
-
-/**
- * Union type for all React Native style types
- */
-export type NativeStyle = ViewStyle | TextStyle | ImageStyle;
-
-/**
- * Return type for tw/twStyle functions with separate style properties for modifiers
- */
-export type TwStyle<T extends NativeStyle = NativeStyle> = {
-  style: T;
-  activeStyle?: T;
-  focusStyle?: T;
-  disabledStyle?: T;
-};
 
 /**
  * Runtime configuration type matching Tailwind config structure

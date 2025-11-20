@@ -2,10 +2,6 @@
  * Core type definitions
  */
 
-import type { ImageStyle, TextStyle, ViewStyle } from "react-native";
-
-export type RNStyle = ViewStyle | TextStyle | ImageStyle;
-
 // Transform types for React Native
 export type TransformStyle =
   | { scale?: number }

@@ -5,7 +5,6 @@
 
 // Compile-time tw/twStyle functions (transformed by Babel plugin)
 export { tw, twStyle } from "./stubs/tw";
-export type { NativeStyle, TwStyle } from "./stubs/tw";
 
 // Main parser functions
 export { parseClass, parseClassName } from "./parser";
@@ -13,7 +12,8 @@ export { flattenColors } from "./utils/flattenColors";
 export { generateStyleKey } from "./utils/styleKey";
 
 // Re-export types
-export type { RNStyle, StyleObject } from "./types/core";
+export type { StyleObject } from "./types/core";
+export type { NativeStyle, TwStyle } from "./types/runtime";
 
 // Re-export individual parsers for advanced usage
 export {
@@ -21,6 +21,8 @@ export {
   parseBorder,
   parseColor,
   parseLayout,
+  parsePlaceholderClass,
+  parsePlaceholderClasses,
   parseShadow,
   parseSizing,
   parseSpacing,

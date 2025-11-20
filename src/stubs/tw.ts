@@ -7,22 +7,7 @@
  * For runtime parsing, use: import { tw } from '@mgcrea/react-native-tailwind/runtime'
  */
 
-import type { ImageStyle, TextStyle, ViewStyle } from "react-native";
-
-/**
- * Union type for all React Native style types
- */
-export type NativeStyle = ViewStyle | TextStyle | ImageStyle;
-
-/**
- * Return type for tw/twStyle functions with separate style properties for modifiers
- */
-export type TwStyle<T extends NativeStyle = NativeStyle> = {
-  style: T;
-  activeStyle?: T;
-  focusStyle?: T;
-  disabledStyle?: T;
-};
+import type { NativeStyle, TwStyle } from "../types/runtime.js";
 
 /**
  * Compile-time Tailwind CSS template tag (transformed by Babel plugin)
