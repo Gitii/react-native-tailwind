@@ -30,6 +30,7 @@ function createJSXElement(code: string): t.JSXOpeningElement {
     for (const key in node) {
       // @ts-expect-error - Dynamic key access
       if (node[key] && typeof node[key] === "object") {
+        // @ts-expect-error - Dynamic key access
         traverse(node[key] as t.Node);
       }
     }
