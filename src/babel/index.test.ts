@@ -265,4 +265,70 @@ describe("Babel plugin - className transformation (existing behavior)", () => {
     expect(output).toContain("_bg_red_500");
     expect(output).toContain("_m_4_p_2");
   });
+
+  it("should merge className with function-based style prop", () => {
+    const input = `
+      import { TextInput } from 'react-native';
+      export function Component() {
+        return (
+          <TextInput
+            className="border border-gray-300 bg-gray-100"
+            style={({ focused, disabled }) => [
+              baseStyles,
+              focused && focusedStyles,
+            ]}
+          />
+        );
+      }
+    `;
+
+    const output = transform(input, undefined, true); // Enable JSX
+
+    // Should have StyleSheet with className styles
+    expect(output).toContain("StyleSheet.create");
+    // Style keys are sorted alphabetically: bg-gray-100 comes before border
+    expect(output).toContain("_bg_gray_100_border_border_gray_300");
+
+    // Should create a wrapper function that merges both
+    // The wrapper should call the original function and merge results
+    expect(output).toContain("_state");
+    expect(output).toContain("_twStyles._bg_gray_100_border_border_gray_300");
+
+    // Should not have className in output
+    expect(output).not.toContain("className");
+
+    // Should have a function that accepts state and returns an array
+    expect(output).toMatch(/_state\s*=>/);
+  });
+
+  it("should merge dynamic className with function-based style prop", () => {
+    const input = `
+      import { TextInput } from 'react-native';
+      export function Component({ isError }) {
+        return (
+          <TextInput
+            className={\`border \${isError ? 'border-red-500' : 'border-gray-300'}\`}
+            style={({ focused }) => [
+              baseStyles,
+              focused && focusedStyles,
+            ]}
+          />
+        );
+      }
+    `;
+
+    const output = transform(input, undefined, true); // Enable JSX
+
+    // Should have StyleSheet with both className styles
+    expect(output).toContain("StyleSheet.create");
+    expect(output).toContain("_border");
+    expect(output).toContain("_border_red_500");
+    expect(output).toContain("_border_gray_300");
+
+    // Should create a wrapper function that merges dynamic styles with function result
+    expect(output).toContain("_state");
+
+    // Should not have className in output
+    expect(output).not.toContain("className");
+  });
 });
