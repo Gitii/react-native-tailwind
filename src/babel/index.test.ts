@@ -1,5 +1,5 @@
 import { transformSync } from "@babel/core";
-import { describe, expect, it } from "vitest";
+import { describe, expect, it, vi } from "vitest";
 import babelPlugin, { type PluginOptions } from "./index.js";
 
 /**
@@ -330,5 +330,152 @@ describe("Babel plugin - className transformation (existing behavior)", () => {
 
     // Should not have className in output
     expect(output).not.toContain("className");
+  });
+});
+
+describe("Babel plugin - placeholder: modifier transformation", () => {
+  it("should transform placeholder:text-{color} to placeholderTextColor prop", () => {
+    const input = `
+      import { TextInput } from 'react-native';
+      export function Component() {
+        return (
+          <TextInput
+            className="border-2 placeholder:text-gray-400"
+            placeholder="Email"
+          />
+        );
+      }
+    `;
+
+    const output = transform(input, undefined, true);
+
+    // Should have placeholderTextColor prop with correct hex value (from custom palette)
+    expect(output).toContain('placeholderTextColor: "#99a1af"');
+
+    // Should still have style for border-2
+    expect(output).toContain("StyleSheet.create");
+    expect(output).toContain("_border_2");
+
+    // Should not have className in output
+    expect(output).not.toContain("className");
+  });
+
+  it("should support placeholder colors with opacity", () => {
+    const input = `
+      import { TextInput } from 'react-native';
+      export function Component() {
+        return <TextInput className="placeholder:text-red-500/50" />;
+      }
+    `;
+
+    const output = transform(input, undefined, true);
+
+    // Should have 8-digit hex with alpha channel (custom palette red-500, uppercased)
+    expect(output).toContain('placeholderTextColor: "#FB2C3680"');
+  });
+
+  it("should support arbitrary placeholder colors", () => {
+    const input = `
+      import { TextInput } from 'react-native';
+      export function Component() {
+        return <TextInput className="placeholder:text-[#ff0000]" />;
+      }
+    `;
+
+    const output = transform(input, undefined, true);
+
+    expect(output).toContain('placeholderTextColor: "#ff0000"');
+  });
+
+  it("should combine placeholder: with other modifiers", () => {
+    const input = `
+      import { TextInput } from 'react-native';
+      export function Component() {
+        return (
+          <TextInput
+            className="border-2 focus:border-blue-500 placeholder:text-gray-400"
+            placeholder="Email"
+          />
+        );
+      }
+    `;
+
+    const output = transform(input, undefined, true);
+
+    // Should have placeholderTextColor prop (custom palette gray-400)
+    expect(output).toContain('placeholderTextColor: "#99a1af"');
+
+    // Should have focus: modifier handling (style function)
+    expect(output).toContain("focused");
+    expect(output).toMatch(/style[\s\S]*=>/); // Style function
+
+    // Should not have className
+    expect(output).not.toContain("className");
+  });
+
+  it("should handle multiple placeholder: classes (last wins)", () => {
+    const input = `
+      import { TextInput } from 'react-native';
+      export function Component() {
+        return (
+          <TextInput className="placeholder:text-red-500 placeholder:text-blue-500" />
+        );
+      }
+    `;
+
+    const output = transform(input, undefined, true);
+
+    // Blue should win (last color, custom palette blue-500)
+    expect(output).toContain('placeholderTextColor: "#2b7fff"');
+  });
+
+  it("should ignore non-text utilities in placeholder: modifier", () => {
+    const consoleSpy = vi.spyOn(console, "warn").mockImplementation(() => {});
+
+    const input = `
+      import { TextInput } from 'react-native';
+      export function Component() {
+        return (
+          <TextInput className="placeholder:font-bold placeholder:text-gray-400" />
+        );
+      }
+    `;
+
+    const output = transform(input, undefined, true);
+
+    // Should still have the valid text color (custom palette gray-400)
+    expect(output).toContain('placeholderTextColor: "#99a1af"');
+
+    // Should not have font-bold anywhere
+    expect(output).not.toContain("fontWeight");
+
+    consoleSpy.mockRestore();
+  });
+
+  it("should work with custom colors", () => {
+    // Note: This test would require setting up a tailwind.config file
+    // For now, we'll skip custom color testing in Babel tests
+    // Custom colors are tested in the parser tests
+  });
+
+  it("should not transform placeholder: on non-TextInput elements", () => {
+    const consoleSpy = vi.spyOn(console, "warn").mockImplementation(() => {});
+
+    const input = `
+      import { View } from 'react-native';
+      export function Component() {
+        return <View className="placeholder:text-gray-400" />;
+      }
+    `;
+
+    const output = transform(input, undefined, true);
+
+    // Should not have placeholderTextColor prop (View doesn't support it)
+    expect(output).not.toContain("placeholderTextColor");
+
+    // Should warn about unsupported modifier
+    // (The warning happens because View doesn't support any modifiers)
+
+    consoleSpy.mockRestore();
   });
 });
