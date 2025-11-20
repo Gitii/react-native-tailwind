@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-empty-function */
 import { transformSync } from "@babel/core";
 import { describe, expect, it, vi } from "vitest";
 import babelPlugin, { type PluginOptions } from "./plugin.js";
@@ -452,7 +453,7 @@ describe("Babel plugin - placeholder: modifier transformation", () => {
     consoleSpy.mockRestore();
   });
 
-  it("should work with custom colors", () => {
+  it.skip("should work with custom colors", () => {
     // Note: This test would require setting up a tailwind.config file
     // For now, we'll skip custom color testing in Babel tests
     // Custom colors are tested in the parser tests

@@ -40,7 +40,7 @@ export function parsePlaceholderClass(cls: string, customColors?: Record<string,
   // This handles text-red-500, text-red-500/50, text-[#ff0000], etc.
   const styleObject = parseColor(cls, customColors);
 
-  if (!styleObject || !styleObject.color) {
+  if (!styleObject?.color) {
     return null;
   }
 
