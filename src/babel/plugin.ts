@@ -105,7 +105,7 @@ export default function reactNativeTailwindBabelPlugin(
           state.customColors = extractCustomColors(state.file.opts.filename ?? "");
         },
 
-        exit(path: NodePath, state: PluginState) {
+        exit(path, state) {
           // Remove tw/twStyle imports if they were used (and transformed)
           if (state.hasTwImport) {
             removeTwImports(path, t);

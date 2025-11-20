@@ -10,7 +10,7 @@ import type { ModifierType } from "../../parser/index.js";
  * Returns an object with component info and supported modifiers
  */
 export function getComponentModifierSupport(
-  jsxElement: any,
+  jsxElement: BabelTypes.Node,
   t: typeof BabelTypes,
 ): { component: string; supportedModifiers: ModifierType[] } | null {
   if (!t.isJSXOpeningElement(jsxElement)) {

@@ -8,6 +8,7 @@ import type { StyleObject } from "../../types/core.js";
 /**
  * Plugin state interface (subset needed for dynamic processing)
  */
+// eslint-disable-next-line @typescript-eslint/consistent-type-definitions
 export interface DynamicProcessingState {
   styleRegistry: Map<string, StyleObject>;
   customColors: Record<string, string>;
@@ -19,7 +20,7 @@ export interface DynamicProcessingState {
  */
 export type DynamicExpressionResult = {
   // The transformed expression to use in the style prop
-  expression: any;
+  expression: BabelTypes.Expression;
   // Static parts that can be parsed at compile time (if any)
   staticParts?: string[];
 };
@@ -29,12 +30,12 @@ export type DynamicExpressionResult = {
  * Extracts static strings and transforms the expression to use pre-compiled styles
  */
 export function processDynamicExpression(
-  expression: any,
+  expression: BabelTypes.Expression,
   state: DynamicProcessingState,
   parseClassName: (className: string, customColors: Record<string, string>) => StyleObject,
   generateStyleKey: (className: string) => string,
   t: typeof BabelTypes,
-): DynamicExpressionResult | null {
+) {
   // Handle template literals: `m-4 ${condition ? "p-4" : "p-2"}`
   if (t.isTemplateLiteral(expression)) {
     return processTemplateLiteral(expression, state, parseClassName, generateStyleKey, t);
@@ -58,13 +59,13 @@ export function processDynamicExpression(
  * Process template literal: `static ${dynamic} more-static`
  */
 function processTemplateLiteral(
-  node: any,
+  node: BabelTypes.TemplateLiteral,
   state: DynamicProcessingState,
   parseClassName: (className: string, customColors: Record<string, string>) => StyleObject,
   generateStyleKey: (className: string) => string,
   t: typeof BabelTypes,
-): DynamicExpressionResult | null {
-  const parts: any[] = [];
+) {
+  const parts: BabelTypes.MemberExpression[] = [];
   const staticParts: string[] = [];
 
   // Process quasis (static parts) and expressions (dynamic parts)
@@ -92,13 +93,19 @@ function processTemplateLiteral(
       const expr = node.expressions[i];
 
       // Recursively process nested dynamic expressions
-      const result = processDynamicExpression(expr, state, parseClassName, generateStyleKey, t);
+      const result = processDynamicExpression(
+        expr as BabelTypes.Expression,
+        state,
+        parseClassName,
+        generateStyleKey,
+        t,
+      );
       if (result) {
-        parts.push(result.expression);
+        parts.push(result.expression as BabelTypes.MemberExpression);
       } else {
         // For unsupported expressions, keep them as-is
         // This won't work at runtime but maintains the structure
-        parts.push(expr);
+        parts.push(expr as BabelTypes.MemberExpression);
       }
     }
   }
@@ -120,12 +127,12 @@ function processTemplateLiteral(
  * Process conditional expression: condition ? "class-a" : "class-b"
  */
 function processConditionalExpression(
-  node: any,
+  node: BabelTypes.ConditionalExpression,
   state: DynamicProcessingState,
   parseClassName: (className: string, customColors: Record<string, string>) => StyleObject,
   generateStyleKey: (className: string) => string,
   t: typeof BabelTypes,
-): DynamicExpressionResult | null {
+) {
   const consequent = processStringOrExpression(node.consequent, state, parseClassName, generateStyleKey, t);
   const alternate = processStringOrExpression(node.alternate, state, parseClassName, generateStyleKey, t);
 
@@ -136,8 +143,8 @@ function processConditionalExpression(
   // Build conditional: condition ? consequentStyle : alternateStyle
   const expression = t.conditionalExpression(
     node.test,
-    consequent ?? t.nullLiteral(),
-    alternate ?? t.nullLiteral(),
+    (consequent as BabelTypes.Expression) ?? t.nullLiteral(),
+    (alternate as BabelTypes.Expression) ?? t.nullLiteral(),
   );
 
   return { expression };
@@ -147,12 +154,12 @@ function processConditionalExpression(
  * Process logical expression: condition && "class-a"
  */
 function processLogicalExpression(
-  node: any,
+  node: BabelTypes.LogicalExpression,
   state: DynamicProcessingState,
   parseClassName: (className: string, customColors: Record<string, string>) => StyleObject,
   generateStyleKey: (className: string) => string,
   t: typeof BabelTypes,
-): DynamicExpressionResult | null {
+) {
   // Only handle AND (&&) expressions
   if (node.operator !== "&&") {
     return null;
@@ -165,7 +172,7 @@ function processLogicalExpression(
   }
 
   // Build logical: condition && style
-  const expression = t.logicalExpression("&&", node.left, right);
+  const expression = t.logicalExpression("&&", node.left, right as BabelTypes.Expression);
 
   return { expression };
 }
@@ -174,12 +181,12 @@ function processLogicalExpression(
  * Process a node that might be a string literal or another expression
  */
 function processStringOrExpression(
-  node: any,
+  node: BabelTypes.StringLiteral | BabelTypes.Expression,
   state: DynamicProcessingState,
   parseClassName: (className: string, customColors: Record<string, string>) => StyleObject,
   generateStyleKey: (className: string) => string,
   t: typeof BabelTypes,
-): any {
+) {
   // Handle string literals
   if (t.isStringLiteral(node)) {
     const className = node.value.trim();

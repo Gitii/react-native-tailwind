@@ -10,6 +10,7 @@ import type { StyleObject } from "../../types/core.js";
 /**
  * Plugin state interface (subset needed for tw processing)
  */
+// eslint-disable-next-line @typescript-eslint/consistent-type-definitions
 export interface TwProcessingState {
   styleRegistry: Map<string, StyleObject>;
   customColors: Record<string, string>;
@@ -32,7 +33,7 @@ export function processTwCall(
   const { baseClasses, modifierClasses } = splitModifierClasses(className);
 
   // Build TwStyle object properties
-  const objectProperties: any[] = [];
+  const objectProperties: BabelTypes.ObjectProperty[] = [];
 
   // Parse and add base styles
   if (baseClasses.length > 0) {
@@ -91,11 +92,11 @@ export function processTwCall(
  * Remove tw/twStyle imports from @mgcrea/react-native-tailwind
  * This is called after all tw calls have been transformed
  */
-export function removeTwImports(path: NodePath, t: typeof BabelTypes): void {
+export function removeTwImports(path: NodePath<BabelTypes.Program>, t: typeof BabelTypes): void {
   // Traverse the program to find and remove tw/twStyle imports
   path.traverse({
-    ImportDeclaration(importPath: NodePath) {
-      const node = importPath.node as any;
+    ImportDeclaration(importPath) {
+      const node = importPath.node;
 
       // Only process imports from main package
       if (node.source.value !== "@mgcrea/react-native-tailwind") {
@@ -103,7 +104,7 @@ export function removeTwImports(path: NodePath, t: typeof BabelTypes): void {
       }
 
       // Filter out tw/twStyle specifiers
-      const remainingSpecifiers = node.specifiers.filter((spec: any) => {
+      const remainingSpecifiers = node.specifiers.filter((spec) => {
         if (t.isImportSpecifier(spec) && t.isIdentifier(spec.imported)) {
           const importedName = spec.imported.name;
           return importedName !== "tw" && importedName !== "twStyle";

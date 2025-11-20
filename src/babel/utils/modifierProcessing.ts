@@ -10,6 +10,7 @@ import { getStatePropertyForModifier } from "./componentSupport.js";
 /**
  * Plugin state interface (subset needed for modifier processing)
  */
+// eslint-disable-next-line @typescript-eslint/consistent-type-definitions
 export interface ModifierProcessingState {
   styleRegistry: Map<string, StyleObject>;
   customColors: Record<string, string>;
@@ -27,11 +28,11 @@ export function processStaticClassNameWithModifiers(
   generateStyleKey: (className: string) => string,
   splitModifierClasses: (className: string) => { baseClasses: string[]; modifierClasses: ParsedModifier[] },
   t: typeof BabelTypes,
-): any {
+) {
   const { baseClasses, modifierClasses } = splitModifierClasses(className);
 
   // Parse and register base classes
-  let baseStyleExpression: any = null;
+  let baseStyleExpression: BabelTypes.Node | null = null;
   if (baseClasses.length > 0) {
     const baseClassName = baseClasses.join(" ");
     const baseStyleObject = parseClassName(baseClassName, state.customColors);
@@ -54,7 +55,7 @@ export function processStaticClassNameWithModifiers(
   }
 
   // Build style function: ({ pressed }) => [baseStyle, pressed && modifierStyle]
-  const styleArrayElements: any[] = [];
+  const styleArrayElements: BabelTypes.Expression[] = [];
 
   // Add base style first
   if (baseStyleExpression) {
@@ -92,12 +93,12 @@ export function processStaticClassNameWithModifiers(
  * Create a style function for Pressable: ({ pressed }) => styleExpression
  */
 export function createStyleFunction(
-  styleExpression: any,
+  styleExpression: BabelTypes.Expression,
   modifierTypes: ModifierType[],
   t: typeof BabelTypes,
-): any {
+) {
   // Build parameter object: { pressed, hovered, focused }
-  const paramProperties: any[] = [];
+  const paramProperties: BabelTypes.ObjectProperty[] = [];
   const usedStateProps = new Set<string>();
 
   for (const modifierType of modifierTypes) {

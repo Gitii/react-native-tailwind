@@ -9,14 +9,14 @@ import type { StyleObject } from "../../types/core.js";
 /**
  * Add StyleSheet import to the file
  */
-export function addStyleSheetImport(path: NodePath, t: typeof BabelTypes): void {
+export function addStyleSheetImport(path: NodePath<BabelTypes.Program>, t: typeof BabelTypes): void {
   const importDeclaration = t.importDeclaration(
     [t.importSpecifier(t.identifier("StyleSheet"), t.identifier("StyleSheet"))],
     t.stringLiteral("react-native"),
   );
 
   // Add import at the top of the file
-  (path as any).unshiftContainer("body", importDeclaration);
+  path.unshiftContainer("body", importDeclaration);
 }
 
 /**
@@ -24,13 +24,13 @@ export function addStyleSheetImport(path: NodePath, t: typeof BabelTypes): void 
  * This ensures the styles object is defined before any code that references it
  */
 export function injectStylesAtTop(
-  path: NodePath,
+  path: NodePath<BabelTypes.Program>,
   styleRegistry: Map<string, StyleObject>,
   stylesIdentifier: string,
   t: typeof BabelTypes,
 ): void {
   // Build style object properties
-  const styleProperties: any[] = [];
+  const styleProperties: BabelTypes.ObjectProperty[] = [];
 
   for (const [key, styleObject] of styleRegistry) {
     const properties = Object.entries(styleObject).map(([styleProp, styleValue]) => {
@@ -62,7 +62,7 @@ export function injectStylesAtTop(
   ]);
 
   // Find the index to insert after all imports
-  const body = (path as any).node.body;
+  const body = path.node.body;
   let insertIndex = 0;
 
   // Find the last import statement

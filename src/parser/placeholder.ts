@@ -60,7 +60,10 @@ export function parsePlaceholderClass(cls: string, customColors?: Record<string,
  * parsePlaceholderClasses("text-red-500 text-blue-500") // "#3b82f6" (blue wins)
  * parsePlaceholderClasses("text-red-500 font-bold") // "#ef4444" (ignores font-bold)
  */
-export function parsePlaceholderClasses(classes: string, customColors?: Record<string, string>): string | null {
+export function parsePlaceholderClasses(
+  classes: string,
+  customColors?: Record<string, string>,
+): string | null {
   const classList = classes.trim().split(/\s+/).filter(Boolean);
   let finalColor: string | null = null;
 
