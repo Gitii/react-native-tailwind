@@ -7,6 +7,21 @@ import type * as BabelTypes from "@babel/types";
 import type { DynamicExpressionResult } from "./dynamicProcessing.js";
 
 /**
+ * Helper to extract expression from JSX attribute value
+ * Returns null if not a valid expression container or if empty
+ */
+function getStyleExpression(
+  styleAttribute: BabelTypes.JSXAttribute,
+  t: typeof BabelTypes,
+): BabelTypes.Expression | null {
+  const value = styleAttribute.value;
+  if (!t.isJSXExpressionContainer(value)) return null;
+  const expression = value.expression;
+  if (t.isJSXEmptyExpression(expression)) return null;
+  return expression;
+}
+
+/**
  * Replace className with style attribute
  */
 export function replaceWithStyleAttribute(
@@ -29,12 +44,13 @@ export function replaceWithStyleAttribute(
  */
 export function mergeStyleAttribute(
   classNamePath: NodePath,
-  styleAttribute: any,
+  styleAttribute: BabelTypes.JSXAttribute,
   styleKey: string,
   stylesIdentifier: string,
   t: typeof BabelTypes,
 ): void {
-  const existingStyle = styleAttribute.value.expression;
+  const existingStyle = getStyleExpression(styleAttribute, t);
+  if (!existingStyle) return;
 
   // Check if existing style is definitely a function expression (inline)
   if (t.isArrowFunctionExpression(existingStyle) || t.isFunctionExpression(existingStyle)) {
@@ -115,11 +131,12 @@ export function replaceDynamicWithStyleAttribute(
  */
 export function mergeDynamicStyleAttribute(
   classNamePath: NodePath,
-  styleAttribute: any,
+  styleAttribute: BabelTypes.JSXAttribute,
   result: DynamicExpressionResult,
   t: typeof BabelTypes,
 ): void {
-  const existingStyle = styleAttribute.value.expression;
+  const existingStyle = getStyleExpression(styleAttribute, t);
+  if (!existingStyle) return;
 
   // Check if existing style is definitely a function expression (inline)
   if (t.isArrowFunctionExpression(existingStyle) || t.isFunctionExpression(existingStyle)) {
@@ -183,7 +200,7 @@ export function mergeDynamicStyleAttribute(
  */
 export function replaceWithStyleFunctionAttribute(
   classNamePath: NodePath,
-  styleFunctionExpression: any,
+  styleFunctionExpression: BabelTypes.Expression,
   targetStyleProp: string,
   t: typeof BabelTypes,
 ): void {
@@ -200,11 +217,12 @@ export function replaceWithStyleFunctionAttribute(
  */
 export function mergeStyleFunctionAttribute(
   classNamePath: NodePath,
-  styleAttribute: any,
-  styleFunctionExpression: any,
+  styleAttribute: BabelTypes.JSXAttribute,
+  styleFunctionExpression: BabelTypes.Expression,
   t: typeof BabelTypes,
 ): void {
-  const existingStyle = styleAttribute.value.expression;
+  const existingStyle = getStyleExpression(styleAttribute, t);
+  if (!existingStyle) return;
 
   // Create a wrapper function that merges both styles
   // ({ pressed }) => [styleFunctionResult, existingStyle]
@@ -246,13 +264,13 @@ export function mergeStyleFunctionAttribute(
  * Handles merging with existing placeholderTextColor if present
  */
 export function addOrMergePlaceholderTextColorProp(
-  jsxOpeningElement: any,
+  jsxOpeningElement: BabelTypes.JSXOpeningElement,
   color: string,
   t: typeof BabelTypes,
 ): void {
   // Check if element already has placeholderTextColor prop
   const existingProp = jsxOpeningElement.attributes.find(
-    (attr: any) => t.isJSXAttribute(attr) && attr.name.name === "placeholderTextColor",
+    (attr) => t.isJSXAttribute(attr) && attr.name.name === "placeholderTextColor",
   );
 
   if (existingProp) {
@@ -265,7 +283,7 @@ export function addOrMergePlaceholderTextColorProp(
       );
     }
     // Override the existing prop value
-    existingProp.value = t.stringLiteral(color);
+    (existingProp as BabelTypes.JSXAttribute).value = t.stringLiteral(color);
   } else {
     // Add new placeholderTextColor prop
     const newProp = t.jsxAttribute(t.jsxIdentifier("placeholderTextColor"), t.stringLiteral(color));
