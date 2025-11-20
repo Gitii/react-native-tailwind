@@ -8,6 +8,7 @@ type NestedColors = {
 /**
  * Flatten nested color objects into flat key-value map
  * Example: { brand: { light: '#fff', dark: '#000' } } => { 'brand-light': '#fff', 'brand-dark': '#000' }
+ * Special handling for DEFAULT: { primary: { DEFAULT: '#000', 500: '#333' } } => { 'primary': '#000', 'primary-500': '#333' }
  *
  * @param colors - Nested color object where values can be strings or objects
  * @param prefix - Optional prefix for nested keys (used for recursion)
@@ -17,7 +18,8 @@ export function flattenColors(colors: NestedColors, prefix = ""): Record<string,
   const result: Record<string, string> = {};
 
   for (const [key, value] of Object.entries(colors)) {
-    const newKey = prefix ? `${prefix}-${key}` : key;
+    // Special handling for DEFAULT key - use parent key without suffix
+    const newKey = key === "DEFAULT" && prefix ? prefix : prefix ? `${prefix}-${key}` : key;
 
     if (typeof value === "string") {
       result[newKey] = value;
