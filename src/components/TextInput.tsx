@@ -22,21 +22,24 @@ import {
   TextInput as RNTextInput,
   type TextInputProps as RNTextInputProps,
 } from "react-native";
+import { type Simplify } from "../types/util";
 
-export type TextInputProps = Omit<RNTextInputProps, "style"> & {
-  /**
-   * Style can be a static style object/array or a function that receives focus and disabled state
-   */
-  style?:
-    | RNTextInputProps["style"]
-    | ((state: { focused: boolean; disabled: boolean }) => RNTextInputProps["style"]);
-  className?: string; // compile-time only
-  /**
-   * Convenience prop for disabled state (overrides editable if provided)
-   * When true, sets editable to false
-   */
-  disabled?: boolean;
-};
+export type TextInputProps = Simplify<
+  Omit<RNTextInputProps, "style"> & {
+    /**
+     * Style can be a static style object/array or a function that receives focus and disabled state
+     */
+    style?:
+      | RNTextInputProps["style"]
+      | ((state: { focused: boolean; disabled: boolean }) => RNTextInputProps["style"]);
+    className?: string; // compile-time only
+    /**
+     * Convenience prop for disabled state (overrides editable if provided)
+     * When true, sets editable to false
+     */
+    disabled?: boolean;
+  }
+>;
 
 /**
  * Enhanced TextInput with focus and disabled state support

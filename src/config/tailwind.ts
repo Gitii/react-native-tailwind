@@ -12,7 +12,7 @@ export type TailwindPalette = {
   "950": string;
 };
 
-export const TAILWIND_PALETTES = {
+export const TAILWIND_COLORS = {
   red: {
     "50": "#fef2f2",
     "100": "#ffe2e2",
@@ -301,4 +301,4 @@ export const TAILWIND_PALETTES = {
   },
 } satisfies Record<string, TailwindPalette>;
 
-export type TailwindColor = keyof typeof TAILWIND_PALETTES;
+export type TailwindColor = keyof typeof TAILWIND_COLORS;

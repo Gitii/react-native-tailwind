@@ -4,8 +4,8 @@
  */
 
 // Compile-time tw/twStyle functions (transformed by Babel plugin)
-export { tw, twStyle } from "./stubs/tw.js";
-export type { NativeStyle, TwStyle } from "./stubs/tw.js";
+export { tw, twStyle } from "./stubs/tw";
+export type { NativeStyle, TwStyle } from "./stubs/tw";
 
 // Main parser functions
 export { parseClass, parseClassName } from "./parser";
@@ -13,7 +13,7 @@ export { flattenColors } from "./utils/flattenColors";
 export { generateStyleKey } from "./utils/styleKey";
 
 // Re-export types
-export type { RNStyle, StyleObject } from "./types";
+export type { RNStyle, StyleObject } from "./types/core";
 
 // Re-export individual parsers for advanced usage
 export {
@@ -41,3 +41,4 @@ export { Pressable } from "./components/Pressable";
 export type { PressableProps } from "./components/Pressable";
 export { TextInput } from "./components/TextInput";
 export type { TextInputProps } from "./components/TextInput";
+export { TAILWIND_COLORS } from "./config/tailwind";

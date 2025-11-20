@@ -2,13 +2,13 @@
  * Color utilities (background, text, border colors)
  */
 
-import { TAILWIND_PALETTES } from "../config/palettes";
+import { TAILWIND_COLORS } from "../config/tailwind";
 import type { StyleObject } from "../types";
 import { flattenColors } from "../utils/flattenColors";
 
 // Tailwind color palette (flattened from config)
 export const COLORS: Record<string, string> = {
-  ...flattenColors(TAILWIND_PALETTES),
+  ...flattenColors(TAILWIND_COLORS),
   // Add basic colors
   white: "#FFFFFF",
   black: "#000000",
