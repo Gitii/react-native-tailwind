@@ -13,7 +13,11 @@ import type { NodePath, PluginObj, PluginPass } from "@babel/core";
 import * as BabelTypes from "@babel/types";
 import { StyleObject } from "src/types/core.js";
 import type { ModifierType, ParsedModifier } from "../parser/index.js";
-import { parseClassName as parseClassNameFn, splitModifierClasses } from "../parser/index.js";
+import {
+  parseClassName as parseClassNameFn,
+  parsePlaceholderClasses,
+  splitModifierClasses,
+} from "../parser/index.js";
 import { generateStyleKey as generateStyleKeyFn } from "../utils/styleKey.js";
 import { extractCustomColors } from "./config-loader.js";
 
@@ -156,7 +160,7 @@ function getComponentModifierSupport(
     case "Pressable":
       return { component: "Pressable", supportedModifiers: ["active", "hover", "focus", "disabled"] };
     case "TextInput":
-      return { component: "TextInput", supportedModifiers: ["focus", "disabled"] };
+      return { component: "TextInput", supportedModifiers: ["focus", "disabled", "placeholder"] };
     default:
       return null;
   }
@@ -738,18 +742,47 @@ export default function reactNativeTailwindBabelPlugin(
 
           state.hasClassNames = true;
 
-          // Check if className contains modifiers (active:, hover:, focus:)
+          // Check if className contains modifiers (active:, hover:, focus:, placeholder:)
           const { baseClasses, modifierClasses } = splitModifierClasses(className);
 
-          // If there are modifiers, check if this component supports them
-          if (modifierClasses.length > 0) {
+          // Separate placeholder modifiers from state modifiers
+          const placeholderModifiers = modifierClasses.filter((m) => m.modifier === "placeholder");
+          const stateModifiers = modifierClasses.filter((m) => m.modifier !== "placeholder");
+
+          // Handle placeholder modifiers first (they generate placeholderTextColor prop, not style)
+          if (placeholderModifiers.length > 0) {
+            // Check if this is a TextInput component (placeholder only works on TextInput)
+            const jsxOpeningElement = path.parent;
+            const componentSupport = getComponentModifierSupport(jsxOpeningElement, t);
+
+            if (componentSupport && componentSupport.supportedModifiers.includes("placeholder")) {
+              const placeholderClasses = placeholderModifiers.map((m) => m.baseClass).join(" ");
+              const placeholderColor = parsePlaceholderClasses(placeholderClasses, state.customColors);
+
+              if (placeholderColor) {
+                // Add or merge placeholderTextColor prop
+                const parent = path.parent as any;
+                addOrMergePlaceholderTextColorProp(parent, placeholderColor, t);
+              }
+            } else {
+              // Warn if placeholder modifier used on non-TextInput element
+              if (process.env.NODE_ENV !== "production") {
+                console.warn(
+                  `[react-native-tailwind] placeholder: modifier can only be used on TextInput component at ${state.file.opts.filename ?? "unknown"}`,
+                );
+              }
+            }
+          }
+
+          // If there are state modifiers, check if this component supports them
+          if (stateModifiers.length > 0) {
             // Get the JSX opening element (the direct parent of the attribute)
             const jsxOpeningElement = path.parent;
             const componentSupport = getComponentModifierSupport(jsxOpeningElement, t);
 
             if (componentSupport) {
               // Get modifier types used in className
-              const usedModifiers = Array.from(new Set(modifierClasses.map((m) => m.modifier)));
+              const usedModifiers = Array.from(new Set(stateModifiers.map((m) => m.modifier)));
 
               // Check if all modifiers are supported by this component
               const unsupportedModifiers = usedModifiers.filter(
@@ -765,7 +798,7 @@ export default function reactNativeTailwindBabelPlugin(
                   );
                 }
                 // Filter out unsupported modifiers
-                const supportedModifierClasses = modifierClasses.filter((m) =>
+                const supportedModifierClasses = stateModifiers.filter((m) =>
                   componentSupport.supportedModifiers.includes(m.modifier),
                 );
 
@@ -819,7 +852,7 @@ export default function reactNativeTailwindBabelPlugin(
             } else {
               // Component doesn't support any modifiers
               if (process.env.NODE_ENV !== "production") {
-                const usedModifiers = Array.from(new Set(modifierClasses.map((m) => m.modifier)));
+                const usedModifiers = Array.from(new Set(stateModifiers.map((m) => m.modifier)));
                 console.warn(
                   `[react-native-tailwind] Modifiers (${usedModifiers.map((m) => `${m}:`).join(", ")}) can only be used on compatible components (Pressable, TextInput). Found on unsupported element at ${state.file.opts.filename ?? "unknown"}`,
                 );
@@ -829,8 +862,16 @@ export default function reactNativeTailwindBabelPlugin(
           }
 
           // Normal processing without modifiers
-          const styleObject = parseClassName(className, state.customColors);
-          const styleKey = generateStyleKey(className);
+          // Use baseClasses only (placeholder modifiers already handled separately)
+          const classNameForStyle = baseClasses.join(" ");
+          if (!classNameForStyle) {
+            // No base classes, only had placeholder modifiers - just remove className
+            path.remove();
+            return;
+          }
+
+          const styleObject = parseClassName(classNameForStyle, state.customColors);
+          const styleKey = generateStyleKey(classNameForStyle);
           state.styleRegistry.set(styleKey, styleObject);
 
           // Check if there's already a style prop on this element
@@ -1244,6 +1285,38 @@ function injectStylesAtTop(
 
   // Insert StyleSheet.create after imports
   body.splice(insertIndex, 0, styleSheet);
+}
+
+/**
+ * Add or merge placeholderTextColor prop on a JSX element
+ * Handles merging with existing placeholderTextColor if present
+ */
+function addOrMergePlaceholderTextColorProp(
+  jsxOpeningElement: any,
+  color: string,
+  t: typeof BabelTypes,
+): void {
+  // Check if element already has placeholderTextColor prop
+  const existingProp = jsxOpeningElement.attributes.find(
+    (attr: any) => t.isJSXAttribute(attr) && attr.name.name === "placeholderTextColor",
+  );
+
+  if (existingProp) {
+    // If explicit prop exists, don't override it (explicit props take precedence)
+    // This matches the behavior of style prop precedence
+    if (process.env.NODE_ENV !== "production") {
+      console.warn(
+        `[react-native-tailwind] placeholderTextColor prop will be overridden by className placeholder: modifier. ` +
+          `Remove the explicit prop or the placeholder: modifier to avoid confusion.`,
+      );
+    }
+    // Override the existing prop value
+    existingProp.value = t.stringLiteral(color);
+  } else {
+    // Add new placeholderTextColor prop
+    const newProp = t.jsxAttribute(t.jsxIdentifier("placeholderTextColor"), t.stringLiteral(color));
+    jsxOpeningElement.attributes.push(newProp);
+  }
 }
 
 // Helper functions that use the imported parser

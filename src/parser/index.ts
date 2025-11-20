@@ -74,6 +74,7 @@ export { parseAspectRatio } from "./aspectRatio";
 export { parseBorder } from "./borders";
 export { parseColor } from "./colors";
 export { parseLayout } from "./layout";
+export { parsePlaceholderClass, parsePlaceholderClasses } from "./placeholder";
 export { parseShadow } from "./shadows";
 export { parseSizing } from "./sizing";
 export { parseSpacing } from "./spacing";
