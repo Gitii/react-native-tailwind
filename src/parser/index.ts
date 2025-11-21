@@ -82,5 +82,11 @@ export { parseTransform } from "./transforms";
 export { parseTypography } from "./typography";
 
 // Re-export modifier utilities
-export { hasModifier, parseModifier, splitModifierClasses } from "./modifiers";
-export type { ModifierType, ParsedModifier } from "./modifiers";
+export {
+  hasModifier,
+  isPlatformModifier,
+  isStateModifier,
+  parseModifier,
+  splitModifierClasses,
+} from "./modifiers";
+export type { ModifierType, ParsedModifier, PlatformModifierType, StateModifierType } from "./modifiers";

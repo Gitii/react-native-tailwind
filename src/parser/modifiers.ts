@@ -1,8 +1,12 @@
 /**
- * Modifier parsing utilities for state-based class names (active:, hover:, focus:, placeholder:)
+ * Modifier parsing utilities for state-based and platform-specific class names
+ * - State modifiers: active:, hover:, focus:, disabled:, placeholder:
+ * - Platform modifiers: ios:, android:, web:
  */
 
-export type ModifierType = "active" | "hover" | "focus" | "disabled" | "placeholder";
+export type StateModifierType = "active" | "hover" | "focus" | "disabled" | "placeholder";
+export type PlatformModifierType = "ios" | "android" | "web";
+export type ModifierType = StateModifierType | PlatformModifierType;
 
 export type ParsedModifier = {
   modifier: ModifierType;
@@ -10,15 +14,25 @@ export type ParsedModifier = {
 };
 
 /**
- * Supported modifiers that map to component states or pseudo-elements
+ * Supported state modifiers that map to component states or pseudo-elements
  */
-const SUPPORTED_MODIFIERS: readonly ModifierType[] = [
+const STATE_MODIFIERS: readonly StateModifierType[] = [
   "active",
   "hover",
   "focus",
   "disabled",
   "placeholder",
 ] as const;
+
+/**
+ * Supported platform modifiers that map to Platform.OS values
+ */
+const PLATFORM_MODIFIERS: readonly PlatformModifierType[] = ["ios", "android", "web"] as const;
+
+/**
+ * All supported modifiers (state + platform)
+ */
+const SUPPORTED_MODIFIERS: readonly ModifierType[] = [...STATE_MODIFIERS, ...PLATFORM_MODIFIERS] as const;
 
 /**
  * Parse a class name to detect and extract modifiers
@@ -71,6 +85,26 @@ export function parseModifier(cls: string): ParsedModifier | null {
  */
 export function hasModifier(cls: string): boolean {
   return parseModifier(cls) !== null;
+}
+
+/**
+ * Check if a modifier is a state modifier (active, hover, focus, disabled, placeholder)
+ *
+ * @param modifier - Modifier type to check
+ * @returns true if modifier is a state modifier
+ */
+export function isStateModifier(modifier: ModifierType): modifier is StateModifierType {
+  return STATE_MODIFIERS.includes(modifier as StateModifierType);
+}
+
+/**
+ * Check if a modifier is a platform modifier (ios, android, web)
+ *
+ * @param modifier - Modifier type to check
+ * @returns true if modifier is a platform modifier
+ */
+export function isPlatformModifier(modifier: ModifierType): modifier is PlatformModifierType {
+  return PLATFORM_MODIFIERS.includes(modifier as PlatformModifierType);
 }
 
 /**
