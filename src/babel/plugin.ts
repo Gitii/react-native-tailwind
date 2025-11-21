@@ -5,7 +5,14 @@
 
 import type { NodePath, PluginObj, PluginPass } from "@babel/core";
 import * as BabelTypes from "@babel/types";
-import { parseClassName, parsePlaceholderClasses, splitModifierClasses } from "../parser/index.js";
+import type { ParsedModifier, StateModifierType } from "../parser/index.js";
+import {
+  isPlatformModifier,
+  isStateModifier,
+  parseClassName,
+  parsePlaceholderClasses,
+  splitModifierClasses,
+} from "../parser/index.js";
 import type { StyleObject } from "../types/core.js";
 import { generateStyleKey } from "../utils/styleKey.js";
 import { extractCustomColors } from "./config-loader.js";
@@ -17,10 +24,11 @@ import {
   getTargetStyleProp,
   isAttributeSupported,
 } from "./utils/attributeMatchers.js";
-import { getComponentModifierSupport } from "./utils/componentSupport.js";
+import { getComponentModifierSupport, getStatePropertyForModifier } from "./utils/componentSupport.js";
 import { processDynamicExpression } from "./utils/dynamicProcessing.js";
 import { createStyleFunction, processStaticClassNameWithModifiers } from "./utils/modifierProcessing.js";
-import { addStyleSheetImport, injectStylesAtTop } from "./utils/styleInjection.js";
+import { processPlatformModifiers } from "./utils/platformModifierProcessing.js";
+import { addPlatformImport, addStyleSheetImport, injectStylesAtTop } from "./utils/styleInjection.js";
 import {
   addOrMergePlaceholderTextColorProp,
   findStyleAttribute,
@@ -59,6 +67,8 @@ type PluginState = PluginPass & {
   styleRegistry: Map<string, StyleObject>;
   hasClassNames: boolean;
   hasStyleSheetImport: boolean;
+  hasPlatformImport: boolean;
+  needsPlatformImport: boolean;
   customColors: Record<string, string>;
   supportedAttributes: Set<string>;
   attributePatterns: RegExp[];
@@ -90,6 +100,8 @@ export default function reactNativeTailwindBabelPlugin(
           state.styleRegistry = new Map();
           state.hasClassNames = false;
           state.hasStyleSheetImport = false;
+          state.hasPlatformImport = false;
+          state.needsPlatformImport = false;
           state.supportedAttributes = exactMatches;
           state.attributePatterns = patterns;
           state.stylesIdentifier = stylesIdentifier;
@@ -116,22 +128,35 @@ export default function reactNativeTailwindBabelPlugin(
             addStyleSheetImport(path, t);
           }
 
+          // Add Platform import if platform modifiers were used and not already present
+          if (state.needsPlatformImport && !state.hasPlatformImport) {
+            addPlatformImport(path, t);
+          }
+
           // Generate and inject StyleSheet.create at the beginning of the file (after imports)
           // This ensures _twStyles is defined before any code that references it
           injectStylesAtTop(path, state.styleRegistry, state.stylesIdentifier, t);
         },
       },
 
-      // Check if StyleSheet is already imported and track tw/twStyle imports
+      // Check if StyleSheet/Platform are already imported and track tw/twStyle imports
       ImportDeclaration(path, state) {
         const node = path.node;
 
-        // Track react-native StyleSheet import
+        // Track react-native StyleSheet and Platform imports
         if (node.source.value === "react-native") {
           const specifiers = node.specifiers;
+
           const hasStyleSheet = specifiers.some((spec) => {
             if (t.isImportSpecifier(spec) && t.isIdentifier(spec.imported)) {
               return spec.imported.name === "StyleSheet";
+            }
+            return false;
+          });
+
+          const hasPlatform = specifiers.some((spec) => {
+            if (t.isImportSpecifier(spec) && t.isIdentifier(spec.imported)) {
+              return spec.imported.name === "Platform";
             }
             return false;
           });
@@ -142,6 +167,10 @@ export default function reactNativeTailwindBabelPlugin(
             // Add StyleSheet to existing import
             node.specifiers.push(t.importSpecifier(t.identifier("StyleSheet"), t.identifier("StyleSheet")));
             state.hasStyleSheetImport = true;
+          }
+
+          if (hasPlatform) {
+            state.hasPlatformImport = true;
           }
         }
 
@@ -291,12 +320,15 @@ export default function reactNativeTailwindBabelPlugin(
 
           state.hasClassNames = true;
 
-          // Check if className contains modifiers (active:, hover:, focus:, placeholder:)
+          // Check if className contains modifiers (active:, hover:, focus:, placeholder:, ios:, android:, web:)
           const { baseClasses, modifierClasses } = splitModifierClasses(className);
 
-          // Separate placeholder modifiers from state modifiers
+          // Separate modifiers by type
           const placeholderModifiers = modifierClasses.filter((m) => m.modifier === "placeholder");
-          const stateModifiers = modifierClasses.filter((m) => m.modifier !== "placeholder");
+          const platformModifiers = modifierClasses.filter((m) => isPlatformModifier(m.modifier));
+          const stateModifiers = modifierClasses.filter(
+            (m) => isStateModifier(m.modifier) && m.modifier !== "placeholder",
+          );
 
           // Handle placeholder modifiers first (they generate placeholderTextColor prop, not style)
           if (placeholderModifiers.length > 0) {
@@ -322,8 +354,153 @@ export default function reactNativeTailwindBabelPlugin(
             }
           }
 
-          // If there are state modifiers, check if this component supports them
-          if (stateModifiers.length > 0) {
+          // Handle combination of modifiers
+          const hasPlatformModifiers = platformModifiers.length > 0;
+          const hasStateModifiers = stateModifiers.length > 0;
+          const hasBaseClasses = baseClasses.length > 0;
+
+          // If we have both state and platform modifiers, or platform modifiers with complex state,
+          // we need to combine them in an array expression wrapped in an arrow function
+          if (hasStateModifiers && hasPlatformModifiers) {
+            // Get the JSX opening element for component support checking
+            const jsxOpeningElement = path.parent;
+            const componentSupport = getComponentModifierSupport(jsxOpeningElement, t);
+
+            if (componentSupport) {
+              // Build style array: [baseStyle, Platform.select(...), stateConditionals]
+              const styleArrayElements: BabelTypes.Expression[] = [];
+
+              // Add base classes
+              if (hasBaseClasses) {
+                const baseClassName = baseClasses.join(" ");
+                const baseStyleObject = parseClassName(baseClassName, state.customColors);
+                const baseStyleKey = generateStyleKey(baseClassName);
+                state.styleRegistry.set(baseStyleKey, baseStyleObject);
+                styleArrayElements.push(
+                  t.memberExpression(t.identifier(state.stylesIdentifier), t.identifier(baseStyleKey)),
+                );
+              }
+
+              // Add platform modifiers as Platform.select()
+              const platformSelectExpression = processPlatformModifiers(
+                platformModifiers,
+                state,
+                parseClassName,
+                generateStyleKey,
+                t,
+              );
+              styleArrayElements.push(platformSelectExpression);
+
+              // Add state modifiers as conditionals
+              // Group by modifier type
+              const modifiersByType = new Map<StateModifierType, ParsedModifier[]>();
+              for (const mod of stateModifiers) {
+                const modType = mod.modifier as StateModifierType;
+                if (!modifiersByType.has(modType)) {
+                  modifiersByType.set(modType, []);
+                }
+                modifiersByType.get(modType)?.push(mod);
+              }
+
+              // Build conditionals for each state modifier type
+              for (const [modifierType, modifiers] of modifiersByType) {
+                if (!componentSupport.supportedModifiers.includes(modifierType)) {
+                  continue; // Skip unsupported modifiers
+                }
+
+                const modifierClassNames = modifiers.map((m) => m.baseClass).join(" ");
+                const modifierStyleObject = parseClassName(modifierClassNames, state.customColors);
+                const modifierStyleKey = generateStyleKey(`${modifierType}_${modifierClassNames}`);
+                state.styleRegistry.set(modifierStyleKey, modifierStyleObject);
+
+                const stateProperty = getStatePropertyForModifier(modifierType);
+                const conditionalExpression = t.logicalExpression(
+                  "&&",
+                  t.identifier(stateProperty),
+                  t.memberExpression(t.identifier(state.stylesIdentifier), t.identifier(modifierStyleKey)),
+                );
+
+                styleArrayElements.push(conditionalExpression);
+              }
+
+              // Wrap in arrow function for state support
+              const usedModifiers = Array.from(new Set(stateModifiers.map((m) => m.modifier))).filter((mod) =>
+                componentSupport.supportedModifiers.includes(mod),
+              );
+              const styleArrayExpression = t.arrayExpression(styleArrayElements);
+              const styleFunctionExpression = createStyleFunction(styleArrayExpression, usedModifiers, t);
+
+              const styleAttribute = findStyleAttribute(path, targetStyleProp, t);
+              if (styleAttribute) {
+                mergeStyleFunctionAttribute(path, styleAttribute, styleFunctionExpression, t);
+              } else {
+                replaceWithStyleFunctionAttribute(path, styleFunctionExpression, targetStyleProp, t);
+              }
+              return;
+            } else {
+              // Component doesn't support state modifiers, but we can still use platform modifiers
+              // Fall through to platform-only handling
+            }
+          }
+
+          // Handle platform-only modifiers (no state modifiers)
+          if (hasPlatformModifiers && !hasStateModifiers) {
+            // Build style array/expression: [baseStyle, Platform.select(...)]
+            const styleExpressions: BabelTypes.Expression[] = [];
+
+            // Add base classes
+            if (hasBaseClasses) {
+              const baseClassName = baseClasses.join(" ");
+              const baseStyleObject = parseClassName(baseClassName, state.customColors);
+              const baseStyleKey = generateStyleKey(baseClassName);
+              state.styleRegistry.set(baseStyleKey, baseStyleObject);
+              styleExpressions.push(
+                t.memberExpression(t.identifier(state.stylesIdentifier), t.identifier(baseStyleKey)),
+              );
+            }
+
+            // Add platform modifiers as Platform.select()
+            const platformSelectExpression = processPlatformModifiers(
+              platformModifiers,
+              state,
+              parseClassName,
+              generateStyleKey,
+              t,
+            );
+            styleExpressions.push(platformSelectExpression);
+
+            // Generate style attribute
+            const styleExpression =
+              styleExpressions.length === 1 ? styleExpressions[0] : t.arrayExpression(styleExpressions);
+
+            const styleAttribute = findStyleAttribute(path, targetStyleProp, t);
+            if (styleAttribute) {
+              // Merge with existing style attribute
+              const existingStyle = styleAttribute.value;
+              if (
+                t.isJSXExpressionContainer(existingStyle) &&
+                !t.isJSXEmptyExpression(existingStyle.expression)
+              ) {
+                const existing = existingStyle.expression;
+                // Merge as array: [ourStyles, existingStyles]
+                const mergedArray = t.isArrayExpression(existing)
+                  ? t.arrayExpression([styleExpression, ...existing.elements])
+                  : t.arrayExpression([styleExpression, existing]);
+                styleAttribute.value = t.jsxExpressionContainer(mergedArray);
+              } else {
+                styleAttribute.value = t.jsxExpressionContainer(styleExpression);
+              }
+              path.remove();
+            } else {
+              // Replace className with style prop containing our expression
+              path.node.name = t.jsxIdentifier(targetStyleProp);
+              path.node.value = t.jsxExpressionContainer(styleExpression);
+            }
+            return;
+          }
+
+          // If there are state modifiers (and no platform modifiers), check if this component supports them
+          if (hasStateModifiers) {
             // Get the JSX opening element (the direct parent of the attribute)
             const jsxOpeningElement = path.parent;
             const componentSupport = getComponentModifierSupport(jsxOpeningElement, t);
