@@ -81,28 +81,6 @@ module.exports = {
 };
 ```
 
-**Advanced:** You can customize which attributes are transformed and the generated styles identifier:
-
-```javascript
-module.exports = {
-  presets: ["module:@react-native/babel-preset"],
-  plugins: [
-    [
-      "@mgcrea/react-native-tailwind/babel",
-      {
-        // Specify which attributes to transform
-        // Default: ['className', 'contentContainerClassName', 'columnWrapperClassName', 'ListHeaderComponentClassName', 'ListFooterComponentClassName']
-        attributes: ["className", "buttonClassName", "containerClassName"],
-
-        // Custom identifier for the generated StyleSheet constant
-        // Default: '_twStyles'
-        stylesIdentifier: "styles",
-      },
-    ],
-  ],
-};
-```
-
 ### 2. Enable TypeScript Support (TypeScript)
 
 Create a type declaration file in your project to enable `className` prop autocomplete:
@@ -725,9 +703,7 @@ import { View, Text } from "react-native";
 export function PlatformCard() {
   return (
     <View className="p-4 ios:p-6 android:p-8 bg-white rounded-lg">
-      <Text className="text-base ios:text-blue-600 android:text-green-600">
-        Platform-specific styles
-      </Text>
+      <Text className="text-base ios:text-blue-600 android:text-green-600">Platform-specific styles</Text>
     </View>
   );
 }
@@ -847,15 +823,16 @@ import { Pressable } from "@mgcrea/react-native-tailwind";
 
 **Supported Platforms:**
 
-| Modifier | Platform       | Description                   |
-| -------- | -------------- | ----------------------------- |
-| `ios:`   | iOS            | Styles specific to iOS        |
-| `android:` | Android      | Styles specific to Android    |
-| `web:`   | React Native Web | Styles for web platform     |
+| Modifier   | Platform         | Description                |
+| ---------- | ---------------- | -------------------------- |
+| `ios:`     | iOS              | Styles specific to iOS     |
+| `android:` | Android          | Styles specific to Android |
+| `web:`     | React Native Web | Styles for web platform    |
 
 **How it works:**
 
 The Babel plugin:
+
 1. Detects platform modifiers during compilation
 2. Parses all platform-specific classes at compile-time
 3. Generates `Platform.select()` expressions with references to pre-compiled styles
