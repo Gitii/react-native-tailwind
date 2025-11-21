@@ -24,14 +24,7 @@ export default defineConfig({
     globals: true,
     coverage: {
       include: ["src/**/*.ts", "src/**/*.tsx"],
-      exclude: [
-        "src/types/**",
-        "src/components/**",
-        "src/babel/**",
-        "**/*.d.ts",
-        "**/*.test.ts",
-        "**/*.test.tsx",
-      ],
+      exclude: ["src/types/**", "src/components/**", "**/*.d.ts", "**/*.test.ts", "**/*.test.tsx"],
     },
     server: {
       deps: {
