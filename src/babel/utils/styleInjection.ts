@@ -20,6 +20,34 @@ export function addStyleSheetImport(path: NodePath<BabelTypes.Program>, t: typeo
 }
 
 /**
+ * Add Platform import to the file or merge with existing react-native import
+ */
+export function addPlatformImport(path: NodePath<BabelTypes.Program>, t: typeof BabelTypes): void {
+  // Check if there's already a react-native import
+  const body = path.node.body;
+  let reactNativeImport: BabelTypes.ImportDeclaration | null = null;
+
+  for (const statement of body) {
+    if (t.isImportDeclaration(statement) && statement.source.value === "react-native") {
+      reactNativeImport = statement;
+      break;
+    }
+  }
+
+  if (reactNativeImport) {
+    // Add Platform to existing react-native import
+    reactNativeImport.specifiers.push(t.importSpecifier(t.identifier("Platform"), t.identifier("Platform")));
+  } else {
+    // Create new react-native import with Platform
+    const importDeclaration = t.importDeclaration(
+      [t.importSpecifier(t.identifier("Platform"), t.identifier("Platform"))],
+      t.stringLiteral("react-native"),
+    );
+    path.unshiftContainer("body", importDeclaration);
+  }
+}
+
+/**
  * Inject StyleSheet.create with all collected styles at the top of the file
  * This ensures the styles object is defined before any code that references it
  */
