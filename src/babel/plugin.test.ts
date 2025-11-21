@@ -480,3 +480,244 @@ describe("Babel plugin - placeholder: modifier transformation", () => {
     consoleSpy.mockRestore();
   });
 });
+
+describe("Babel plugin - platform modifier transformation", () => {
+  it("should transform platform modifiers to Platform.select()", () => {
+    const input = `
+      import React from 'react';
+      import { View } from 'react-native';
+
+      export function Component() {
+        return (
+          <View className="p-4 ios:p-6 android:p-8" />
+        );
+      }
+    `;
+
+    const output = transform(input, undefined, true);
+
+    // Should import Platform from react-native
+    expect(output).toContain("Platform");
+    expect(output).toMatch(/import.*Platform.*from ['"]react-native['"]/);
+
+    // Should generate Platform.select()
+    expect(output).toContain("Platform.select");
+
+    // Should have base padding style
+    expect(output).toContain("_p_4");
+
+    // Should have iOS and Android specific styles
+    expect(output).toContain("_ios_p_6");
+    expect(output).toContain("_android_p_8");
+
+    // Should have correct style values in StyleSheet.create
+    expect(output).toMatch(/padding:\s*16/); // p-4
+    expect(output).toMatch(/padding:\s*24/); // p-6 (ios)
+    expect(output).toMatch(/padding:\s*32/); // p-8 (android)
+  });
+
+  it("should support multiple platform modifiers on same element", () => {
+    const input = `
+      import React from 'react';
+      import { View } from 'react-native';
+
+      export function Component() {
+        return (
+          <View className="bg-white ios:bg-blue-50 android:bg-green-50 p-4 ios:p-6 android:p-8" />
+        );
+      }
+    `;
+
+    const output = transform(input, undefined, true);
+
+    // Should have Platform import
+    expect(output).toContain("Platform");
+
+    // Should have base styles (combined key)
+    expect(output).toContain("_bg_white_p_4");
+
+    // Should have iOS specific styles (combined key for multiple ios: modifiers)
+    expect(output).toContain("_ios_bg_blue_50_p_6");
+
+    // Should have Android specific styles (combined key for multiple android: modifiers)
+    expect(output).toContain("_android_bg_green_50_p_8");
+
+    // Should contain Platform.select with both platforms
+    expect(output).toMatch(/Platform\.select\s*\(\s*\{[\s\S]*ios:/);
+    expect(output).toMatch(/Platform\.select\s*\(\s*\{[\s\S]*android:/);
+  });
+
+  it("should support web platform modifier", () => {
+    const input = `
+      import React from 'react';
+      import { View } from 'react-native';
+
+      export function Component() {
+        return (
+          <View className="p-4 web:p-2" />
+        );
+      }
+    `;
+
+    const output = transform(input, undefined, true);
+
+    // Should have Platform.select with web
+    expect(output).toContain("Platform.select");
+    expect(output).toContain("web:");
+    expect(output).toContain("_web_p_2");
+  });
+
+  it("should work with platform modifiers on all components", () => {
+    const input = `
+      import React from 'react';
+      import { View, Text, ScrollView } from 'react-native';
+
+      export function Component() {
+        return (
+          <View className="ios:bg-blue-500 android:bg-green-500">
+            <Text className="ios:text-lg android:text-xl">Platform text</Text>
+            <ScrollView contentContainerClassName="ios:p-4 android:p-8" />
+          </View>
+        );
+      }
+    `;
+
+    const output = transform(input, undefined, true);
+
+    // Should work on View - check for Platform.select separately (not checking style= format)
+    expect(output).toContain("Platform.select");
+
+    // Should work on Text
+    expect(output).toContain("_ios_text_lg");
+    expect(output).toContain("_android_text_xl");
+
+    // Should work on ScrollView contentContainerStyle
+    expect(output).toContain("contentContainerStyle");
+  });
+
+  it("should combine platform modifiers with state modifiers", () => {
+    const input = `
+      import React from 'react';
+      import { Pressable, Text } from 'react-native';
+
+      export function Component() {
+        return (
+          <Pressable className="bg-blue-500 active:bg-blue-700 ios:shadow-md android:shadow-sm p-4">
+            <Text className="text-white">Button</Text>
+          </Pressable>
+        );
+      }
+    `;
+
+    const output = transform(input, undefined, true);
+
+    // Should have Platform.select for platform modifiers
+    expect(output).toContain("Platform.select");
+    expect(output).toContain("_ios_shadow_md");
+    expect(output).toContain("_android_shadow_sm");
+
+    // Should have state modifier function for active
+    expect(output).toMatch(/\(\s*\{\s*pressed\s*\}\s*\)\s*=>/);
+    expect(output).toContain("pressed");
+    expect(output).toContain("_active_bg_blue_700");
+
+    // Should have base styles
+    expect(output).toContain("_bg_blue_500");
+    expect(output).toContain("_p_4");
+  });
+
+  it("should handle platform-specific colors", () => {
+    const input = `
+      import React from 'react';
+      import { View, Text } from 'react-native';
+
+      export function Component() {
+        return (
+          <View className="bg-gray-100 ios:bg-blue-50 android:bg-green-50">
+            <Text className="text-gray-900 ios:text-blue-900 android:text-green-900">
+              Platform colors
+            </Text>
+          </View>
+        );
+      }
+    `;
+
+    const output = transform(input, undefined, true);
+
+    // Should have color values in StyleSheet
+    expect(output).toMatch(/#[0-9A-F]{6}/i); // Hex color format
+
+    // Should have platform-specific color classes
+    expect(output).toContain("_ios_text_blue_900");
+    expect(output).toContain("_android_text_green_900");
+  });
+
+  it("should only add Platform import once when needed", () => {
+    const input = `
+      import React from 'react';
+      import { View } from 'react-native';
+
+      export function Component() {
+        return (
+          <>
+            <View className="ios:p-4" />
+            <View className="android:p-8" />
+            <View className="ios:bg-blue-500" />
+          </>
+        );
+      }
+    `;
+
+    const output = transform(input, undefined, true);
+
+    // Should have Platform import
+    expect(output).toContain("Platform");
+
+    // Count how many times Platform is imported (should be once)
+    const platformImports = output.match(/import.*Platform.*from ['"]react-native['"]/g);
+    expect(platformImports).toHaveLength(1);
+  });
+
+  it("should merge with existing Platform import", () => {
+    const input = `
+      import React from 'react';
+      import { View, Platform } from 'react-native';
+
+      export function Component() {
+        return <View className="ios:p-4 android:p-8" />;
+      }
+    `;
+
+    const output = transform(input, undefined, true);
+
+    // Should still use Platform.select
+    expect(output).toContain("Platform.select");
+
+    // Should not duplicate Platform import - Platform appears in import and Platform.select calls
+    expect(output).toMatch(/Platform.*react-native/);
+  });
+
+  it("should handle platform modifiers without base classes", () => {
+    const input = `
+      import React from 'react';
+      import { View } from 'react-native';
+
+      export function Component() {
+        return <View className="ios:p-6 android:p-8" />;
+      }
+    `;
+
+    const output = transform(input, undefined, true);
+
+    // Should only have Platform.select, no base style
+    expect(output).toContain("Platform.select");
+    expect(output).toContain("_ios_p_6");
+    expect(output).toContain("_android_p_8");
+
+    // Should not have generic padding without platform prefix
+    // Check that non-platform-prefixed style keys don't exist
+    expect(output).not.toMatch(/(?<!_ios|_android|_web)_p_4:/);
+    expect(output).not.toMatch(/(?<!_ios|_android|_web)_p_6:/);
+    expect(output).not.toMatch(/(?<!_ios|_android|_web)_p_8:/);
+  });
+});
