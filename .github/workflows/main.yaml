@@ -33,6 +33,11 @@ jobs:
         run: pnpm run check
       - name: Vitest 🔍
         run: pnpm run spec
+      - name: Upload coverage to Codecov 📊
+        uses: codecov/codecov-action@v5
+        with:
+          files: ./coverage/coverage-final.json
+          token: ${{ secrets.CODECOV_TOKEN }}
   build:
     runs-on: ubuntu-latest
     strategy:
