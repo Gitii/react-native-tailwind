@@ -1,6 +1,5 @@
-import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import * as fs from "fs";
-import * as path from "path";
+import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import { extractCustomColors, findTailwindConfig, loadTailwindConfig } from "./config-loader";
 
 // Mock fs
@@ -94,14 +93,14 @@ describe("config-loader", () => {
       };
 
       const config = mockConfig;
-      const result = "default" in config ? (config as any).default : config;
+      const result = "default" in config ? (config as { default: unknown }).default : config;
 
       expect(result).toEqual(mockConfig);
     });
 
     it("should cache loaded configs", () => {
       const configPath = "/project/tailwind.config.js";
-      const mockConfig = { theme: {} };
+      const _mockConfig = { theme: {} };
 
       vi.spyOn(require, "resolve").mockReturnValue(configPath);
 

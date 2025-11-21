@@ -347,3 +347,59 @@ describe("Style merging - edge cases", () => {
     expect(output).not.toContain("className");
   });
 });
+
+describe("Style function merging - mergeStyleFunctionAttribute", () => {
+  it("should merge modifier className with existing function style prop", () => {
+    const input = `
+      import { Pressable } from 'react-native';
+      export function Component() {
+        return (
+          <Pressable
+            className="bg-blue-500 active:bg-blue-700"
+            style={({ pressed }) => pressed && { opacity: 0.8 }}
+          />
+        );
+      }
+    `;
+
+    const output = transform(input);
+
+    // Should create wrapper function that merges both style functions
+    expect(output).toContain("_state");
+    expect(output).toMatch(/_state\s*=>/);
+
+    // Should call both the new style function and existing style function
+    expect(output).toContain("_bg_blue_500");
+    expect(output).toContain("_active_bg_blue_700");
+
+    // Should not have className in output
+    expect(output).not.toContain("className");
+  });
+
+  it("should merge modifier className with static existing style when using Pressable", () => {
+    const input = `
+      import { Pressable } from 'react-native';
+      export function Component() {
+        return (
+          <Pressable
+            className="p-4 active:bg-gray-100"
+            style={{ borderRadius: 8 }}
+          />
+        );
+      }
+    `;
+
+    const output = transform(input);
+
+    // Should create function that wraps className styles
+    expect(output).toContain("_state");
+
+    // Should include both the className styles and the static style
+    expect(output).toContain("_p_4");
+    expect(output).toContain("_active_bg_gray_100");
+    expect(output).toContain("borderRadius");
+
+    // Should not have className in output
+    expect(output).not.toContain("className");
+  });
+});
