@@ -1,5 +1,6 @@
 import { describe, expect, it } from "vitest";
 import { ASPECT_RATIO_PRESETS, parseAspectRatio } from "./aspectRatio";
+import { parseClassName } from "./index";
 
 describe("ASPECT_RATIO_PRESETS", () => {
   it("should export aspect ratio presets", () => {
@@ -29,8 +30,8 @@ describe("parseAspectRatio - preset values", () => {
   });
 
   it("should parse aspect-auto", () => {
-    // aspect-auto removes the aspect ratio constraint
-    expect(parseAspectRatio("aspect-auto")).toEqual({});
+    // aspect-auto removes the aspect ratio constraint by explicitly setting to undefined
+    expect(parseAspectRatio("aspect-auto")).toEqual({ aspectRatio: undefined });
   });
 });
 
@@ -128,6 +129,28 @@ describe("parseAspectRatio - type validation", () => {
 
     const invalid = parseAspectRatio("invalid");
     expect(invalid).toBeNull();
+  });
+});
+
+describe("parseAspectRatio - override behavior", () => {
+  it("should allow aspect-auto to override previously set aspect ratios", () => {
+    // This tests the fix for issue #3 - aspect-auto must explicitly set aspectRatio: undefined
+    // to override previous aspect ratio values when using Object.assign
+    const result = parseClassName("aspect-square aspect-auto");
+    expect(result).toEqual({ aspectRatio: undefined });
+  });
+
+  it("should allow aspect ratios to override aspect-auto", () => {
+    const result = parseClassName("aspect-auto aspect-square");
+    expect(result).toEqual({ aspectRatio: 1 });
+  });
+
+  it("should apply last aspect ratio in sequence", () => {
+    const result = parseClassName("aspect-square aspect-video aspect-auto");
+    expect(result).toEqual({ aspectRatio: undefined });
+
+    const result2 = parseClassName("aspect-auto aspect-square aspect-video");
+    expect(result2).toEqual({ aspectRatio: 16 / 9 });
   });
 });
 

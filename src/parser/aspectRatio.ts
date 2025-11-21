@@ -52,10 +52,10 @@ export function parseAspectRatio(cls: string): StyleObject | null {
   // Check for preset values
   if (cls in ASPECT_RATIO_PRESETS) {
     const aspectRatio = ASPECT_RATIO_PRESETS[cls];
-    // aspect-auto removes the aspect ratio constraint by returning empty object
-    // (this effectively unsets the aspectRatio property)
+    // aspect-auto removes the aspect ratio constraint by explicitly setting to undefined
+    // This ensures it overrides any previously set aspectRatio in Object.assign
     if (aspectRatio === undefined) {
-      return {};
+      return { aspectRatio: undefined };
     }
     return { aspectRatio };
   }
