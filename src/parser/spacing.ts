@@ -69,24 +69,28 @@ function parseArbitrarySpacing(value: string): number | null {
 
 /**
  * Parse spacing classes (margin, padding, gap)
- * Examples: m-4, mx-2, mt-8, p-4, px-2, pt-8, gap-4, m-[16px]
+ * Examples: m-4, mx-2, mt-8, p-4, px-2, pt-8, gap-4, m-[16px], -m-4, -mt-[10px]
  */
 export function parseSpacing(cls: string): StyleObject | null {
-  // Margin: m-4, mx-2, mt-8, m-[16px], etc.
-  const marginMatch = cls.match(/^m([xytrbls]?)-(.+)$/);
+  // Margin: m-4, mx-2, mt-8, m-[16px], -m-4, -mt-2, etc.
+  // Supports negative values for margins (but not padding or gap)
+  const marginMatch = cls.match(/^(-?)m([xytrbls]?)-(.+)$/);
   if (marginMatch) {
-    const [, dir, valueStr] = marginMatch;
+    const [, negativePrefix, dir, valueStr] = marginMatch;
+    const isNegative = negativePrefix === "-";
 
     // Try arbitrary value first
     const arbitraryValue = parseArbitrarySpacing(valueStr);
     if (arbitraryValue !== null) {
-      return getMarginStyle(dir, arbitraryValue);
+      const finalValue = isNegative ? -arbitraryValue : arbitraryValue;
+      return getMarginStyle(dir, finalValue);
     }
 
     // Try preset scale
     const scaleValue = SPACING_SCALE[valueStr];
     if (scaleValue !== undefined) {
-      return getMarginStyle(dir, scaleValue);
+      const finalValue = isNegative ? -scaleValue : scaleValue;
+      return getMarginStyle(dir, finalValue);
     }
   }
 

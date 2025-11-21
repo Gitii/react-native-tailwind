@@ -60,6 +60,69 @@ describe("parseSpacing - margin", () => {
   });
 });
 
+describe("parseSpacing - negative margin", () => {
+  it("should parse negative margin all sides", () => {
+    expect(parseSpacing("-m-0")).toEqual({ margin: -0 }); // JavaScript -0 is distinct from +0
+    expect(parseSpacing("-m-4")).toEqual({ margin: -16 });
+    expect(parseSpacing("-m-8")).toEqual({ margin: -32 });
+    expect(parseSpacing("-m-96")).toEqual({ margin: -384 });
+  });
+
+  it("should parse negative margin with fractional values", () => {
+    expect(parseSpacing("-m-0.5")).toEqual({ margin: -2 });
+    expect(parseSpacing("-m-1.5")).toEqual({ margin: -6 });
+    expect(parseSpacing("-m-2.5")).toEqual({ margin: -10 });
+  });
+
+  it("should parse negative margin horizontal", () => {
+    expect(parseSpacing("-mx-4")).toEqual({ marginHorizontal: -16 });
+    expect(parseSpacing("-mx-8")).toEqual({ marginHorizontal: -32 });
+  });
+
+  it("should parse negative margin vertical", () => {
+    expect(parseSpacing("-my-4")).toEqual({ marginVertical: -16 });
+    expect(parseSpacing("-my-8")).toEqual({ marginVertical: -32 });
+  });
+
+  it("should parse negative margin directional", () => {
+    expect(parseSpacing("-mt-4")).toEqual({ marginTop: -16 });
+    expect(parseSpacing("-mr-4")).toEqual({ marginRight: -16 });
+    expect(parseSpacing("-mb-4")).toEqual({ marginBottom: -16 });
+    expect(parseSpacing("-ml-4")).toEqual({ marginLeft: -16 });
+  });
+
+  it("should parse negative margin with arbitrary values", () => {
+    expect(parseSpacing("-m-[16px]")).toEqual({ margin: -16 });
+    expect(parseSpacing("-m-[16]")).toEqual({ margin: -16 });
+    expect(parseSpacing("-m-[100px]")).toEqual({ margin: -100 });
+    expect(parseSpacing("-m-[100]")).toEqual({ margin: -100 });
+  });
+
+  it("should parse negative margin directional with arbitrary values", () => {
+    expect(parseSpacing("-mt-[24px]")).toEqual({ marginTop: -24 });
+    expect(parseSpacing("-mr-[32]")).toEqual({ marginRight: -32 });
+    expect(parseSpacing("-mb-[16px]")).toEqual({ marginBottom: -16 });
+    expect(parseSpacing("-ml-[48]")).toEqual({ marginLeft: -48 });
+  });
+
+  it("should parse negative margin horizontal/vertical with arbitrary values", () => {
+    expect(parseSpacing("-mx-[20px]")).toEqual({ marginHorizontal: -20 });
+    expect(parseSpacing("-my-[30]")).toEqual({ marginVertical: -30 });
+  });
+
+  it("should not parse negative padding (invalid)", () => {
+    expect(parseSpacing("-p-4")).toBeNull();
+    expect(parseSpacing("-px-4")).toBeNull();
+    expect(parseSpacing("-pt-4")).toBeNull();
+    expect(parseSpacing("-p-[16px]")).toBeNull();
+  });
+
+  it("should not parse negative gap (invalid)", () => {
+    expect(parseSpacing("-gap-4")).toBeNull();
+    expect(parseSpacing("-gap-[16px]")).toBeNull();
+  });
+});
+
 describe("parseSpacing - padding", () => {
   it("should parse padding all sides", () => {
     expect(parseSpacing("p-0")).toEqual({ padding: 0 });
