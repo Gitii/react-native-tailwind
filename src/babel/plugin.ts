@@ -76,6 +76,8 @@ type PluginState = PluginPass & {
   // Track tw/twStyle imports from main package
   twImportNames: Set<string>; // e.g., ['tw', 'twStyle'] or ['tw as customTw']
   hasTwImport: boolean;
+  // Track react-native import path for conditional StyleSheet/Platform injection
+  reactNativeImportPath?: NodePath<BabelTypes.ImportDeclaration>;
 };
 
 // Default identifier for the generated StyleSheet constant
@@ -161,17 +163,18 @@ export default function reactNativeTailwindBabelPlugin(
             return false;
           });
 
+          // Only track if imports exist - don't mutate yet
+          // Actual import injection happens in Program.exit only if needed
           if (hasStyleSheet) {
-            state.hasStyleSheetImport = true;
-          } else {
-            // Add StyleSheet to existing import
-            node.specifiers.push(t.importSpecifier(t.identifier("StyleSheet"), t.identifier("StyleSheet")));
             state.hasStyleSheetImport = true;
           }
 
           if (hasPlatform) {
             state.hasPlatformImport = true;
           }
+
+          // Store reference to the react-native import for later modification if needed
+          state.reactNativeImportPath = path;
         }
 
         // Track tw/twStyle imports from main package (for compile-time transformation)

@@ -7,16 +7,33 @@ import type * as BabelTypes from "@babel/types";
 import type { StyleObject } from "../../types/core.js";
 
 /**
- * Add StyleSheet import to the file
+ * Add StyleSheet import to the file or merge with existing react-native import
  */
 export function addStyleSheetImport(path: NodePath<BabelTypes.Program>, t: typeof BabelTypes): void {
-  const importDeclaration = t.importDeclaration(
-    [t.importSpecifier(t.identifier("StyleSheet"), t.identifier("StyleSheet"))],
-    t.stringLiteral("react-native"),
-  );
+  // Check if there's already a react-native import
+  const body = path.node.body;
+  let reactNativeImport: BabelTypes.ImportDeclaration | null = null;
 
-  // Add import at the top of the file
-  path.unshiftContainer("body", importDeclaration);
+  for (const statement of body) {
+    if (t.isImportDeclaration(statement) && statement.source.value === "react-native") {
+      reactNativeImport = statement;
+      break;
+    }
+  }
+
+  if (reactNativeImport) {
+    // Add StyleSheet to existing react-native import
+    reactNativeImport.specifiers.push(
+      t.importSpecifier(t.identifier("StyleSheet"), t.identifier("StyleSheet")),
+    );
+  } else {
+    // Create new react-native import with StyleSheet
+    const importDeclaration = t.importDeclaration(
+      [t.importSpecifier(t.identifier("StyleSheet"), t.identifier("StyleSheet"))],
+      t.stringLiteral("react-native"),
+    );
+    path.unshiftContainer("body", importDeclaration);
+  }
 }
 
 /**
