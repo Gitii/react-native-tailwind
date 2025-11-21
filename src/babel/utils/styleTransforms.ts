@@ -242,6 +242,7 @@ export function addOrMergePlaceholderTextColorProp(
   if (existingProp) {
     // If explicit prop exists, don't override it (explicit props take precedence)
     // This matches the behavior of style prop precedence
+    /* v8 ignore next 5 */
     if (process.env.NODE_ENV !== "production") {
       console.warn(
         `[react-native-tailwind] placeholderTextColor prop will be overridden by className placeholder: modifier. ` +

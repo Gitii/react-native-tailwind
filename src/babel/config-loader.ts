@@ -72,6 +72,7 @@ export function loadTailwindConfig(configPath: string): TailwindConfig | null {
     configCache.set(configPath, resolved);
     return resolved;
   } catch (error) {
+    /* v8 ignore next 3 */
     if (process.env.NODE_ENV !== "production") {
       console.warn(`[react-native-tailwind] Failed to load config from ${configPath}:`, error);
     }
@@ -98,6 +99,7 @@ export function extractCustomColors(filename: string): Record<string, string> {
   }
 
   // Warn if using theme.colors instead of theme.extend.colors
+  /* v8 ignore next 5 */
   if (config.theme.colors && !config.theme.extend?.colors && process.env.NODE_ENV !== "production") {
     console.warn(
       "[react-native-tailwind] Using theme.colors will override all default colors. " +

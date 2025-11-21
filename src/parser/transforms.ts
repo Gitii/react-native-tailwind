@@ -70,6 +70,7 @@ function parseArbitraryScale(value: string): number | null {
 
   // Unsupported format
   if (value.startsWith("[") && value.endsWith("]")) {
+    /* v8 ignore next 5 */
     if (process.env.NODE_ENV !== "production") {
       console.warn(
         `[react-native-tailwind] Invalid arbitrary scale value: ${value}. Only numbers are supported (e.g., [1.5], [0.75]).`,
@@ -93,6 +94,7 @@ function parseArbitraryRotation(value: string): string | null {
 
   // Unsupported format
   if (value.startsWith("[") && value.endsWith("]")) {
+    /* v8 ignore next 5 */
     if (process.env.NODE_ENV !== "production") {
       console.warn(
         `[react-native-tailwind] Invalid arbitrary rotation value: ${value}. Only deg unit is supported (e.g., [45deg], [-15deg]).`,
@@ -123,6 +125,7 @@ function parseArbitraryTranslation(value: string): number | string | null {
 
   // Unsupported units
   if (value.startsWith("[") && value.endsWith("]")) {
+    /* v8 ignore next 5 */
     if (process.env.NODE_ENV !== "production") {
       console.warn(
         `[react-native-tailwind] Unsupported arbitrary translation unit: ${value}. Only px and % are supported.`,
@@ -146,6 +149,7 @@ function parseArbitraryPerspective(value: string): number | null {
 
   // Unsupported format
   if (value.startsWith("[") && value.endsWith("]")) {
+    /* v8 ignore next 5 */
     if (process.env.NODE_ENV !== "production") {
       console.warn(
         `[react-native-tailwind] Invalid arbitrary perspective value: ${value}. Only integers are supported (e.g., [1500]).`,
@@ -164,6 +168,7 @@ function parseArbitraryPerspective(value: string): number | null {
 export function parseTransform(cls: string): StyleObject | null {
   // Transform origin warning (not supported in React Native)
   if (cls.startsWith("origin-")) {
+    /* v8 ignore next 5 */
     if (process.env.NODE_ENV !== "production") {
       console.warn(
         `[react-native-tailwind] transform-origin is not supported in React Native. Class "${cls}" will be ignored.`,

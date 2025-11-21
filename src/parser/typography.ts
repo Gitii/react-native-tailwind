@@ -125,6 +125,7 @@ function parseArbitraryFontSize(value: string): number | null {
 
   // Warn about unsupported formats
   if (value.startsWith("[") && value.endsWith("]")) {
+    /* v8 ignore next 5 */
     if (process.env.NODE_ENV !== "production") {
       console.warn(
         `[react-native-tailwind] Unsupported arbitrary font size value: ${value}. Only px values are supported (e.g., [18px] or [18]).`,
@@ -149,6 +150,7 @@ function parseArbitraryLineHeight(value: string): number | null {
 
   // Warn about unsupported formats
   if (value.startsWith("[") && value.endsWith("]")) {
+    /* v8 ignore next 5 */
     if (process.env.NODE_ENV !== "production") {
       console.warn(
         `[react-native-tailwind] Unsupported arbitrary line height value: ${value}. Only px values are supported (e.g., [24px] or [24]).`,

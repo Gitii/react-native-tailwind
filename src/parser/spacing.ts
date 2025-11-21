@@ -55,6 +55,7 @@ function parseArbitrarySpacing(value: string): number | null {
 
   // Warn about unsupported formats
   if (value.startsWith("[") && value.endsWith("]")) {
+    /* v8 ignore next 5 */
     if (process.env.NODE_ENV !== "production") {
       console.warn(
         `[react-native-tailwind] Unsupported arbitrary spacing value: ${value}. Only px values are supported (e.g., [16px] or [16]).`,

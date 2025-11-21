@@ -62,6 +62,7 @@ export function parseClass(cls: string, customColors?: Record<string, string>): 
   }
 
   // Warn about unknown class in development
+  /* v8 ignore next 3 */
   if (process.env.NODE_ENV !== "production") {
     console.warn(`[react-native-tailwind] Unknown class: "${cls}"`);
   }

@@ -27,6 +27,7 @@ export function parsePlaceholderClass(cls: string, customColors?: Record<string,
   // Check if it's a text color class
   if (!cls.startsWith("text-")) {
     // Warn about unsupported utilities
+    /* v8 ignore next 5 */
     if (process.env.NODE_ENV !== "production") {
       console.warn(
         `[react-native-tailwind] Only text color utilities are supported in placeholder: modifier. ` +

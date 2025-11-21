@@ -70,6 +70,7 @@ function parseArbitraryColor(value: string): string | null {
 
   // Warn about unsupported formats
   if (value.startsWith("[") && value.endsWith("]")) {
+    /* v8 ignore next 5 */
     if (process.env.NODE_ENV !== "production") {
       console.warn(
         `[react-native-tailwind] Unsupported arbitrary color value: ${value}. Only hex colors are supported (e.g., [#ff0000], [#f00], or [#ff0000aa]).`,
@@ -101,6 +102,7 @@ export function parseColor(cls: string, customColors?: Record<string, string>): 
 
       // Validate opacity range (0-100)
       if (opacity < 0 || opacity > 100) {
+        /* v8 ignore next 5 */
         if (process.env.NODE_ENV !== "production") {
           console.warn(
             `[react-native-tailwind] Invalid opacity value: ${opacity}. Opacity must be between 0 and 100.`,

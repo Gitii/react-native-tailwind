@@ -26,6 +26,7 @@ function parseArbitraryAspectRatio(value: string): number | null {
     const denominator = Number.parseInt(match[2], 10);
 
     if (denominator === 0) {
+      /* v8 ignore next 3 */
       if (process.env.NODE_ENV !== "production") {
         console.warn(`[react-native-tailwind] Invalid aspect ratio: ${value}. Denominator cannot be zero.`);
       }

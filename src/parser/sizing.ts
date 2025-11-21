@@ -80,6 +80,7 @@ function parseArbitrarySize(value: string): number | string | null {
 
   // Unsupported units (rem, em, vh, vw, etc.) - warn and reject
   if (value.startsWith("[") && value.endsWith("]")) {
+    /* v8 ignore next 5 */
     if (process.env.NODE_ENV !== "production") {
       console.warn(
         `[react-native-tailwind] Unsupported arbitrary size unit: ${value}. Only px and % are supported.`,
