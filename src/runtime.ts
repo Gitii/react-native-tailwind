@@ -211,8 +211,9 @@ export function tw<T extends NativeStyle = NativeStyle>(
   const className = strings.reduce((acc, str, i) => {
     const value = values[i];
     // Handle falsy values (false, null, undefined) - don't add them
+    // Note: 0 and empty string are preserved as they may be valid values
     // eslint-disable-next-line @typescript-eslint/no-base-to-string
-    const valueStr = value ? String(value) : "";
+    const valueStr = value != null && value !== false ? String(value) : "";
     return acc + str + valueStr;
   }, "");
 

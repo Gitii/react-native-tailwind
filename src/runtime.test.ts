@@ -45,6 +45,33 @@ describe("runtime", () => {
       });
     });
 
+    it("should preserve zero values in template literals", () => {
+      // Issue #1 fix: 0 should be treated as valid value, not filtered out
+      const result = tw`opacity-${0} m-4`;
+      expect(result?.style).toEqual({
+        opacity: 0,
+        margin: 16,
+      });
+    });
+
+    it("should preserve empty string values in template literals", () => {
+      // Empty strings should be preserved (even though they don't contribute to className)
+      const result = tw`m-4 ${""}p-2`;
+      expect(result?.style).toEqual({
+        margin: 16,
+        padding: 8,
+      });
+    });
+
+    it("should handle mixed falsy and truthy numeric values", () => {
+      const spacing = 0;
+      const result = tw`m-${spacing} p-4`;
+      expect(result?.style).toEqual({
+        margin: 0,
+        padding: 16,
+      });
+    });
+
     it("should return empty style object for empty className", () => {
       const result = tw``;
       expect(result).toEqual({ style: {} });
