@@ -28,6 +28,11 @@
       "types": "./dist/react-native.d.ts"
     }
   },
+  "files": [
+    "src",
+    "dist",
+    "README.md"
+  ],
   "scripts": {
     "dev": "cd example; npm run dev",
     "build": "npm run build:babel && npm run build:babel-plugin && npm run build:runtime && npm run build:types",
