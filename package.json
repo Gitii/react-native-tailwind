@@ -46,7 +46,7 @@
     "lint": "eslint src/",
     "prettify": "prettier --write src/",
     "check": "tsc --noEmit",
-    "spec": "vitest --run",
+    "spec": "vitest --run --coverage",
     "test": "npm run lint && npm run check && npm run spec",
     "prepare": "npm run build"
   },
@@ -69,7 +69,8 @@
     "@testing-library/react-native": "^13.3.3",
     "@types/babel__core": "^7.20.5",
     "@types/babel__traverse": "^7.28.0",
-    "@types/react": "^19.2.5",
+    "@types/react": "^19.2.6",
+    "@vitest/coverage-v8": "^4.0.13",
     "babel-plugin-module-resolver": "^5.0.2",
     "esbuild": "^0.27.0",
     "eslint": "^9.39.1",
@@ -79,12 +80,12 @@
     "react": "^19.2.0",
     "react-native": "0.82.1",
     "typescript": "^5.9.3",
-    "vitest": "^4.0.10"
+    "vitest": "^4.0.13"
   },
   "engines": {
     "node": ">=18"
   },
-  "packageManager": "pnpm@10.22.0",
+  "packageManager": "pnpm@10.23.0",
   "publishConfig": {
     "access": "public"
   },

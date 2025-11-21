@@ -22,6 +22,9 @@ export default defineConfig({
     include: ["src/**/*.{test,spec}.{js,ts,jsx,tsx}"],
     setupFiles: ["./test/setup.ts"],
     globals: true,
+    coverage: {
+      include: ["src/**/*.ts", "src/**/*.tsx"],
+    },
     server: {
       deps: {
         external: ["react-native"],
