@@ -45,6 +45,7 @@ Compile-time Tailwind CSS for React Native with zero runtime overhead. Transform
 - 🔀 **Dynamic className** — Conditional styles with hybrid compile-time optimization
 - 🏃 **Runtime option** — Optional `tw` template tag for fully dynamic styling (~25KB)
 - 🎯 **State modifiers** — `active:`, `hover:`, `focus:`, and `disabled:` modifiers for interactive components
+- 📱 **Platform modifiers** — `ios:`, `android:`, and `web:` modifiers for platform-specific styling
 - 📜 **Special style props** — Support for `contentContainerClassName`, `columnWrapperClassName`, and more
 - 🎛️ **Custom attributes** — Configure which props to transform with exact matching or glob patterns
 
@@ -708,6 +709,157 @@ The enhanced `TextInput` also provides a convenient `disabled` prop that overrid
 - ✅ **Minimal runtime cost** — Only adds state management (focus tracking, disabled injection)
 - ✅ **Type-safe** — Full TypeScript autocomplete for all modifiers
 - ✅ **Works with custom colors** — `focus:border-primary`, `active:bg-secondary`, `disabled:bg-gray-200`, etc.
+
+### Platform Modifiers
+
+Apply platform-specific styles using `ios:`, `android:`, and `web:` modifiers. These work on **all components** (not just enhanced ones) and compile to `Platform.select()` calls with zero runtime parsing overhead.
+
+**Basic Example:**
+
+```tsx
+import { View, Text } from "react-native";
+
+export function PlatformCard() {
+  return (
+    <View className="p-4 ios:p-6 android:p-8 bg-white rounded-lg">
+      <Text className="text-base ios:text-blue-600 android:text-green-600">
+        Platform-specific styles
+      </Text>
+    </View>
+  );
+}
+```
+
+**Transforms to:**
+
+```tsx
+import { Platform, StyleSheet } from "react-native";
+
+<View
+  style={[
+    _twStyles._bg_white_p_4_rounded_lg,
+    Platform.select({
+      ios: _twStyles._ios_p_6,
+      android: _twStyles._android_p_8,
+    }),
+  ]}
+>
+  <Text
+    style={[
+      _twStyles._text_base,
+      Platform.select({
+        ios: _twStyles._ios_text_blue_600,
+        android: _twStyles._android_text_green_600,
+      }),
+    ]}
+  >
+    Platform-specific styles
+  </Text>
+</View>;
+
+// Generated styles:
+const _twStyles = StyleSheet.create({
+  _bg_white_p_4_rounded_lg: {
+    backgroundColor: "#FFFFFF",
+    padding: 16,
+    borderRadius: 8,
+  },
+  _ios_p_6: { padding: 24 },
+  _android_p_8: { padding: 32 },
+  _text_base: { fontSize: 16 },
+  _ios_text_blue_600: { color: "#2563EB" },
+  _android_text_green_600: { color: "#059669" },
+});
+```
+
+**Common Use Cases:**
+
+**Platform-specific colors:**
+
+```tsx
+// Different colors per platform for brand consistency
+<View className="bg-blue-500 ios:bg-blue-600 android:bg-green-600">
+  <Text className="text-white">Platform-specific background</Text>
+</View>
+```
+
+**Platform-specific spacing:**
+
+```tsx
+// More padding on Android due to larger default touch targets
+<View className="p-4 ios:p-6 android:p-8">
+  <Text>Platform-specific padding</Text>
+</View>
+```
+
+**Combined with base styles:**
+
+```tsx
+// Base styles + platform-specific overrides
+<View className="border-2 border-gray-300 ios:border-blue-500 android:border-green-500 rounded-lg p-4">
+  <Text className="text-gray-800 ios:text-blue-800 android:text-green-800">
+    Base styles with platform overrides
+  </Text>
+</View>
+```
+
+**Multiple platform modifiers:**
+
+```tsx
+// Combine multiple platform-specific styles
+<View className="bg-gray-100 ios:bg-blue-50 android:bg-green-50 p-4 ios:p-6 android:p-8 rounded-lg">
+  <Text>Multiple platform styles</Text>
+</View>
+```
+
+**Web platform support:**
+
+```tsx
+// Different styles for React Native Web
+<View className="p-4 ios:p-6 android:p-8 web:p-2">
+  <Text className="text-base web:text-lg">Cross-platform styling</Text>
+</View>
+```
+
+**Mixing with state modifiers:**
+
+```tsx
+import { Pressable } from "@mgcrea/react-native-tailwind";
+
+// Platform modifiers work alongside state modifiers
+<Pressable className="bg-blue-500 active:bg-blue-700 ios:border-2 android:border-0 p-4 rounded-lg">
+  <Text className="text-white">Button with platform + state modifiers</Text>
+</Pressable>;
+```
+
+**Key Features:**
+
+- ✅ **Works on all components** — No need for enhanced components (unlike state modifiers)
+- ✅ **Zero runtime overhead** — All parsing happens at compile-time
+- ✅ **Native Platform API** — Uses React Native's `Platform.select()` under the hood
+- ✅ **Type-safe** — Full TypeScript autocomplete for platform modifiers
+- ✅ **Optimized** — Styles deduplicated via `StyleSheet.create`
+- ✅ **Works with custom colors** — `ios:bg-primary`, `android:bg-secondary`, etc.
+- ✅ **Minimal runtime cost** — Only one `Platform.select()` call per element with platform modifiers
+
+**Supported Platforms:**
+
+| Modifier | Platform       | Description                   |
+| -------- | -------------- | ----------------------------- |
+| `ios:`   | iOS            | Styles specific to iOS        |
+| `android:` | Android      | Styles specific to Android    |
+| `web:`   | React Native Web | Styles for web platform     |
+
+**How it works:**
+
+The Babel plugin:
+1. Detects platform modifiers during compilation
+2. Parses all platform-specific classes at compile-time
+3. Generates `Platform.select()` expressions with references to pre-compiled styles
+4. Auto-imports `Platform` from `react-native` when needed
+5. Merges platform styles with base classes and other modifiers in style arrays
+
+This approach provides the best of both worlds: compile-time optimization for all styles, with minimal runtime platform detection only for the conditional selection logic.
 
 ### ScrollView Content Container
 
