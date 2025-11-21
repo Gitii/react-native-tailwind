@@ -23,6 +23,9 @@
   <a href="https://github.com/mgcrea/react-native-tailwind/actions/workflows/main.yaml">
     <img src="https://img.shields.io/github/actions/workflow/status/mgcrea/react-native-tailwind/main.yaml?style=for-the-badge&branch=main" alt="build status" />
   </a>
+  <a href="https://codecov.io/gh/mgcrea/react-native-tailwind">
+    <img src="https://img.shields.io/codecov/c/github/mgcrea/react-native-tailwind?style=for-the-badge" alt="coverage" />
+  </a>
   <a href="https://depfu.com/github/mgcrea/react-native-tailwind">
     <img src="https://img.shields.io/depfu/dependencies/github/mgcrea/react-native-tailwind?style=for-the-badge" alt="dependencies status" />
   </a>
