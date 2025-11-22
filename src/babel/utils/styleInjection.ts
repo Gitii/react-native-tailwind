@@ -117,11 +117,21 @@ export function injectColorSchemeHook(
   colorSchemeVariableName: string,
   t: typeof BabelTypes,
 ): boolean {
-  const body = functionPath.node.body;
+  let body = functionPath.node.body;
 
-  // Only inject in function components (not class methods)
+  // Handle concise arrow functions: () => <JSX />
+  // Convert to block statement: () => { const _twColorScheme = useColorScheme(); return <JSX />; }
   if (!t.isBlockStatement(body)) {
-    return false;
+    if (t.isArrowFunctionExpression(functionPath.node) && t.isExpression(body)) {
+      // Convert concise body to block statement with return
+      const returnStatement = t.returnStatement(body);
+      const blockStatement = t.blockStatement([returnStatement]);
+      functionPath.node.body = blockStatement;
+      body = blockStatement;
+    } else {
+      // Other non-block functions (shouldn't happen for components, but be safe)
+      return false;
+    }
   }
 
   // Check if hook is already injected
