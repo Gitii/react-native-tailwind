@@ -965,7 +965,17 @@ The Babel plugin:
 **Requirements:**
 
 - ⚠️ **Functional components only** — Color scheme modifiers require hooks (React Native's `useColorScheme()`)
+  - ✅ Works with function declarations: `function Component() { ... }`
+  - ✅ Works with arrow functions: `const Component = () => { ... }`
+  - ✅ Works with concise arrow functions: `const Component = () => <View className="dark:..." />`
+  - ✅ Works in nested callbacks: Hook injected at component level, not in callbacks
+  - ❌ **Not supported in class components** — Will show a warning
 - ⚠️ **React Native 0.62+** — Requires the `useColorScheme` API
+- ✅ **Dynamic expressions supported** — Works in template literals and conditional expressions:
+
+  ```tsx
+  <View className={`p-4 ${isActive ? "dark:bg-blue-500" : "dark:bg-gray-900"}`} />
+  ```
 
 **Performance:**
 
