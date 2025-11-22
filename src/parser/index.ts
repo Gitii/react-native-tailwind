@@ -85,9 +85,16 @@ export { parseTypography } from "./typography";
 // Re-export modifier utilities
 export {
   hasModifier,
+  isColorSchemeModifier,
   isPlatformModifier,
   isStateModifier,
   parseModifier,
   splitModifierClasses,
 } from "./modifiers";
-export type { ModifierType, ParsedModifier, PlatformModifierType, StateModifierType } from "./modifiers";
+export type {
+  ColorSchemeModifierType,
+  ModifierType,
+  ParsedModifier,
+  PlatformModifierType,
+  StateModifierType,
+} from "./modifiers";

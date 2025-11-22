@@ -1,12 +1,14 @@
 /**
- * Modifier parsing utilities for state-based and platform-specific class names
+ * Modifier parsing utilities for state-based, platform-specific, and color scheme class names
  * - State modifiers: active:, hover:, focus:, disabled:, placeholder:
  * - Platform modifiers: ios:, android:, web:
+ * - Color scheme modifiers: dark:, light:
  */
 
 export type StateModifierType = "active" | "hover" | "focus" | "disabled" | "placeholder";
 export type PlatformModifierType = "ios" | "android" | "web";
-export type ModifierType = StateModifierType | PlatformModifierType;
+export type ColorSchemeModifierType = "dark" | "light";
+export type ModifierType = StateModifierType | PlatformModifierType | ColorSchemeModifierType;
 
 export type ParsedModifier = {
   modifier: ModifierType;
@@ -30,9 +32,18 @@ const STATE_MODIFIERS: readonly StateModifierType[] = [
 const PLATFORM_MODIFIERS: readonly PlatformModifierType[] = ["ios", "android", "web"] as const;
 
 /**
- * All supported modifiers (state + platform)
+ * Supported color scheme modifiers that map to Appearance.colorScheme values
  */
-const SUPPORTED_MODIFIERS: readonly ModifierType[] = [...STATE_MODIFIERS, ...PLATFORM_MODIFIERS] as const;
+const COLOR_SCHEME_MODIFIERS: readonly ColorSchemeModifierType[] = ["dark", "light"] as const;
+
+/**
+ * All supported modifiers (state + platform + color scheme)
+ */
+const SUPPORTED_MODIFIERS: readonly ModifierType[] = [
+  ...STATE_MODIFIERS,
+  ...PLATFORM_MODIFIERS,
+  ...COLOR_SCHEME_MODIFIERS,
+] as const;
 
 /**
  * Parse a class name to detect and extract modifiers
@@ -105,6 +116,16 @@ export function isStateModifier(modifier: ModifierType): modifier is StateModifi
  */
 export function isPlatformModifier(modifier: ModifierType): modifier is PlatformModifierType {
   return PLATFORM_MODIFIERS.includes(modifier as PlatformModifierType);
+}
+
+/**
+ * Check if a modifier is a color scheme modifier (dark, light)
+ *
+ * @param modifier - Modifier type to check
+ * @returns true if modifier is a color scheme modifier
+ */
+export function isColorSchemeModifier(modifier: ModifierType): modifier is ColorSchemeModifierType {
+  return COLOR_SCHEME_MODIFIERS.includes(modifier as ColorSchemeModifierType);
 }
 
 /**
