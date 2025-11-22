@@ -49,6 +49,7 @@ Compile-time Tailwind CSS for React Native with zero runtime overhead. Transform
 - 🏃 **Runtime option** — Optional `tw` template tag for fully dynamic styling (~25KB)
 - 🎯 **State modifiers** — `active:`, `hover:`, `focus:`, and `disabled:` modifiers for interactive components
 - 📱 **Platform modifiers** — `ios:`, `android:`, and `web:` modifiers for platform-specific styling
+- 🌓 **Color scheme modifiers** — `dark:` and `light:` modifiers for automatic theme adaptation
 - 📜 **Special style props** — Support for `contentContainerClassName`, `columnWrapperClassName`, and more
 - 🎛️ **Custom attributes** — Configure which props to transform with exact matching or glob patterns
 
@@ -840,6 +841,137 @@ The Babel plugin:
 5. Merges platform styles with base classes and other modifiers in style arrays
 
 This approach provides the best of both worlds: compile-time optimization for all styles, with minimal runtime platform detection only for the conditional selection logic.
+
+### Color Scheme Modifiers
+
+Apply color scheme-specific styles using `dark:` and `light:` modifiers that automatically react to the device's appearance settings. These work on **all components in functional components** and compile to conditional expressions that use React Native's `useColorScheme()` hook.
+
+**Basic Example:**
+
+```tsx
+import { View, Text } from "react-native";
+
+export function ThemeCard() {
+  return (
+    <View className="bg-white dark:bg-gray-900 p-4 rounded-lg">
+      <Text className="text-gray-900 dark:text-white">Adapts to device theme</Text>
+    </View>
+  );
+}
+```
+
+**Transforms to:**
+
+```tsx
+import { useColorScheme, StyleSheet } from "react-native";
+
+export function ThemeCard() {
+  const _twColorScheme = useColorScheme();
+
+  return (
+    <View
+      style={[
+        _twStyles._bg_white_p_4_rounded_lg,
+        _twColorScheme === "dark" && _twStyles._dark_bg_gray_900,
+      ]}
+    >
+      <Text style={[_twStyles._text_gray_900, _twColorScheme === "dark" && _twStyles._dark_text_white]}>
+        Adapts to device theme
+      </Text>
+    </View>
+  );
+}
+
+// Generated styles:
+const _twStyles = StyleSheet.create({
+  _bg_white_p_4_rounded_lg: {
+    backgroundColor: "#FFFFFF",
+    padding: 16,
+    borderRadius: 8,
+  },
+  _dark_bg_gray_900: { backgroundColor: "#111827" },
+  _text_gray_900: { color: "#111827" },
+  _dark_text_white: { color: "#FFFFFF" },
+});
+```
+
+**Common Use Cases:**
+
+**Dark mode support:**
+
+```tsx
+// Automatically switches between light and dark themes
+<View className="bg-white dark:bg-gray-900">
+  <Text className="text-gray-900 dark:text-white">Theme-aware text</Text>
+</View>
+```
+
+**Both light and dark overrides:**
+
+```tsx
+// Specify both light and dark mode styles explicitly
+<View className="bg-gray-100 light:bg-white dark:bg-gray-900">
+  <Text className="text-gray-600 light:text-gray-900 dark:text-gray-100">Custom light & dark styles</Text>
+</View>
+```
+
+**Mixed color scheme and platform modifiers:**
+
+```tsx
+// Combine color scheme with platform-specific styles
+<View className="p-4 ios:p-6 dark:bg-gray-900 android:rounded-xl">
+  <Text className="text-base dark:text-white ios:text-blue-600">Platform + theme aware</Text>
+</View>
+```
+
+**Theme-aware cards:**
+
+```tsx
+// Card that looks great in both light and dark mode
+<View className="bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 p-4 rounded-lg">
+  <Text className="text-lg font-bold text-gray-900 dark:text-white mb-2">Card Title</Text>
+  <Text className="text-gray-600 dark:text-gray-300">Card description text</Text>
+</View>
+```
+
+**Key Features:**
+
+- ✅ **Reactive** — Automatically updates when user changes system appearance
+- ✅ **Zero runtime parsing** — All styles compiled at build time
+- ✅ **Auto-injected hook** — `useColorScheme()` automatically added to components
+- ✅ **Works with all modifiers** — Combine with platform and state modifiers
+- ✅ **Type-safe** — Full TypeScript autocomplete
+- ✅ **Optimized** — Minimal runtime overhead (just conditional checks)
+
+**Supported Modifiers:**
+
+| Modifier | Color Scheme | Description                    |
+| -------- | ------------ | ------------------------------ |
+| `dark:`  | Dark mode    | Styles when dark mode is active |
+| `light:` | Light mode   | Styles when light mode is active |
+
+**How it works:**
+
+The Babel plugin:
+
+1. Detects color scheme modifiers during compilation
+2. Finds the parent function component
+3. Auto-injects `const _twColorScheme = useColorScheme();` at the top of the component
+4. Parses all color scheme-specific classes at compile-time
+5. Generates conditional expressions: `_twColorScheme === 'dark' && styles._dark_bg_gray_900`
+6. Auto-imports `useColorScheme` from `react-native` when needed
+7. Reuses the same hook variable for multiple elements in the same component
+
+**Requirements:**
+
+- ⚠️ **Functional components only** — Color scheme modifiers require hooks (React Native's `useColorScheme()`)
+- ⚠️ **React Native 0.62+** — Requires the `useColorScheme` API
+
+**Performance:**
+
+- **Compile-time**: All styles parsed and registered during build
+- **Runtime**: One `useColorScheme()` hook call per component + minimal conditional checks
+- **Bundle size**: Only includes styles actually used in your code
 
 ### ScrollView Content Container
 
