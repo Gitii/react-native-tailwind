@@ -5,6 +5,7 @@
 import type { NodePath } from "@babel/core";
 import type * as BabelTypes from "@babel/types";
 import type { ParsedModifier } from "../../parser/index.js";
+import type { SchemeModifierConfig } from "../../types/config.js";
 import type { StyleObject } from "../../types/core.js";
 
 /**
@@ -14,6 +15,7 @@ import type { StyleObject } from "../../types/core.js";
 export interface DynamicProcessingState {
   styleRegistry: Map<string, StyleObject>;
   customColors: Record<string, string>;
+  schemeModifierConfig: SchemeModifierConfig;
   stylesIdentifier: string;
   needsPlatformImport: boolean;
   needsColorSchemeImport: boolean;
@@ -57,6 +59,16 @@ export type ProcessColorSchemeModifiersFn = (
 export type ModifierTypeGuardFn = (modifier: unknown) => boolean;
 
 /**
+ * Type for the expandSchemeModifier function
+ */
+export type ExpandSchemeModifierFn = (
+  modifier: ParsedModifier,
+  customColors: Record<string, string>,
+  darkSuffix: string,
+  lightSuffix: string,
+) => ParsedModifier[];
+
+/**
  * Result of processing a dynamic expression
  */
 export type DynamicExpressionResult = {
@@ -81,6 +93,8 @@ export function processDynamicExpression(
   componentScope: NodePath<BabelTypes.Function> | null,
   isPlatformModifier: ModifierTypeGuardFn,
   isColorSchemeModifier: ModifierTypeGuardFn,
+  isSchemeModifier: ModifierTypeGuardFn,
+  expandSchemeModifier: ExpandSchemeModifierFn,
   t: typeof BabelTypes,
 ) {
   // Handle template literals: `m-4 ${condition ? "p-4" : "p-2"}`
@@ -96,6 +110,8 @@ export function processDynamicExpression(
       componentScope,
       isPlatformModifier,
       isColorSchemeModifier,
+      isSchemeModifier,
+      expandSchemeModifier,
       t,
     );
   }
@@ -113,6 +129,8 @@ export function processDynamicExpression(
       componentScope,
       isPlatformModifier,
       isColorSchemeModifier,
+      isSchemeModifier,
+      expandSchemeModifier,
       t,
     );
   }
@@ -130,6 +148,8 @@ export function processDynamicExpression(
       componentScope,
       isPlatformModifier,
       isColorSchemeModifier,
+      isSchemeModifier,
+      expandSchemeModifier,
       t,
     );
   }
@@ -152,6 +172,8 @@ function processTemplateLiteral(
   componentScope: NodePath<BabelTypes.Function> | null,
   isPlatformModifier: ModifierTypeGuardFn,
   isColorSchemeModifier: ModifierTypeGuardFn,
+  isSchemeModifier: ModifierTypeGuardFn,
+  expandSchemeModifier: ExpandSchemeModifierFn,
   t: typeof BabelTypes,
 ) {
   const parts: BabelTypes.Expression[] = [];
@@ -176,6 +198,8 @@ function processTemplateLiteral(
         componentScope,
         isPlatformModifier,
         isColorSchemeModifier,
+        isSchemeModifier,
+        expandSchemeModifier,
         t,
       );
 
@@ -206,6 +230,8 @@ function processTemplateLiteral(
         componentScope,
         isPlatformModifier,
         isColorSchemeModifier,
+        isSchemeModifier,
+        expandSchemeModifier,
         t,
       );
       if (result) {
@@ -244,6 +270,8 @@ function processConditionalExpression(
   componentScope: NodePath<BabelTypes.Function> | null,
   isPlatformModifier: ModifierTypeGuardFn,
   isColorSchemeModifier: ModifierTypeGuardFn,
+  isSchemeModifier: ModifierTypeGuardFn,
+  expandSchemeModifier: ExpandSchemeModifierFn,
   t: typeof BabelTypes,
 ) {
   const consequent = processStringOrExpressionHelper(
@@ -257,6 +285,8 @@ function processConditionalExpression(
     componentScope,
     isPlatformModifier,
     isColorSchemeModifier,
+    isSchemeModifier,
+    expandSchemeModifier,
     t,
   );
   const alternate = processStringOrExpressionHelper(
@@ -270,6 +300,8 @@ function processConditionalExpression(
     componentScope,
     isPlatformModifier,
     isColorSchemeModifier,
+    isSchemeModifier,
+    expandSchemeModifier,
     t,
   );
 
@@ -301,6 +333,8 @@ function processLogicalExpression(
   componentScope: NodePath<BabelTypes.Function> | null,
   isPlatformModifier: ModifierTypeGuardFn,
   isColorSchemeModifier: ModifierTypeGuardFn,
+  isSchemeModifier: ModifierTypeGuardFn,
+  expandSchemeModifier: ExpandSchemeModifierFn,
   t: typeof BabelTypes,
 ) {
   // Only handle AND (&&) expressions
@@ -319,6 +353,8 @@ function processLogicalExpression(
     componentScope,
     isPlatformModifier,
     isColorSchemeModifier,
+    isSchemeModifier,
+    expandSchemeModifier,
     t,
   );
 
@@ -348,6 +384,8 @@ function processStringOrExpressionHelper(
   componentScope: NodePath<BabelTypes.Function> | null,
   isPlatformModifier: ModifierTypeGuardFn,
   isColorSchemeModifier: ModifierTypeGuardFn,
+  isSchemeModifier: ModifierTypeGuardFn,
+  expandSchemeModifier: ExpandSchemeModifierFn,
   t: typeof BabelTypes,
 ): BabelTypes.Expression | BabelTypes.ArrayExpression | null {
   // Handle string literals
@@ -358,7 +396,25 @@ function processStringOrExpressionHelper(
     }
 
     // Split into base and modifier classes
-    const { baseClasses, modifierClasses } = splitModifierClasses(className);
+    const { baseClasses, modifierClasses: rawModifierClasses } = splitModifierClasses(className);
+
+    // Expand scheme: modifiers into dark: and light: modifiers
+    const modifierClasses: Array<import("../../parser/index.js").ParsedModifier> = [];
+    for (const modifier of rawModifierClasses) {
+      if (isSchemeModifier(modifier.modifier)) {
+        // Expand scheme: into dark: and light:
+        const expanded = expandSchemeModifier(
+          modifier,
+          state.customColors,
+          state.schemeModifierConfig.darkSuffix ?? "-dark",
+          state.schemeModifierConfig.lightSuffix ?? "-light",
+        );
+        modifierClasses.push(...expanded);
+      } else {
+        // Keep other modifiers as-is
+        modifierClasses.push(modifier);
+      }
+    }
 
     // Separate modifiers by type
     const platformModifiers = modifierClasses.filter((m) => isPlatformModifier(m.modifier));
@@ -436,6 +492,8 @@ function processStringOrExpressionHelper(
       componentScope,
       isPlatformModifier,
       isColorSchemeModifier,
+      isSchemeModifier,
+      expandSchemeModifier,
       t,
     );
     return result?.expression ?? null;
@@ -453,6 +511,8 @@ function processStringOrExpressionHelper(
       componentScope,
       isPlatformModifier,
       isColorSchemeModifier,
+      isSchemeModifier,
+      expandSchemeModifier,
       t,
     );
     return result?.expression ?? null;
@@ -470,6 +530,8 @@ function processStringOrExpressionHelper(
       componentScope,
       isPlatformModifier,
       isColorSchemeModifier,
+      isSchemeModifier,
+      expandSchemeModifier,
       t,
     );
     return result?.expression ?? null;

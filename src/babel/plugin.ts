@@ -7,8 +7,10 @@ import type { NodePath, PluginObj, PluginPass } from "@babel/core";
 import * as BabelTypes from "@babel/types";
 import type { ParsedModifier, StateModifierType } from "../parser/index.js";
 import {
+  expandSchemeModifier,
   isColorSchemeModifier,
   isPlatformModifier,
+  isSchemeModifier,
   isStateModifier,
   parseClassName,
   parsePlaceholderClasses,
@@ -19,6 +21,7 @@ import { generateStyleKey } from "../utils/styleKey.js";
 import { extractCustomColors } from "./config-loader.js";
 
 // Import utility functions
+import type { SchemeModifierConfig } from "../types/config.js";
 import {
   DEFAULT_CLASS_ATTRIBUTES,
   buildAttributeMatchers,
@@ -69,6 +72,22 @@ export type PluginOptions = {
    * @default '_twStyles'
    */
   stylesIdentifier?: string;
+
+  /**
+   * Configuration for the scheme: modifier that expands to both dark: and light: modifiers
+   *
+   * @example
+   * {
+   *   darkSuffix: '-dark',  // scheme:bg-primary -> dark:bg-primary-dark
+   *   lightSuffix: '-light' // scheme:bg-primary -> light:bg-primary-light
+   * }
+   *
+   * @default { darkSuffix: '-dark', lightSuffix: '-light' }
+   */
+  schemeModifier?: {
+    darkSuffix?: string;
+    lightSuffix?: string;
+  };
 };
 
 type PluginState = PluginPass & {
@@ -81,6 +100,7 @@ type PluginState = PluginPass & {
   needsColorSchemeImport: boolean;
   colorSchemeVariableName: string;
   customColors: Record<string, string>;
+  schemeModifierConfig: SchemeModifierConfig;
   supportedAttributes: Set<string>;
   attributePatterns: RegExp[];
   stylesIdentifier: string;
@@ -183,6 +203,12 @@ export default function reactNativeTailwindBabelPlugin(
   const { exactMatches, patterns } = buildAttributeMatchers(attributes);
   const stylesIdentifier = options?.stylesIdentifier ?? DEFAULT_STYLES_IDENTIFIER;
 
+  // Scheme modifier configuration from plugin options
+  const schemeModifierConfig = {
+    darkSuffix: options?.schemeModifier?.darkSuffix ?? "-dark",
+    lightSuffix: options?.schemeModifier?.lightSuffix ?? "-light",
+  };
+
   return {
     name: "react-native-tailwind",
 
@@ -207,6 +233,9 @@ export default function reactNativeTailwindBabelPlugin(
 
           // Load custom colors from tailwind.config.*
           state.customColors = extractCustomColors(state.file.opts.filename ?? "");
+
+          // Use scheme modifier config from plugin options
+          state.schemeModifierConfig = schemeModifierConfig;
         },
 
         exit(path, state) {
@@ -441,8 +470,26 @@ export default function reactNativeTailwindBabelPlugin(
 
           state.hasClassNames = true;
 
-          // Check if className contains modifiers (active:, hover:, focus:, placeholder:, ios:, android:, web:, dark:, light:)
-          const { baseClasses, modifierClasses } = splitModifierClasses(className);
+          // Check if className contains modifiers (active:, hover:, focus:, placeholder:, ios:, android:, web:, dark:, light:, scheme:)
+          const { baseClasses, modifierClasses: rawModifierClasses } = splitModifierClasses(className);
+
+          // Expand scheme: modifiers into dark: and light: modifiers
+          const modifierClasses: ParsedModifier[] = [];
+          for (const modifier of rawModifierClasses) {
+            if (isSchemeModifier(modifier.modifier)) {
+              // Expand scheme: into dark: and light:
+              const expanded = expandSchemeModifier(
+                modifier,
+                state.customColors,
+                state.schemeModifierConfig.darkSuffix,
+                state.schemeModifierConfig.lightSuffix,
+              );
+              modifierClasses.push(...expanded);
+            } else {
+              // Keep other modifiers as-is
+              modifierClasses.push(modifier);
+            }
+          }
 
           // Separate modifiers by type
           const placeholderModifiers = modifierClasses.filter((m) => m.modifier === "placeholder");
@@ -626,8 +673,8 @@ export default function reactNativeTailwindBabelPlugin(
               styleExpressions.push(platformSelectExpression);
             }
 
-            // Add color scheme modifiers as conditionals
-            if (hasColorSchemeModifiers) {
+            // Add color scheme modifiers as conditionals (only if we have a valid component scope)
+            if (hasColorSchemeModifiers && componentScope) {
               const colorSchemeConditionals = processColorSchemeModifiers(
                 colorSchemeModifiers,
                 state,
@@ -810,6 +857,8 @@ export default function reactNativeTailwindBabelPlugin(
               componentScope,
               isPlatformModifier as (modifier: unknown) => boolean,
               isColorSchemeModifier as (modifier: unknown) => boolean,
+              isSchemeModifier as (modifier: unknown) => boolean,
+              expandSchemeModifier,
               t,
             );
 

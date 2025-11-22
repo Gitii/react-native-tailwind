@@ -5,6 +5,8 @@
 import type { NodePath } from "@babel/core";
 import type * as BabelTypes from "@babel/types";
 import type { ModifierType, ParsedModifier } from "../../parser/index.js";
+import { expandSchemeModifier, isSchemeModifier } from "../../parser/index.js";
+import type { SchemeModifierConfig } from "../../types/config.js";
 import type { StyleObject } from "../../types/core.js";
 
 /**
@@ -14,6 +16,7 @@ import type { StyleObject } from "../../types/core.js";
 export interface TwProcessingState {
   styleRegistry: Map<string, StyleObject>;
   customColors: Record<string, string>;
+  schemeModifierConfig: SchemeModifierConfig;
   stylesIdentifier: string;
 }
 
@@ -30,7 +33,25 @@ export function processTwCall(
   splitModifierClasses: (className: string) => { baseClasses: string[]; modifierClasses: ParsedModifier[] },
   t: typeof BabelTypes,
 ): void {
-  const { baseClasses, modifierClasses } = splitModifierClasses(className);
+  const { baseClasses, modifierClasses: rawModifierClasses } = splitModifierClasses(className);
+
+  // Expand scheme: modifiers into dark: and light: modifiers
+  const modifierClasses: ParsedModifier[] = [];
+  for (const modifier of rawModifierClasses) {
+    if (isSchemeModifier(modifier.modifier)) {
+      // Expand scheme: into dark: and light:
+      const expanded = expandSchemeModifier(
+        modifier,
+        state.customColors,
+        state.schemeModifierConfig.darkSuffix ?? "-dark",
+        state.schemeModifierConfig.lightSuffix ?? "-light",
+      );
+      modifierClasses.push(...expanded);
+    } else {
+      // Keep other modifiers as-is
+      modifierClasses.push(modifier);
+    }
+  }
 
   // Build TwStyle object properties
   const objectProperties: BabelTypes.ObjectProperty[] = [];
