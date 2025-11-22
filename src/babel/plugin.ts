@@ -7,6 +7,7 @@ import type { NodePath, PluginObj, PluginPass } from "@babel/core";
 import * as BabelTypes from "@babel/types";
 import type { ParsedModifier, StateModifierType } from "../parser/index.js";
 import {
+  isColorSchemeModifier,
   isPlatformModifier,
   isStateModifier,
   parseClassName,
@@ -24,11 +25,18 @@ import {
   getTargetStyleProp,
   isAttributeSupported,
 } from "./utils/attributeMatchers.js";
+import { processColorSchemeModifiers } from "./utils/colorSchemeModifierProcessing.js";
 import { getComponentModifierSupport, getStatePropertyForModifier } from "./utils/componentSupport.js";
 import { processDynamicExpression } from "./utils/dynamicProcessing.js";
 import { createStyleFunction, processStaticClassNameWithModifiers } from "./utils/modifierProcessing.js";
 import { processPlatformModifiers } from "./utils/platformModifierProcessing.js";
-import { addPlatformImport, addStyleSheetImport, injectStylesAtTop } from "./utils/styleInjection.js";
+import {
+  addColorSchemeImport,
+  addPlatformImport,
+  addStyleSheetImport,
+  injectColorSchemeHook,
+  injectStylesAtTop,
+} from "./utils/styleInjection.js";
 import {
   addOrMergePlaceholderTextColorProp,
   findStyleAttribute,
@@ -69,6 +77,9 @@ type PluginState = PluginPass & {
   hasStyleSheetImport: boolean;
   hasPlatformImport: boolean;
   needsPlatformImport: boolean;
+  hasColorSchemeImport: boolean;
+  needsColorSchemeImport: boolean;
+  colorSchemeVariableName: string;
   customColors: Record<string, string>;
   supportedAttributes: Set<string>;
   attributePatterns: RegExp[];
@@ -78,6 +89,8 @@ type PluginState = PluginPass & {
   hasTwImport: boolean;
   // Track react-native import path for conditional StyleSheet/Platform injection
   reactNativeImportPath?: NodePath<BabelTypes.ImportDeclaration>;
+  // Track function components that need colorScheme hook injection
+  functionComponentsNeedingColorScheme: Set<NodePath<BabelTypes.Function>>;
 };
 
 // Default identifier for the generated StyleSheet constant
@@ -104,11 +117,15 @@ export default function reactNativeTailwindBabelPlugin(
           state.hasStyleSheetImport = false;
           state.hasPlatformImport = false;
           state.needsPlatformImport = false;
+          state.hasColorSchemeImport = false;
+          state.needsColorSchemeImport = false;
+          state.colorSchemeVariableName = "_twColorScheme";
           state.supportedAttributes = exactMatches;
           state.attributePatterns = patterns;
           state.stylesIdentifier = stylesIdentifier;
           state.twImportNames = new Set();
           state.hasTwImport = false;
+          state.functionComponentsNeedingColorScheme = new Set();
 
           // Load custom colors from tailwind.config.*
           state.customColors = extractCustomColors(state.file.opts.filename ?? "");
@@ -133,6 +150,18 @@ export default function reactNativeTailwindBabelPlugin(
           // Add Platform import if platform modifiers were used and not already present
           if (state.needsPlatformImport && !state.hasPlatformImport) {
             addPlatformImport(path, t);
+          }
+
+          // Add useColorScheme import if color scheme modifiers were used and not already present
+          if (state.needsColorSchemeImport && !state.hasColorSchemeImport) {
+            addColorSchemeImport(path, t);
+          }
+
+          // Inject useColorScheme hook in function components that need it
+          if (state.needsColorSchemeImport) {
+            for (const functionPath of state.functionComponentsNeedingColorScheme) {
+              injectColorSchemeHook(functionPath, state.colorSchemeVariableName, t);
+            }
           }
 
           // Generate and inject StyleSheet.create at the beginning of the file (after imports)
@@ -163,6 +192,13 @@ export default function reactNativeTailwindBabelPlugin(
             return false;
           });
 
+          const hasUseColorScheme = specifiers.some((spec) => {
+            if (t.isImportSpecifier(spec) && t.isIdentifier(spec.imported)) {
+              return spec.imported.name === "useColorScheme";
+            }
+            return false;
+          });
+
           // Only track if imports exist - don't mutate yet
           // Actual import injection happens in Program.exit only if needed
           if (hasStyleSheet) {
@@ -171,6 +207,10 @@ export default function reactNativeTailwindBabelPlugin(
 
           if (hasPlatform) {
             state.hasPlatformImport = true;
+          }
+
+          if (hasUseColorScheme) {
+            state.hasColorSchemeImport = true;
           }
 
           // Store reference to the react-native import for later modification if needed
@@ -323,12 +363,13 @@ export default function reactNativeTailwindBabelPlugin(
 
           state.hasClassNames = true;
 
-          // Check if className contains modifiers (active:, hover:, focus:, placeholder:, ios:, android:, web:)
+          // Check if className contains modifiers (active:, hover:, focus:, placeholder:, ios:, android:, web:, dark:, light:)
           const { baseClasses, modifierClasses } = splitModifierClasses(className);
 
           // Separate modifiers by type
           const placeholderModifiers = modifierClasses.filter((m) => m.modifier === "placeholder");
           const platformModifiers = modifierClasses.filter((m) => isPlatformModifier(m.modifier));
+          const colorSchemeModifiers = modifierClasses.filter((m) => isColorSchemeModifier(m.modifier));
           const stateModifiers = modifierClasses.filter(
             (m) => isStateModifier(m.modifier) && m.modifier !== "placeholder",
           );
@@ -359,18 +400,27 @@ export default function reactNativeTailwindBabelPlugin(
 
           // Handle combination of modifiers
           const hasPlatformModifiers = platformModifiers.length > 0;
+          const hasColorSchemeModifiers = colorSchemeModifiers.length > 0;
           const hasStateModifiers = stateModifiers.length > 0;
           const hasBaseClasses = baseClasses.length > 0;
 
-          // If we have both state and platform modifiers, or platform modifiers with complex state,
-          // we need to combine them in an array expression wrapped in an arrow function
-          if (hasStateModifiers && hasPlatformModifiers) {
+          // If we have color scheme modifiers, we need to track the parent function component
+          if (hasColorSchemeModifiers) {
+            const functionComponent = path.getFunctionParent();
+            if (functionComponent && t.isFunction(functionComponent.node)) {
+              state.functionComponentsNeedingColorScheme.add(functionComponent);
+            }
+          }
+
+          // If we have multiple modifier types, combine them in an array expression
+          // For state modifiers, wrap in arrow function; for color scheme, they're just conditionals
+          if (hasStateModifiers && (hasPlatformModifiers || hasColorSchemeModifiers)) {
             // Get the JSX opening element for component support checking
             const jsxOpeningElement = path.parent;
             const componentSupport = getComponentModifierSupport(jsxOpeningElement, t);
 
             if (componentSupport) {
-              // Build style array: [baseStyle, Platform.select(...), stateConditionals]
+              // Build style array: [baseStyle, Platform.select(...), colorSchemeConditionals, stateConditionals]
               const styleArrayElements: BabelTypes.Expression[] = [];
 
               // Add base classes
@@ -385,14 +435,28 @@ export default function reactNativeTailwindBabelPlugin(
               }
 
               // Add platform modifiers as Platform.select()
-              const platformSelectExpression = processPlatformModifiers(
-                platformModifiers,
-                state,
-                parseClassName,
-                generateStyleKey,
-                t,
-              );
-              styleArrayElements.push(platformSelectExpression);
+              if (hasPlatformModifiers) {
+                const platformSelectExpression = processPlatformModifiers(
+                  platformModifiers,
+                  state,
+                  parseClassName,
+                  generateStyleKey,
+                  t,
+                );
+                styleArrayElements.push(platformSelectExpression);
+              }
+
+              // Add color scheme modifiers as conditionals
+              if (hasColorSchemeModifiers) {
+                const colorSchemeConditionals = processColorSchemeModifiers(
+                  colorSchemeModifiers,
+                  state,
+                  parseClassName,
+                  generateStyleKey,
+                  t,
+                );
+                styleArrayElements.push(...colorSchemeConditionals);
+              }
 
               // Add state modifiers as conditionals
               // Group by modifier type
@@ -446,9 +510,9 @@ export default function reactNativeTailwindBabelPlugin(
             }
           }
 
-          // Handle platform-only modifiers (no state modifiers)
-          if (hasPlatformModifiers && !hasStateModifiers) {
-            // Build style array/expression: [baseStyle, Platform.select(...)]
+          // Handle platform and/or color scheme modifiers (no state modifiers)
+          if ((hasPlatformModifiers || hasColorSchemeModifiers) && !hasStateModifiers) {
+            // Build style array/expression: [baseStyle, Platform.select(...), colorSchemeConditionals]
             const styleExpressions: BabelTypes.Expression[] = [];
 
             // Add base classes
@@ -463,14 +527,28 @@ export default function reactNativeTailwindBabelPlugin(
             }
 
             // Add platform modifiers as Platform.select()
-            const platformSelectExpression = processPlatformModifiers(
-              platformModifiers,
-              state,
-              parseClassName,
-              generateStyleKey,
-              t,
-            );
-            styleExpressions.push(platformSelectExpression);
+            if (hasPlatformModifiers) {
+              const platformSelectExpression = processPlatformModifiers(
+                platformModifiers,
+                state,
+                parseClassName,
+                generateStyleKey,
+                t,
+              );
+              styleExpressions.push(platformSelectExpression);
+            }
+
+            // Add color scheme modifiers as conditionals
+            if (hasColorSchemeModifiers) {
+              const colorSchemeConditionals = processColorSchemeModifiers(
+                colorSchemeModifiers,
+                state,
+                parseClassName,
+                generateStyleKey,
+                t,
+              );
+              styleExpressions.push(...colorSchemeConditionals);
+            }
 
             // Generate style attribute
             const styleExpression =
