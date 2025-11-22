@@ -8,7 +8,12 @@
 export type StateModifierType = "active" | "hover" | "focus" | "disabled" | "placeholder";
 export type PlatformModifierType = "ios" | "android" | "web";
 export type ColorSchemeModifierType = "dark" | "light";
-export type ModifierType = StateModifierType | PlatformModifierType | ColorSchemeModifierType;
+export type SchemeModifierType = "scheme";
+export type ModifierType =
+  | StateModifierType
+  | PlatformModifierType
+  | ColorSchemeModifierType
+  | SchemeModifierType;
 
 export type ParsedModifier = {
   modifier: ModifierType;
@@ -37,12 +42,18 @@ const PLATFORM_MODIFIERS: readonly PlatformModifierType[] = ["ios", "android", "
 const COLOR_SCHEME_MODIFIERS: readonly ColorSchemeModifierType[] = ["dark", "light"] as const;
 
 /**
- * All supported modifiers (state + platform + color scheme)
+ * Scheme modifier that expands to both dark: and light: modifiers
+ */
+const SCHEME_MODIFIERS: readonly SchemeModifierType[] = ["scheme"] as const;
+
+/**
+ * All supported modifiers (state + platform + color scheme + scheme)
  */
 const SUPPORTED_MODIFIERS: readonly ModifierType[] = [
   ...STATE_MODIFIERS,
   ...PLATFORM_MODIFIERS,
   ...COLOR_SCHEME_MODIFIERS,
+  ...SCHEME_MODIFIERS,
 ] as const;
 
 /**
@@ -126,6 +137,109 @@ export function isPlatformModifier(modifier: ModifierType): modifier is Platform
  */
 export function isColorSchemeModifier(modifier: ModifierType): modifier is ColorSchemeModifierType {
   return COLOR_SCHEME_MODIFIERS.includes(modifier as ColorSchemeModifierType);
+}
+
+/**
+ * Check if a modifier is a scheme modifier (scheme)
+ *
+ * @param modifier - Modifier type to check
+ * @returns true if modifier is a scheme modifier
+ */
+export function isSchemeModifier(modifier: ModifierType): modifier is SchemeModifierType {
+  return SCHEME_MODIFIERS.includes(modifier as SchemeModifierType);
+}
+
+/**
+ * Check if a class name is a color-based utility class
+ *
+ * @param className - Class name to check
+ * @returns true if class is color-based (text-*, bg-*, border-*)
+ */
+export function isColorClass(className: string): boolean {
+  return className.startsWith("text-") || className.startsWith("bg-") || className.startsWith("border-");
+}
+
+/**
+ * Expand scheme modifier into dark and light modifiers
+ *
+ * @param schemeModifier - Parsed scheme modifier
+ * @param customColors - Custom colors from config
+ * @param darkSuffix - Suffix for dark variant (default: "-dark")
+ * @param lightSuffix - Suffix for light variant (default: "-light")
+ * @returns Array of expanded modifiers (dark: and light:), or empty array if validation fails
+ *
+ * @example
+ * expandSchemeModifier(
+ *   { modifier: "scheme", baseClass: "text-systemGray" },
+ *   { "systemGray-dark": "#333", "systemGray-light": "#ccc" },
+ *   "-dark",
+ *   "-light"
+ * )
+ * // Returns: [
+ * //   { modifier: "dark", baseClass: "text-systemGray-dark" },
+ * //   { modifier: "light", baseClass: "text-systemGray-light" }
+ * // ]
+ */
+export function expandSchemeModifier(
+  schemeModifier: ParsedModifier,
+  customColors: Record<string, string>,
+  darkSuffix = "-dark",
+  lightSuffix = "-light",
+): ParsedModifier[] {
+  const { baseClass } = schemeModifier;
+
+  // Only process color-based classes
+  if (!isColorClass(baseClass)) {
+    if (process.env.NODE_ENV !== "production") {
+      console.warn(
+        `[react-native-tailwind] scheme: modifier only supports color classes (text-*, bg-*, border-*). ` +
+          `Found: "${baseClass}". This modifier will be ignored.`,
+      );
+    }
+    return [];
+  }
+
+  // Extract the color name from the class
+  // e.g., "text-systemGray" -> "systemGray"
+  const match = baseClass.match(/^(text|bg|border)-(.+)$/);
+  if (!match) {
+    return [];
+  }
+
+  const [, prefix, colorName] = match;
+
+  // Build variant class names
+  const darkColorName = `${colorName}${darkSuffix}`;
+  const lightColorName = `${colorName}${lightSuffix}`;
+
+  // Validate that both color variants exist
+  const darkColorExists = customColors[darkColorName] !== undefined;
+  const lightColorExists = customColors[lightColorName] !== undefined;
+
+  if (!darkColorExists || !lightColorExists) {
+    if (process.env.NODE_ENV !== "production") {
+      const missing = [];
+      if (!darkColorExists) missing.push(`${colorName}${darkSuffix}`);
+      if (!lightColorExists) missing.push(`${colorName}${lightSuffix}`);
+      console.warn(
+        `[react-native-tailwind] scheme:${baseClass} requires both color variants to exist. ` +
+          `Missing: ${missing.join(", ")}. This modifier will be ignored.`,
+      );
+    }
+    return [];
+  }
+
+  // Expand to dark: and light: modifiers
+  return [
+    {
+      modifier: "dark" as ColorSchemeModifierType,
+      baseClass: `${prefix}-${darkColorName}`,
+    },
+    {
+      modifier: "light" as ColorSchemeModifierType,
+      baseClass: `${prefix}-${lightColorName}`,
+    },
+  ];
 }
 
 /**

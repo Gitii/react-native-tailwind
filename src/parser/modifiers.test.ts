@@ -1,6 +1,13 @@
 import { describe, expect, it } from "vitest";
 import type { ModifierType, ParsedModifier } from "./modifiers";
-import { hasModifier, parseModifier, splitModifierClasses } from "./modifiers";
+import {
+  expandSchemeModifier,
+  hasModifier,
+  isColorClass,
+  isSchemeModifier,
+  parseModifier,
+  splitModifierClasses,
+} from "./modifiers";
 
 describe("parseModifier - basic functionality", () => {
   it("should parse active modifier", () => {
@@ -371,5 +378,148 @@ describe("type safety", () => {
       expect(typeof parsed.modifier).toBe("string");
       expect(typeof parsed.baseClass).toBe("string");
     }
+  });
+});
+
+describe("isSchemeModifier", () => {
+  it("should return true for scheme modifier", () => {
+    expect(isSchemeModifier("scheme")).toBe(true);
+  });
+
+  it("should return false for non-scheme modifiers", () => {
+    expect(isSchemeModifier("dark")).toBe(false);
+    expect(isSchemeModifier("light")).toBe(false);
+    expect(isSchemeModifier("active")).toBe(false);
+    expect(isSchemeModifier("ios")).toBe(false);
+  });
+});
+
+describe("isColorClass", () => {
+  it("should return true for text color classes", () => {
+    expect(isColorClass("text-red-500")).toBe(true);
+    expect(isColorClass("text-systemGray")).toBe(true);
+    expect(isColorClass("text-blue-50")).toBe(true);
+  });
+
+  it("should return true for background color classes", () => {
+    expect(isColorClass("bg-red-500")).toBe(true);
+    expect(isColorClass("bg-systemGray")).toBe(true);
+    expect(isColorClass("bg-transparent")).toBe(true);
+  });
+
+  it("should return true for border color classes", () => {
+    expect(isColorClass("border-red-500")).toBe(true);
+    expect(isColorClass("border-systemGray")).toBe(true);
+    expect(isColorClass("border-black")).toBe(true);
+  });
+
+  it("should return false for non-color classes", () => {
+    expect(isColorClass("m-4")).toBe(false);
+    expect(isColorClass("p-2")).toBe(false);
+    expect(isColorClass("flex")).toBe(false);
+    expect(isColorClass("rounded-lg")).toBe(false);
+    expect(isColorClass("font-bold")).toBe(false);
+  });
+});
+
+describe("expandSchemeModifier", () => {
+  const customColors = {
+    "systemGray-dark": "#333333",
+    "systemGray-light": "#CCCCCC",
+    "primary-dark": "#1E40AF",
+    "primary-light": "#BFDBFE",
+    "accent-dark": "#DC2626",
+    "accent-light": "#FECACA",
+  };
+
+  it("should expand text color scheme modifier with default suffixes", () => {
+    const modifier = { modifier: "scheme" as const, baseClass: "text-systemGray" };
+    const result = expandSchemeModifier(modifier, customColors);
+
+    expect(result).toHaveLength(2);
+    expect((result as [ParsedModifier, ParsedModifier])[0]).toEqual({
+      modifier: "dark",
+      baseClass: "text-systemGray-dark",
+    });
+    expect((result as [ParsedModifier, ParsedModifier])[1]).toEqual({
+      modifier: "light",
+      baseClass: "text-systemGray-light",
+    });
+  });
+
+  it("should expand background color scheme modifier", () => {
+    const modifier = { modifier: "scheme" as const, baseClass: "bg-primary" };
+    const result = expandSchemeModifier(modifier, customColors);
+
+    expect(result).toHaveLength(2);
+    expect((result as [ParsedModifier, ParsedModifier])[0]).toEqual({
+      modifier: "dark",
+      baseClass: "bg-primary-dark",
+    });
+    expect((result as [ParsedModifier, ParsedModifier])[1]).toEqual({
+      modifier: "light",
+      baseClass: "bg-primary-light",
+    });
+  });
+
+  it("should expand border color scheme modifier", () => {
+    const modifier = { modifier: "scheme" as const, baseClass: "border-accent" };
+    const result = expandSchemeModifier(modifier, customColors);
+
+    expect(result).toHaveLength(2);
+    expect((result as [ParsedModifier, ParsedModifier])[0]).toEqual({
+      modifier: "dark",
+      baseClass: "border-accent-dark",
+    });
+    expect((result as [ParsedModifier, ParsedModifier])[1]).toEqual({
+      modifier: "light",
+      baseClass: "border-accent-light",
+    });
+  });
+
+  it("should use custom suffixes when provided", () => {
+    const modifier = { modifier: "scheme" as const, baseClass: "text-systemGray" };
+    const _result = expandSchemeModifier(modifier, customColors, "-darkMode", "-lightMode");
+
+    const expectedColors = {
+      "systemGray-darkMode": "#333333",
+      "systemGray-lightMode": "#CCCCCC",
+    };
+
+    expect(expandSchemeModifier(modifier, expectedColors, "-darkMode", "-lightMode")).toHaveLength(2);
+  });
+
+  it("should return empty array for non-color classes", () => {
+    const modifier = { modifier: "scheme" as const, baseClass: "m-4" };
+    const result = expandSchemeModifier(modifier, customColors);
+
+    expect(result).toEqual([]);
+  });
+
+  it("should return empty array when dark color variant is missing", () => {
+    const modifier = { modifier: "scheme" as const, baseClass: "text-missing" };
+    const incompleteColors = {
+      "missing-light": "#FFFFFF",
+    };
+    const result = expandSchemeModifier(modifier, incompleteColors);
+
+    expect(result).toEqual([]);
+  });
+
+  it("should return empty array when light color variant is missing", () => {
+    const modifier = { modifier: "scheme" as const, baseClass: "text-missing" };
+    const incompleteColors = {
+      "missing-dark": "#000000",
+    };
+    const result = expandSchemeModifier(modifier, incompleteColors);
+
+    expect(result).toEqual([]);
+  });
+
+  it("should return empty array when both color variants are missing", () => {
+    const modifier = { modifier: "scheme" as const, baseClass: "text-missing" };
+    const result = expandSchemeModifier(modifier, customColors);
+
+    expect(result).toEqual([]);
   });
 });
