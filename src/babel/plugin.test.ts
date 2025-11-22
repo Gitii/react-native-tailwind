@@ -722,6 +722,161 @@ describe("Babel plugin - platform modifier transformation", () => {
   });
 });
 
+describe("Babel plugin - color scheme modifier transformation", () => {
+  it("should transform dark: modifier to conditional expression", () => {
+    const input = `
+      import React from 'react';
+      import { View } from 'react-native';
+
+      export function Component() {
+        return (
+          <View className="bg-white dark:bg-gray-900" />
+        );
+      }
+    `;
+
+    const output = transform(input, undefined, true);
+
+    // Should import useColorScheme
+    expect(output).toContain("useColorScheme");
+    expect(output).toMatch(/import.*useColorScheme.*from ['"]react-native['"]/);
+
+    // Should inject colorScheme hook in component
+    expect(output).toContain("_twColorScheme");
+    expect(output).toContain("useColorScheme()");
+
+    // Should have base bg-white style
+    expect(output).toContain("_bg_white");
+
+    // Should have dark:bg-gray-900 style
+    expect(output).toContain("_dark_bg_gray_900");
+
+    // Should generate conditional: _twColorScheme === 'dark' && ...
+    expect(output).toMatch(/_twColorScheme\s*===\s*['"]dark['"]/);
+  });
+
+  it("should support both dark: and light: modifiers", () => {
+    const input = `
+      import React from 'react';
+      import { View } from 'react-native';
+
+      export function Component() {
+        return (
+          <View className="bg-gray-100 dark:bg-gray-900 light:bg-white" />
+        );
+      }
+    `;
+
+    const output = transform(input, undefined, true);
+
+    // Should have all three styles
+    expect(output).toContain("_bg_gray_100");
+    expect(output).toContain("_dark_bg_gray_900");
+    expect(output).toContain("_light_bg_white");
+
+    // Should have both conditionals
+    expect(output).toMatch(/_twColorScheme\s*===\s*['"]dark['"]/);
+    expect(output).toMatch(/_twColorScheme\s*===\s*['"]light['"]/);
+  });
+
+  it("should inject hook once for multiple elements with color scheme modifiers", () => {
+    const input = `
+      import React from 'react';
+      import { View, Text } from 'react-native';
+
+      export function Component() {
+        return (
+          <>
+            <View className="dark:bg-gray-900" />
+            <Text className="dark:text-white" />
+            <View className="light:bg-white" />
+          </>
+        );
+      }
+    `;
+
+    const output = transform(input, undefined, true);
+
+    // Count occurrences of useColorScheme() call - should be exactly 1
+    const hookCallMatches = output.match(/=\s*useColorScheme\(\)/g);
+    expect(hookCallMatches).toHaveLength(1);
+
+    // Should have color scheme variable
+    expect(output).toContain("_twColorScheme");
+  });
+
+  it("should work with color scheme and platform modifiers together", () => {
+    const input = `
+      import React from 'react';
+      import { View } from 'react-native';
+
+      export function Component() {
+        return (
+          <View className="p-4 ios:p-6 dark:bg-gray-900" />
+        );
+      }
+    `;
+
+    const output = transform(input, undefined, true);
+
+    // Should have Platform import
+    expect(output).toContain("Platform");
+
+    // Should have useColorScheme import
+    expect(output).toContain("useColorScheme");
+
+    // Should have Platform.select for ios:
+    expect(output).toContain("Platform.select");
+    expect(output).toContain("_ios_p_6");
+
+    // Should have color scheme conditional for dark:
+    expect(output).toMatch(/_twColorScheme\s*===\s*['"]dark['"]/);
+    expect(output).toContain("_dark_bg_gray_900");
+  });
+
+  it("should only add useColorScheme import once when needed", () => {
+    const input = `
+      import React from 'react';
+      import { View } from 'react-native';
+
+      export function Component() {
+        return (
+          <>
+            <View className="dark:bg-black" />
+            <View className="light:bg-white" />
+          </>
+        );
+      }
+    `;
+
+    const output = transform(input, undefined, true);
+
+    // Count useColorScheme imports
+    const importMatches = output.match(/import.*useColorScheme.*from ['"]react-native['"]/g);
+    expect(importMatches).toHaveLength(1);
+  });
+
+  it("should merge with existing useColorScheme import", () => {
+    const input = `
+      import React from 'react';
+      import { View, useColorScheme } from 'react-native';
+
+      export function Component() {
+        return <View className="dark:bg-gray-900" />;
+      }
+    `;
+
+    const output = transform(input, undefined, true);
+
+    // Should still use useColorScheme
+    expect(output).toContain("useColorScheme");
+
+    // Should inject hook call
+    expect(output).toContain("_twColorScheme");
+    expect(output).toContain("useColorScheme()");
+  });
+});
+
 describe("Babel plugin - import injection", () => {
   it("should not add StyleSheet import to files without className usage", () => {
     const input = `
