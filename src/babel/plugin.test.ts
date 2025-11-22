@@ -875,6 +875,113 @@ describe("Babel plugin - color scheme modifier transformation", () => {
     expect(output).toContain("_twColorScheme");
     expect(output).toContain("useColorScheme()");
   });
+
+  it("should work with concise arrow functions", () => {
+    const input = `
+      import React from 'react';
+      import { View } from 'react-native';
+
+      const Component = () => <View className="dark:bg-gray-900" />;
+    `;
+
+    const output = transform(input, undefined, true);
+
+    // Should inject useColorScheme import
+    expect(output).toContain("useColorScheme");
+
+    // Should convert concise arrow to block statement and inject hook
+    expect(output).toContain("_twColorScheme");
+    expect(output).toContain("useColorScheme()");
+    expect(output).toContain("return");
+
+    // Should have the style
+    expect(output).toContain("_dark_bg_gray_900");
+    expect(output).toMatch(/_twColorScheme\s*===\s*['"]dark['"]/);
+  });
+
+  it("should inject hook at component level when dark: used in nested callback", () => {
+    const input = `
+      import React from 'react';
+      import { View } from 'react-native';
+
+      export function Component() {
+        const items = [1, 2, 3];
+        return (
+          <View>
+            {items.map(item => (
+              <View key={item} className="dark:bg-gray-900" />
+            ))}
+          </View>
+        );
+      }
+    `;
+
+    const output = transform(input, undefined, true);
+
+    // Should inject hook at Component level (not in map callback)
+    expect(output).toContain("_twColorScheme");
+    expect(output).toContain("useColorScheme()");
+
+    // Hook should be injected in Component function, not in map callback
+    // Count occurrences - should be exactly 1 at Component level
+    const hookCallMatches = output.match(/=\s*useColorScheme\(\)/g);
+    expect(hookCallMatches).toHaveLength(1);
+
+    // Should still generate conditional expression
+    expect(output).toContain("_dark_bg_gray_900");
+    expect(output).toMatch(/_twColorScheme\s*===\s*['"]dark['"]/);
+  });
+
+  it("should handle dynamic expressions with dark:/light: modifiers", () => {
+    const input = `
+      import React from 'react';
+      import { View } from 'react-native';
+
+      export function Component({ isActive }) {
+        return (
+          <View className={\`p-4 \${isActive ? "dark:bg-blue-500" : "dark:bg-gray-900"}\`} />
+        );
+      }
+    `;
+
+    const output = transform(input, undefined, true);
+
+    // Should inject useColorScheme
+    expect(output).toContain("useColorScheme");
+    expect(output).toContain("_twColorScheme");
+
+    // Should have both dark styles
+    expect(output).toContain("_dark_bg_blue_500");
+    expect(output).toContain("_dark_bg_gray_900");
+
+    // Should have conditional expressions for color scheme
+    expect(output).toMatch(/_twColorScheme\s*===\s*['"]dark['"]/);
+  });
+
+  it("should handle dynamic expressions with platform modifiers", () => {
+    const input = `
+      import React from 'react';
+      import { View } from 'react-native';
+
+      export function Component({ isLarge }) {
+        return (
+          <View className={\`p-4 \${isLarge ? "ios:p-8" : "ios:p-6"}\`} />
+        );
+      }
+    `;
+
+    const output = transform(input, undefined, true);
+
+    // Should inject Platform import
+    expect(output).toContain("Platform");
+
+    // Should have both ios styles
+    expect(output).toContain("_ios_p_8");
+    expect(output).toContain("_ios_p_6");
+
+    // Should have Platform.select
+    expect(output).toContain("Platform.select");
+  });
 });
 
 describe("Babel plugin - import injection", () => {
