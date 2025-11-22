@@ -50,6 +50,7 @@ Compile-time Tailwind CSS for React Native with zero runtime overhead. Transform
 - 🎯 **State modifiers** — `active:`, `hover:`, `focus:`, and `disabled:` modifiers for interactive components
 - 📱 **Platform modifiers** — `ios:`, `android:`, and `web:` modifiers for platform-specific styling
 - 🌓 **Color scheme modifiers** — `dark:` and `light:` modifiers for automatic theme adaptation
+- 🎨 **Scheme modifier** — `scheme:` convenience modifier that expands to both `dark:` and `light:` variants
 - 📜 **Special style props** — Support for `contentContainerClassName`, `columnWrapperClassName`, and more
 - 🎛️ **Custom attributes** — Configure which props to transform with exact matching or glob patterns
 
@@ -982,6 +983,209 @@ The Babel plugin:
 - **Compile-time**: All styles parsed and registered during build
 - **Runtime**: One `useColorScheme()` hook call per component + minimal conditional checks
 - **Bundle size**: Only includes styles actually used in your code
+
+#### Scheme Modifier (Convenience)
+
+The `scheme:` modifier is a convenience feature that automatically expands to both `dark:` and `light:` modifiers for color classes. This is useful when you have custom colors with separate dark and light variants.
+
+**Basic Usage:**
+
+```tsx
+import { View, Text } from "react-native";
+
+export function ThemedCard() {
+  return (
+    <View className="scheme:bg-systemGray p-4 rounded-lg">
+      <Text className="scheme:text-systemLabel">Adaptive system colors</Text>
+    </View>
+  );
+}
+```
+
+**Transforms to:**
+
+```tsx
+// Automatically expands to both dark: and light: modifiers
+<View className="dark:bg-systemGray-dark light:bg-systemGray-light p-4 rounded-lg">
+  <Text className="dark:text-systemLabel-dark light:text-systemLabel-light">
+    Adaptive system colors
+  </Text>
+</View>
+```
+
+**Requirements:**
+
+To use the `scheme:` modifier, you must define both color variants in your `tailwind.config.*`:
+
+```javascript
+// tailwind.config.mjs
+export default {
+  theme: {
+    extend: {
+      colors: {
+        // Option 1: Nested structure
+        systemGray: {
+          light: "#8e8e93",
+          dark: "#8e8e93",
+        },
+        systemLabel: {
+          light: "#000000",
+          dark: "#ffffff",
+        },
+
+        // Option 2: Flat structure with suffixes
+        "primary-light": "#bfdbfe",
+        "primary-dark": "#1e40af",
+      },
+    },
+  },
+};
+```
+
+**Configuring Suffixes:**
+
+By default, the plugin looks for `-dark` and `-light` suffixes. You can customize these in your Babel configuration:
+
+```javascript
+// babel.config.js
+module.exports = {
+  plugins: [
+    [
+      "@mgcrea/react-native-tailwind/babel",
+      {
+        schemeModifier: {
+          darkSuffix: "-dark",   // default
+          lightSuffix: "-light", // default
+        },
+      },
+    ],
+  ],
+};
+```
+
+**Custom Suffixes Example:**
+
+```javascript
+// babel.config.js with custom suffixes
+module.exports = {
+  plugins: [
+    [
+      "@mgcrea/react-native-tailwind/babel",
+      {
+        schemeModifier: {
+          darkSuffix: "Dark",
+          lightSuffix: "Light",
+        },
+      },
+    ],
+  ],
+};
+
+// tailwind.config.mjs
+export default {
+  theme: {
+    extend: {
+      colors: {
+        systemGrayDark: "#8e8e93",
+        systemGrayLight: "#8e8e93",
+      },
+    },
+  },
+};
+
+// Usage (same as before)
+<View className="scheme:bg-systemGray" />
+```
+
+**Validation:**
+
+The plugin validates that both color variants exist at compile time:
+
+```tsx
+// ✅ Works - both variants exist
+<View className="scheme:bg-systemGray" />
+// Expands to: dark:bg-systemGray-dark light:bg-systemGray-light
+
+// ⚠️ Warning (development only) - missing light variant
+<View className="scheme:bg-incomplete" />
+// Only has: incomplete-dark
+// Warning: "Missing: incomplete-light. This modifier will be ignored."
+
+// ⚠️ Warning - non-color class
+<View className="scheme:p-4" />
+// Warning: "scheme: modifier only supports color classes (text-*, bg-*, border-*)"
+```
+
+**Supported Color Classes:**
+
+The `scheme:` modifier only works with color utilities:
+
+- ✅ `scheme:text-{color}` — Text colors
+- ✅ `scheme:bg-{color}` — Background colors
+- ✅ `scheme:border-{color}` — Border colors
+- ❌ Other utilities — Ignored with development warning
+
+**Use Cases:**
+
+**Semantic color names:**
+
+```tsx
+// Define semantic system colors that adapt to appearance
+<View className="scheme:bg-systemBackground p-4">
+  <Text className="scheme:text-systemLabel">System-native appearance</Text>
+  <View className="scheme:border-systemSeparator border-t mt-2 pt-2">
+    <Text className="scheme:text-systemSecondaryLabel">Secondary text</Text>
+  </View>
+</View>
+```
+
+**Brand colors with theme variants:**
+
+```tsx
+// Brand colors that look good in both themes
+<View className="scheme:bg-brand p-6 rounded-xl">
+  <Text className="scheme:text-brandContrast text-xl font-bold">
+    Branded Card
+  </Text>
+  <Text className="scheme:text-brandSubtle mt-2">
+    Automatically adapts to user's theme preference
+  </Text>
+</View>
+```
+
+**Mixed with other modifiers:**
+
+```tsx
+import { Pressable } from "@mgcrea/react-native-tailwind";
+
+// Combine with state and platform modifiers
+<Pressable className="scheme:bg-interactive active:opacity-80 ios:p-6 android:p-4 rounded-lg">
+  <Text className="scheme:text-interactiveText font-semibold">
+    Press Me
+  </Text>
+</Pressable>
+```
+
+**Key Features:**
+
+- ✅ **DRY principle** — Define color pairs once, use everywhere with `scheme:`
+- ✅ **Compile-time expansion** — Expands to `dark:` and `light:` during build
+- ✅ **Type-safe** — Full TypeScript autocomplete
+- ✅ **Validates at compile-time** — Ensures both variants exist
+- ✅ **Zero runtime overhead** — Same performance as writing `dark:` and `light:` manually
+- ✅ **Configurable suffixes** — Adapt to your naming convention
+
+**How it works:**
+
+The Babel plugin:
+
+1. Detects `scheme:` modifiers during compilation
+2. Validates that the class is a color utility (`text-*`, `bg-*`, `border-*`)
+3. Checks that both color variants exist in your custom colors (e.g., `systemGray-dark` and `systemGray-light`)
+4. Expands to both `dark:` and `light:` modifiers before further processing
+5. Processes the expanded modifiers using the standard color scheme logic (injects `useColorScheme()` hook)
+
+This means `scheme:bg-systemGray` is functionally identical to writing `dark:bg-systemGray-dark light:bg-systemGray-light`, but more concise and maintainable.
 
 ### ScrollView Content Container
 
