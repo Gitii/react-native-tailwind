@@ -2,7 +2,9 @@
  * Utility functions for processing dynamic className expressions
  */
 
+import type { NodePath } from "@babel/core";
 import type * as BabelTypes from "@babel/types";
+import type { ParsedModifier } from "../../parser/index.js";
 import type { StyleObject } from "../../types/core.js";
 
 /**
@@ -13,7 +15,46 @@ export interface DynamicProcessingState {
   styleRegistry: Map<string, StyleObject>;
   customColors: Record<string, string>;
   stylesIdentifier: string;
+  needsPlatformImport: boolean;
+  needsColorSchemeImport: boolean;
+  colorSchemeVariableName: string;
+  functionComponentsNeedingColorScheme: Set<NodePath<BabelTypes.Function>>;
 }
+
+/**
+ * Type for the splitModifierClasses function
+ */
+export type SplitModifierClassesFn = (className: string) => {
+  baseClasses: string[];
+  modifierClasses: ParsedModifier[];
+};
+
+/**
+ * Type for the processPlatformModifiers function
+ */
+export type ProcessPlatformModifiersFn = (
+  modifiers: ParsedModifier[],
+  state: DynamicProcessingState,
+  parseClassName: (className: string, customColors: Record<string, string>) => StyleObject,
+  generateStyleKey: (className: string) => string,
+  t: typeof BabelTypes,
+) => BabelTypes.Expression;
+
+/**
+ * Type for the processColorSchemeModifiers function
+ */
+export type ProcessColorSchemeModifiersFn = (
+  modifiers: ParsedModifier[],
+  state: DynamicProcessingState,
+  parseClassName: (className: string, customColors: Record<string, string>) => StyleObject,
+  generateStyleKey: (className: string) => string,
+  t: typeof BabelTypes,
+) => BabelTypes.Expression[];
+
+/**
+ * Type for modifier type guard functions
+ */
+export type ModifierTypeGuardFn = (modifier: unknown) => boolean;
 
 /**
  * Result of processing a dynamic expression
@@ -34,21 +75,63 @@ export function processDynamicExpression(
   state: DynamicProcessingState,
   parseClassName: (className: string, customColors: Record<string, string>) => StyleObject,
   generateStyleKey: (className: string) => string,
+  splitModifierClasses: SplitModifierClassesFn,
+  processPlatformModifiers: ProcessPlatformModifiersFn,
+  processColorSchemeModifiers: ProcessColorSchemeModifiersFn,
+  componentScope: NodePath<BabelTypes.Function> | null,
+  isPlatformModifier: ModifierTypeGuardFn,
+  isColorSchemeModifier: ModifierTypeGuardFn,
   t: typeof BabelTypes,
 ) {
   // Handle template literals: `m-4 ${condition ? "p-4" : "p-2"}`
   if (t.isTemplateLiteral(expression)) {
-    return processTemplateLiteral(expression, state, parseClassName, generateStyleKey, t);
+    return processTemplateLiteral(
+      expression,
+      state,
+      parseClassName,
+      generateStyleKey,
+      splitModifierClasses,
+      processPlatformModifiers,
+      processColorSchemeModifiers,
+      componentScope,
+      isPlatformModifier,
+      isColorSchemeModifier,
+      t,
+    );
   }
 
   // Handle conditional expressions: condition ? "m-4" : "p-2"
   if (t.isConditionalExpression(expression)) {
-    return processConditionalExpression(expression, state, parseClassName, generateStyleKey, t);
+    return processConditionalExpression(
+      expression,
+      state,
+      parseClassName,
+      generateStyleKey,
+      splitModifierClasses,
+      processPlatformModifiers,
+      processColorSchemeModifiers,
+      componentScope,
+      isPlatformModifier,
+      isColorSchemeModifier,
+      t,
+    );
   }
 
   // Handle logical expressions: condition && "m-4"
   if (t.isLogicalExpression(expression)) {
-    return processLogicalExpression(expression, state, parseClassName, generateStyleKey, t);
+    return processLogicalExpression(
+      expression,
+      state,
+      parseClassName,
+      generateStyleKey,
+      splitModifierClasses,
+      processPlatformModifiers,
+      processColorSchemeModifiers,
+      componentScope,
+      isPlatformModifier,
+      isColorSchemeModifier,
+      t,
+    );
   }
 
   // Unsupported expression type
@@ -63,9 +146,15 @@ function processTemplateLiteral(
   state: DynamicProcessingState,
   parseClassName: (className: string, customColors: Record<string, string>) => StyleObject,
   generateStyleKey: (className: string) => string,
+  splitModifierClasses: SplitModifierClassesFn,
+  processPlatformModifiers: ProcessPlatformModifiersFn,
+  processColorSchemeModifiers: ProcessColorSchemeModifiersFn,
+  componentScope: NodePath<BabelTypes.Function> | null,
+  isPlatformModifier: ModifierTypeGuardFn,
+  isColorSchemeModifier: ModifierTypeGuardFn,
   t: typeof BabelTypes,
 ) {
-  const parts: BabelTypes.MemberExpression[] = [];
+  const parts: BabelTypes.Expression[] = [];
   const staticParts: string[] = [];
 
   // Process quasis (static parts) and expressions (dynamic parts)
@@ -75,16 +164,29 @@ function processTemplateLiteral(
 
     // Add static part if not empty
     if (staticText) {
-      // Parse static classes and add to registry
-      const classes = staticText.split(/\s+/).filter(Boolean);
-      for (const cls of classes) {
-        const styleObject = parseClassName(cls, state.customColors);
-        const styleKey = generateStyleKey(cls);
-        state.styleRegistry.set(styleKey, styleObject);
-        staticParts.push(cls);
+      // Parse static classes with modifier support
+      const processedExpression = processStringOrExpressionHelper(
+        t.stringLiteral(staticText),
+        state,
+        parseClassName,
+        generateStyleKey,
+        splitModifierClasses,
+        processPlatformModifiers,
+        processColorSchemeModifiers,
+        componentScope,
+        isPlatformModifier,
+        isColorSchemeModifier,
+        t,
+      );
 
-        // Add to parts array
-        parts.push(t.memberExpression(t.identifier(state.stylesIdentifier), t.identifier(styleKey)));
+      if (processedExpression) {
+        staticParts.push(staticText);
+        // Handle array or single expression
+        if (t.isArrayExpression(processedExpression)) {
+          parts.push(...(processedExpression.elements as BabelTypes.Expression[]));
+        } else {
+          parts.push(processedExpression);
+        }
       }
     }
 
@@ -98,14 +200,19 @@ function processTemplateLiteral(
         state,
         parseClassName,
         generateStyleKey,
+        splitModifierClasses,
+        processPlatformModifiers,
+        processColorSchemeModifiers,
+        componentScope,
+        isPlatformModifier,
+        isColorSchemeModifier,
         t,
       );
       if (result) {
-        parts.push(result.expression as BabelTypes.MemberExpression);
+        parts.push(result.expression);
       } else {
         // For unsupported expressions, keep them as-is
-        // This won't work at runtime but maintains the structure
-        parts.push(expr as BabelTypes.MemberExpression);
+        parts.push(expr as BabelTypes.Expression);
       }
     }
   }
@@ -131,10 +238,40 @@ function processConditionalExpression(
   state: DynamicProcessingState,
   parseClassName: (className: string, customColors: Record<string, string>) => StyleObject,
   generateStyleKey: (className: string) => string,
+  splitModifierClasses: SplitModifierClassesFn,
+  processPlatformModifiers: ProcessPlatformModifiersFn,
+  processColorSchemeModifiers: ProcessColorSchemeModifiersFn,
+  componentScope: NodePath<BabelTypes.Function> | null,
+  isPlatformModifier: ModifierTypeGuardFn,
+  isColorSchemeModifier: ModifierTypeGuardFn,
   t: typeof BabelTypes,
 ) {
-  const consequent = processStringOrExpression(node.consequent, state, parseClassName, generateStyleKey, t);
-  const alternate = processStringOrExpression(node.alternate, state, parseClassName, generateStyleKey, t);
+  const consequent = processStringOrExpressionHelper(
+    node.consequent,
+    state,
+    parseClassName,
+    generateStyleKey,
+    splitModifierClasses,
+    processPlatformModifiers,
+    processColorSchemeModifiers,
+    componentScope,
+    isPlatformModifier,
+    isColorSchemeModifier,
+    t,
+  );
+  const alternate = processStringOrExpressionHelper(
+    node.alternate,
+    state,
+    parseClassName,
+    generateStyleKey,
+    splitModifierClasses,
+    processPlatformModifiers,
+    processColorSchemeModifiers,
+    componentScope,
+    isPlatformModifier,
+    isColorSchemeModifier,
+    t,
+  );
 
   if (!consequent && !alternate) {
     return null;
@@ -143,8 +280,8 @@ function processConditionalExpression(
   // Build conditional: condition ? consequentStyle : alternateStyle
   const expression = t.conditionalExpression(
     node.test,
-    (consequent as BabelTypes.Expression) ?? t.nullLiteral(),
-    (alternate as BabelTypes.Expression) ?? t.nullLiteral(),
+    consequent ?? t.nullLiteral(),
+    alternate ?? t.nullLiteral(),
   );
 
   return { expression };
@@ -158,6 +295,12 @@ function processLogicalExpression(
   state: DynamicProcessingState,
   parseClassName: (className: string, customColors: Record<string, string>) => StyleObject,
   generateStyleKey: (className: string) => string,
+  splitModifierClasses: SplitModifierClassesFn,
+  processPlatformModifiers: ProcessPlatformModifiersFn,
+  processColorSchemeModifiers: ProcessColorSchemeModifiersFn,
+  componentScope: NodePath<BabelTypes.Function> | null,
+  isPlatformModifier: ModifierTypeGuardFn,
+  isColorSchemeModifier: ModifierTypeGuardFn,
   t: typeof BabelTypes,
 ) {
   // Only handle AND (&&) expressions
@@ -165,28 +308,48 @@ function processLogicalExpression(
     return null;
   }
 
-  const right = processStringOrExpression(node.right, state, parseClassName, generateStyleKey, t);
+  const right = processStringOrExpressionHelper(
+    node.right,
+    state,
+    parseClassName,
+    generateStyleKey,
+    splitModifierClasses,
+    processPlatformModifiers,
+    processColorSchemeModifiers,
+    componentScope,
+    isPlatformModifier,
+    isColorSchemeModifier,
+    t,
+  );
 
   if (!right) {
     return null;
   }
 
   // Build logical: condition && style
-  const expression = t.logicalExpression("&&", node.left, right as BabelTypes.Expression);
+  const expression = t.logicalExpression("&&", node.left, right);
 
   return { expression };
 }
 
 /**
  * Process a node that might be a string literal or another expression
+ *
+ * This helper is called by processStringOrExpression below
  */
-function processStringOrExpression(
+function processStringOrExpressionHelper(
   node: BabelTypes.StringLiteral | BabelTypes.Expression,
   state: DynamicProcessingState,
   parseClassName: (className: string, customColors: Record<string, string>) => StyleObject,
   generateStyleKey: (className: string) => string,
+  splitModifierClasses: SplitModifierClassesFn,
+  processPlatformModifiers: ProcessPlatformModifiersFn,
+  processColorSchemeModifiers: ProcessColorSchemeModifiersFn,
+  componentScope: NodePath<BabelTypes.Function> | null,
+  isPlatformModifier: ModifierTypeGuardFn,
+  isColorSchemeModifier: ModifierTypeGuardFn,
   t: typeof BabelTypes,
-) {
+): BabelTypes.Expression | BabelTypes.ArrayExpression | null {
   // Handle string literals
   if (t.isStringLiteral(node)) {
     const className = node.value.trim();
@@ -194,27 +357,121 @@ function processStringOrExpression(
       return null;
     }
 
-    // Parse and register styles
-    const styleObject = parseClassName(className, state.customColors);
-    const styleKey = generateStyleKey(className);
-    state.styleRegistry.set(styleKey, styleObject);
+    // Split into base and modifier classes
+    const { baseClasses, modifierClasses } = splitModifierClasses(className);
 
-    return t.memberExpression(t.identifier(state.stylesIdentifier), t.identifier(styleKey));
+    // Separate modifiers by type
+    const platformModifiers = modifierClasses.filter((m) => isPlatformModifier(m.modifier));
+    const colorSchemeModifiers = modifierClasses.filter((m) => isColorSchemeModifier(m.modifier));
+
+    const styleElements: BabelTypes.Expression[] = [];
+
+    // Process base classes
+    if (baseClasses.length > 0) {
+      const baseClassName = baseClasses.join(" ");
+      const styleObject = parseClassName(baseClassName, state.customColors);
+      const styleKey = generateStyleKey(baseClassName);
+      state.styleRegistry.set(styleKey, styleObject);
+      styleElements.push(t.memberExpression(t.identifier(state.stylesIdentifier), t.identifier(styleKey)));
+    }
+
+    // Process platform modifiers
+    if (platformModifiers.length > 0) {
+      state.needsPlatformImport = true;
+      const platformExpression = processPlatformModifiers(
+        platformModifiers,
+        state,
+        parseClassName,
+        generateStyleKey,
+        t,
+      );
+      styleElements.push(platformExpression);
+    }
+
+    // Process color scheme modifiers (only if component scope exists)
+    if (colorSchemeModifiers.length > 0) {
+      if (componentScope) {
+        state.needsColorSchemeImport = true;
+        state.functionComponentsNeedingColorScheme.add(componentScope);
+        const colorSchemeExpressions = processColorSchemeModifiers(
+          colorSchemeModifiers,
+          state,
+          parseClassName,
+          generateStyleKey,
+          t,
+        );
+        styleElements.push(...colorSchemeExpressions);
+      } else {
+        // Warn in development: color scheme modifiers without valid component scope
+        // Skip transformation - these modifiers will be ignored
+        if (process.env.NODE_ENV !== "production") {
+          console.warn(
+            "[react-native-tailwind] dark:/light: modifiers in dynamic expressions require a function component scope. " +
+              "These modifiers will be ignored.",
+          );
+        }
+      }
+    }
+
+    // Return single element or array
+    if (styleElements.length === 0) {
+      return null;
+    }
+    if (styleElements.length === 1) {
+      return styleElements[0];
+    }
+    return t.arrayExpression(styleElements);
   }
 
   // Handle nested expressions recursively
   if (t.isConditionalExpression(node)) {
-    const result = processConditionalExpression(node, state, parseClassName, generateStyleKey, t);
+    const result = processConditionalExpression(
+      node,
+      state,
+      parseClassName,
+      generateStyleKey,
+      splitModifierClasses,
+      processPlatformModifiers,
+      processColorSchemeModifiers,
+      componentScope,
+      isPlatformModifier,
+      isColorSchemeModifier,
+      t,
+    );
     return result?.expression ?? null;
   }
 
   if (t.isLogicalExpression(node)) {
-    const result = processLogicalExpression(node, state, parseClassName, generateStyleKey, t);
+    const result = processLogicalExpression(
+      node,
+      state,
+      parseClassName,
+      generateStyleKey,
+      splitModifierClasses,
+      processPlatformModifiers,
+      processColorSchemeModifiers,
+      componentScope,
+      isPlatformModifier,
+      isColorSchemeModifier,
+      t,
+    );
     return result?.expression ?? null;
   }
 
   if (t.isTemplateLiteral(node)) {
-    const result = processTemplateLiteral(node, state, parseClassName, generateStyleKey, t);
+    const result = processTemplateLiteral(
+      node,
+      state,
+      parseClassName,
+      generateStyleKey,
+      splitModifierClasses,
+      processPlatformModifiers,
+      processColorSchemeModifiers,
+      componentScope,
+      isPlatformModifier,
+      isColorSchemeModifier,
+      t,
+    );
     return result?.expression ?? null;
   }
 
