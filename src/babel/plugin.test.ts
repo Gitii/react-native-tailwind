@@ -982,6 +982,44 @@ describe("Babel plugin - color scheme modifier transformation", () => {
     // Should have Platform.select
     expect(output).toContain("Platform.select");
   });
+
+  it("should skip color scheme modifiers when used outside component scope", () => {
+    // Suppress console.warn for this test
+    const consoleWarnSpy = vi.spyOn(console, "warn").mockImplementation(() => {});
+
+    const input = `
+      import React from 'react';
+      import { View } from 'react-native';
+
+      // Class component - no function component scope
+      class MyComponent extends React.Component {
+        render() {
+          return <View className="p-4 dark:bg-gray-900" />;
+        }
+      }
+    `;
+
+    const output = transform(input, undefined, true);
+
+    // Should warn about invalid context
+    expect(consoleWarnSpy).toHaveBeenCalledWith(
+      expect.stringContaining("dark:/light: modifiers require a function component scope"),
+    );
+
+    // Should NOT inject useColorScheme import (no valid component scope)
+    expect(output).not.toContain("useColorScheme");
+
+    // Should NOT have _twColorScheme variable reference (would cause ReferenceError)
+    expect(output).not.toContain("_twColorScheme");
+
+    // Should NOT have dark: style conditional (skipped due to no component scope)
+    expect(output).not.toContain("_dark_bg_gray_900");
+
+    // Should still transform base classes (p-4)
+    expect(output).toContain("_p_4");
+
+    consoleWarnSpy.mockRestore();
+  });
 });
 
 describe("Babel plugin - import injection", () => {
@@ -1067,5 +1105,36 @@ describe("Babel plugin - import injection", () => {
 
     // Should still have StyleSheet
     expect(output).toContain("StyleSheet");
+  });
+});
+
+describe("Babel plugin - scheme: modifier", () => {
+  it.skip("should expand scheme: modifier into dark: and light: modifiers", () => {
+    // Note: This test requires tailwind.config.js with custom colors defined
+    // The scheme: modifier expands to dark: and light: modifiers which require
+    // the color variants to exist in customColors (e.g., systemGray-dark, systemGray-light)
+    //
+    // Integration test should be done in a real project with tailwind.config.js
+    const input = `
+      import { View } from 'react-native';
+
+      function MyComponent() {
+        return <View className="scheme:text-systemGray" />;
+      }
+    `;
+
+    const output = transform(input, undefined, true);
+
+    // Should generate both dark and light variants
+    expect(output).toContain("_dark_text_systemGray_dark");
+    expect(output).toContain("_light_text_systemGray_light");
+
+    // Should inject useColorScheme hook
+    expect(output).toContain("useColorScheme");
+    expect(output).toContain("_twColorScheme");
+
+    // Should have conditional expressions
+    expect(output).toContain("_twColorScheme === 'dark'");
+    expect(output).toContain("_twColorScheme === 'light'");
   });
 });
