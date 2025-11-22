@@ -65,6 +65,97 @@ export function addPlatformImport(path: NodePath<BabelTypes.Program>, t: typeof 
 }
 
 /**
+ * Add useColorScheme import to the file or merge with existing react-native import
+ */
+export function addColorSchemeImport(path: NodePath<BabelTypes.Program>, t: typeof BabelTypes): void {
+  // Check if there's already a react-native import
+  const body = path.node.body;
+  let reactNativeImport: BabelTypes.ImportDeclaration | null = null;
+
+  for (const statement of body) {
+    if (t.isImportDeclaration(statement) && statement.source.value === "react-native") {
+      reactNativeImport = statement;
+      break;
+    }
+  }
+
+  if (reactNativeImport) {
+    // Check if useColorScheme is already imported
+    const hasUseColorScheme = reactNativeImport.specifiers.some(
+      (spec) =>
+        t.isImportSpecifier(spec) &&
+        spec.imported.type === "Identifier" &&
+        spec.imported.name === "useColorScheme",
+    );
+
+    if (!hasUseColorScheme) {
+      // Add useColorScheme to existing react-native import
+      reactNativeImport.specifiers.push(
+        t.importSpecifier(t.identifier("useColorScheme"), t.identifier("useColorScheme")),
+      );
+    }
+  } else {
+    // Create new react-native import with useColorScheme
+    const importDeclaration = t.importDeclaration(
+      [t.importSpecifier(t.identifier("useColorScheme"), t.identifier("useColorScheme"))],
+      t.stringLiteral("react-native"),
+    );
+    path.unshiftContainer("body", importDeclaration);
+  }
+}
+
+/**
+ * Inject useColorScheme hook call at the top of a function component
+ *
+ * @param functionPath - Path to the function component
+ * @param colorSchemeVariableName - Name for the color scheme variable
+ * @param t - Babel types
+ * @returns true if hook was injected, false if already exists
+ */
+export function injectColorSchemeHook(
+  functionPath: NodePath<BabelTypes.Function>,
+  colorSchemeVariableName: string,
+  t: typeof BabelTypes,
+): boolean {
+  const body = functionPath.node.body;
+
+  // Only inject in function components (not class methods)
+  if (!t.isBlockStatement(body)) {
+    return false;
+  }
+
+  // Check if hook is already injected
+  const hasHook = body.body.some((statement) => {
+    if (
+      t.isVariableDeclaration(statement) &&
+      statement.declarations.length > 0 &&
+      t.isVariableDeclarator(statement.declarations[0])
+    ) {
+      const declarator = statement.declarations[0];
+      return t.isIdentifier(declarator.id) && declarator.id.name === colorSchemeVariableName;
+    }
+    return false;
+  });
+
+  if (hasHook) {
+    return false; // Already injected
+  }
+
+  // Create: const _twColorScheme = useColorScheme();
+  const hookCall = t.variableDeclaration("const", [
+    t.variableDeclarator(
+      t.identifier(colorSchemeVariableName),
+      t.callExpression(t.identifier("useColorScheme"), []),
+    ),
+  ]);
+
+  // Insert at the beginning of function body
+  body.body.unshift(hookCall);
+
+  return true;
+}
+
+/**
  * Inject StyleSheet.create with all collected styles at the top of the file
  * This ensures the styles object is defined before any code that references it
  */
