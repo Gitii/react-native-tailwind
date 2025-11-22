@@ -96,6 +96,84 @@ type PluginState = PluginPass & {
 // Default identifier for the generated StyleSheet constant
 const DEFAULT_STYLES_IDENTIFIER = "_twStyles";
 
+/**
+ * Check if a function path represents a valid component scope for hook injection
+ * Valid scopes:
+ * - Top-level FunctionDeclaration
+ * - FunctionExpression/ArrowFunctionExpression in top-level VariableDeclarator (with PascalCase name)
+ * - NOT class methods, NOT nested functions, NOT inline callbacks
+ *
+ * @param functionPath - Path to the function to check
+ * @param t - Babel types
+ * @returns true if function is a valid component scope
+ */
+function isComponentScope(functionPath: NodePath<BabelTypes.Function>, t: typeof BabelTypes): boolean {
+  const node = functionPath.node;
+  const parent = functionPath.parent;
+  const parentPath = functionPath.parentPath;
+
+  // Reject class methods (class components not supported for hooks)
+  if (t.isClassMethod(parent)) {
+    return false;
+  }
+
+  // Reject if inside a class body
+  if (functionPath.findParent((p) => t.isClassBody(p.node))) {
+    return false;
+  }
+
+  // Accept top-level FunctionDeclaration
+  if (t.isFunctionDeclaration(node)) {
+    // Check if it's at program level or in export
+    if (t.isProgram(parent) || t.isExportNamedDeclaration(parent) || t.isExportDefaultDeclaration(parent)) {
+      return true;
+    }
+  }
+
+  // Accept FunctionExpression/ArrowFunctionExpression in VariableDeclarator
+  if (t.isFunctionExpression(node) || t.isArrowFunctionExpression(node)) {
+    if (t.isVariableDeclarator(parent)) {
+      // Check if it's at program level (via VariableDeclaration)
+      const varDeclarationPath = parentPath?.parentPath;
+      if (
+        varDeclarationPath &&
+        t.isVariableDeclaration(varDeclarationPath.node) &&
+        (t.isProgram(varDeclarationPath.parent) || t.isExportNamedDeclaration(varDeclarationPath.parent))
+      ) {
+        // Check for PascalCase naming (component convention)
+        if (t.isIdentifier(parent.id)) {
+          const name = parent.id.name;
+          return /^[A-Z]/.test(name); // Starts with uppercase
+        }
+      }
+    }
+  }
+
+  return false;
+}
+
+/**
+ * Find the nearest valid component scope for hook injection
+ * Climbs the AST from the current path to find a component-level function
+ *
+ * @param path - Starting path (e.g., JSXAttribute)
+ * @param t - Babel types
+ * @returns NodePath to component function, or null if not found
+ */
+function findComponentScope(path: NodePath, t: typeof BabelTypes): NodePath<BabelTypes.Function> | null {
+  let current = path.getFunctionParent();
+
+  while (current) {
+    if (t.isFunction(current.node) && isComponentScope(current, t)) {
+      return current;
+    }
+    // Climb to next parent function
+    current = current.getFunctionParent();
+  }
+
+  return null;
+}
+
 export default function reactNativeTailwindBabelPlugin(
   { types: t }: { types: typeof BabelTypes },
   options?: PluginOptions,
@@ -405,10 +483,20 @@ export default function reactNativeTailwindBabelPlugin(
           const hasBaseClasses = baseClasses.length > 0;
 
           // If we have color scheme modifiers, we need to track the parent function component
+          let componentScope: NodePath<BabelTypes.Function> | null = null;
           if (hasColorSchemeModifiers) {
-            const functionComponent = path.getFunctionParent();
-            if (functionComponent && t.isFunction(functionComponent.node)) {
-              state.functionComponentsNeedingColorScheme.add(functionComponent);
+            componentScope = findComponentScope(path, t);
+            if (componentScope) {
+              state.functionComponentsNeedingColorScheme.add(componentScope);
+            } else {
+              // Warn if color scheme modifiers used in invalid context (class component, nested function)
+              if (process.env.NODE_ENV !== "production") {
+                console.warn(
+                  `[react-native-tailwind] dark:/light: modifiers require a function component scope. ` +
+                    `Found in non-component context at ${state.file.opts.filename ?? "unknown"}. ` +
+                    `These modifiers are not supported in class components or nested callbacks.`,
+                );
+              }
             }
           }
 
@@ -446,8 +534,8 @@ export default function reactNativeTailwindBabelPlugin(
                 styleArrayElements.push(platformSelectExpression);
               }
 
-              // Add color scheme modifiers as conditionals
-              if (hasColorSchemeModifiers) {
+              // Add color scheme modifiers as conditionals (only if component scope exists)
+              if (hasColorSchemeModifiers && componentScope) {
                 const colorSchemeConditionals = processColorSchemeModifiers(
                   colorSchemeModifiers,
                   state,
@@ -707,8 +795,23 @@ export default function reactNativeTailwindBabelPlugin(
           }
 
           try {
-            // Process dynamic expression
-            const result = processDynamicExpression(expression, state, parseClassName, generateStyleKey, t);
+            // Find component scope for color scheme modifiers
+            const componentScope = findComponentScope(path, t);
+
+            // Process dynamic expression with modifier support
+            const result = processDynamicExpression(
+              expression,
+              state,
+              parseClassName,
+              generateStyleKey,
+              splitModifierClasses,
+              processPlatformModifiers,
+              processColorSchemeModifiers,
+              componentScope,
+              isPlatformModifier as (modifier: unknown) => boolean,
+              isColorSchemeModifier as (modifier: unknown) => boolean,
+              t,
+            );
 
             if (result) {
               state.hasClassNames = true;
