@@ -67,54 +67,57 @@ export function addPlatformImport(path: NodePath<BabelTypes.Program>, t: typeof 
 /**
  * Add useColorScheme import to the file or merge with existing react-native import
  */
-export function addColorSchemeImport(path: NodePath<BabelTypes.Program>, t: typeof BabelTypes): void {
-  // Check if there's already a react-native import
+export function addColorSchemeImport(
+  path: NodePath<BabelTypes.Program>,
+  importSource: string,
+  hookName: string,
+  t: typeof BabelTypes,
+): void {
+  // Check if there's already an import from the specified source
   const body = path.node.body;
-  let reactNativeImport: BabelTypes.ImportDeclaration | null = null;
+  let existingImport: BabelTypes.ImportDeclaration | null = null;
 
   for (const statement of body) {
-    if (t.isImportDeclaration(statement) && statement.source.value === "react-native") {
-      reactNativeImport = statement;
+    if (t.isImportDeclaration(statement) && statement.source.value === importSource) {
+      existingImport = statement;
       break;
     }
   }
 
-  if (reactNativeImport) {
-    // Check if useColorScheme is already imported
-    const hasUseColorScheme = reactNativeImport.specifiers.some(
+  if (existingImport) {
+    // Check if the hook is already imported
+    const hasHook = existingImport.specifiers.some(
       (spec) =>
-        t.isImportSpecifier(spec) &&
-        spec.imported.type === "Identifier" &&
-        spec.imported.name === "useColorScheme",
+        t.isImportSpecifier(spec) && spec.imported.type === "Identifier" && spec.imported.name === hookName,
     );
 
-    if (!hasUseColorScheme) {
-      // Add useColorScheme to existing react-native import
-      reactNativeImport.specifiers.push(
-        t.importSpecifier(t.identifier("useColorScheme"), t.identifier("useColorScheme")),
-      );
+    if (!hasHook) {
+      // Add hook to existing import from the source
+      existingImport.specifiers.push(t.importSpecifier(t.identifier(hookName), t.identifier(hookName)));
     }
   } else {
-    // Create new react-native import with useColorScheme
+    // Create new import with the hook
     const importDeclaration = t.importDeclaration(
-      [t.importSpecifier(t.identifier("useColorScheme"), t.identifier("useColorScheme"))],
-      t.stringLiteral("react-native"),
+      [t.importSpecifier(t.identifier(hookName), t.identifier(hookName))],
+      t.stringLiteral(importSource),
     );
     path.unshiftContainer("body", importDeclaration);
   }
 }
 
 /**
- * Inject useColorScheme hook call at the top of a function component
+ * Inject color scheme hook call at the top of a function component
  *
  * @param functionPath - Path to the function component
  * @param colorSchemeVariableName - Name for the color scheme variable
+ * @param hookName - Name of the hook to call (e.g., 'useColorScheme')
  * @param t - Babel types
  * @returns true if hook was injected, false if already exists
  */
 export function injectColorSchemeHook(
   functionPath: NodePath<BabelTypes.Function>,
   colorSchemeVariableName: string,
+  hookName: string,
   t: typeof BabelTypes,
 ): boolean {
   let body = functionPath.node.body;
@@ -151,12 +154,9 @@ export function injectColorSchemeHook(
     return false; // Already injected
   }
 
-  // Create: const _twColorScheme = useColorScheme();
+  // Create: const _twColorScheme = useColorScheme(); (or custom hook name)
   const hookCall = t.variableDeclaration("const", [
-    t.variableDeclarator(
-      t.identifier(colorSchemeVariableName),
-      t.callExpression(t.identifier("useColorScheme"), []),
-    ),
+    t.variableDeclarator(t.identifier(colorSchemeVariableName), t.callExpression(t.identifier(hookName), [])),
   ]);
 
   // Insert at the beginning of function body

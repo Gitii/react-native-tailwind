@@ -89,6 +89,42 @@ export type PluginOptions = {
     darkSuffix?: string;
     lightSuffix?: string;
   };
+
+  /**
+   * Configuration for color scheme hook import (dark:/light: modifiers)
+   *
+   * Allows using custom color scheme hooks from theme providers instead of
+   * React Native's built-in useColorScheme.
+   *
+   * @example
+   * // Use custom hook from theme provider
+   * {
+   *   importFrom: '@/hooks/useColorScheme',
+   *   importName: 'useColorScheme'
+   * }
+   *
+   * @example
+   * // Use React Navigation theme
+   * {
+   *   importFrom: '@react-navigation/native',
+   *   importName: 'useTheme'  // You'd wrap this to return ColorSchemeName
+   * }
+   *
+   * @default { importFrom: 'react-native', importName: 'useColorScheme' }
+   */
+  colorScheme?: {
+    /**
+     * Module to import the color scheme hook from
+     * @default 'react-native'
+     */
+    importFrom?: string;
+
+    /**
+     * Name of the hook to import
+     * @default 'useColorScheme'
+     */
+    importName?: string;
+  };
 };
 
 type PluginState = PluginPass & {
@@ -100,6 +136,8 @@ type PluginState = PluginPass & {
   hasColorSchemeImport: boolean;
   needsColorSchemeImport: boolean;
   colorSchemeVariableName: string;
+  colorSchemeImportSource: string; // Where to import the hook from (e.g., 'react-native')
+  colorSchemeHookName: string; // Name of the hook to import (e.g., 'useColorScheme')
   customTheme: CustomTheme;
   schemeModifierConfig: SchemeModifierConfig;
   supportedAttributes: Set<string>;
@@ -210,6 +248,10 @@ export default function reactNativeTailwindBabelPlugin(
     lightSuffix: options?.schemeModifier?.lightSuffix ?? "-light",
   };
 
+  // Color scheme hook configuration from plugin options
+  const colorSchemeImportSource = options?.colorScheme?.importFrom ?? "react-native";
+  const colorSchemeHookName = options?.colorScheme?.importName ?? "useColorScheme";
+
   return {
     name: "react-native-tailwind",
 
@@ -225,6 +267,8 @@ export default function reactNativeTailwindBabelPlugin(
           state.hasColorSchemeImport = false;
           state.needsColorSchemeImport = false;
           state.colorSchemeVariableName = "_twColorScheme";
+          state.colorSchemeImportSource = colorSchemeImportSource;
+          state.colorSchemeHookName = colorSchemeHookName;
           state.supportedAttributes = exactMatches;
           state.attributePatterns = patterns;
           state.stylesIdentifier = stylesIdentifier;
@@ -260,15 +304,15 @@ export default function reactNativeTailwindBabelPlugin(
             addPlatformImport(path, t);
           }
 
-          // Add useColorScheme import if color scheme modifiers were used and not already present
+          // Add color scheme hook import if color scheme modifiers were used and not already present
           if (state.needsColorSchemeImport && !state.hasColorSchemeImport) {
-            addColorSchemeImport(path, t);
+            addColorSchemeImport(path, state.colorSchemeImportSource, state.colorSchemeHookName, t);
           }
 
-          // Inject useColorScheme hook in function components that need it
+          // Inject color scheme hook in function components that need it
           if (state.needsColorSchemeImport) {
             for (const functionPath of state.functionComponentsNeedingColorScheme) {
-              injectColorSchemeHook(functionPath, state.colorSchemeVariableName, t);
+              injectColorSchemeHook(functionPath, state.colorSchemeVariableName, state.colorSchemeHookName, t);
             }
           }
 
@@ -300,13 +344,6 @@ export default function reactNativeTailwindBabelPlugin(
             return false;
           });
 
-          const hasUseColorScheme = specifiers.some((spec) => {
-            if (t.isImportSpecifier(spec) && t.isIdentifier(spec.imported)) {
-              return spec.imported.name === "useColorScheme";
-            }
-            return false;
-          });
-
           // Only track if imports exist - don't mutate yet
           // Actual import injection happens in Program.exit only if needed
           if (hasStyleSheet) {
@@ -317,12 +354,25 @@ export default function reactNativeTailwindBabelPlugin(
             state.hasPlatformImport = true;
           }
 
-          if (hasUseColorScheme) {
-            state.hasColorSchemeImport = true;
-          }
-
           // Store reference to the react-native import for later modification if needed
           state.reactNativeImportPath = path;
+        }
+
+        // Track color scheme hook import from the configured source
+        // (default: react-native, but can be custom like @/hooks/useColorScheme)
+        if (node.source.value === state.colorSchemeImportSource) {
+          const specifiers = node.specifiers;
+
+          const hasColorSchemeHook = specifiers.some((spec) => {
+            if (t.isImportSpecifier(spec) && t.isIdentifier(spec.imported)) {
+              return spec.imported.name === state.colorSchemeHookName;
+            }
+            return false;
+          });
+
+          if (hasColorSchemeHook) {
+            state.hasColorSchemeImport = true;
+          }
         }
 
         // Track tw/twStyle imports from main package (for compile-time transformation)
