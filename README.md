@@ -425,7 +425,7 @@ export function RuntimeExample() {
 
 #### Configuration
 
-Configure custom colors and other theme options using `setConfig()`:
+Configure custom colors and font families using `setConfig()`:
 
 ```typescript
 import { setConfig } from '@mgcrea/react-native-tailwind/runtime';
@@ -442,13 +442,17 @@ setConfig({
           dark: '#CC0000',
         },
       },
+      fontFamily: {
+        sans: ['"SF Pro Rounded"'],
+        custom: ['"My Custom Font"'],
+      },
     },
   },
 });
 
-// Now you can use custom colors
+// Now you can use custom theme
 <View style={tw`bg-primary p-4`} />
-<Text style={tw`text-brand-light`}>Custom color</Text>
+<Text style={tw`text-brand-light font-custom`}>Custom styling</Text>
 ```
 
 #### API Reference
@@ -1365,7 +1369,7 @@ This pattern allows you to build component libraries with optimized default styl
 
 **Available shades:** `50`, `100`, `200`, `300`, `400`, `500`, `600`, `700`, `800`, `900`
 
-> **Note:** You can extend the color palette with custom colors via `tailwind.config.*` — see [Custom Colors](#custom-colors)
+> **Note:** You can extend the color palette with custom colors via `tailwind.config.*` — see [Custom Theme Extensions](#custom-theme-extensions)
 
 **Opacity Modifiers:**
 
@@ -1911,9 +1915,9 @@ Use arbitrary values for custom sizes, spacing, and borders not in the preset sc
 
 > **Note:** CSS units (`rem`, `em`, `vh`, `vw`) are not supported by React Native.
 
-### Custom Colors
+### Custom Theme Extensions
 
-Extend the default color palette via `tailwind.config.*` in your project root:
+Extend the default color palette and font families via `tailwind.config.*` in your project root:
 
 ```javascript
 // tailwind.config.mjs
@@ -1929,16 +1933,21 @@ export default {
           dark: "#0c4a6e",
         },
       },
+      fontFamily: {
+        sans: ['"SF Pro Rounded"'],
+        custom: ['"My Custom Font"'],
+      },
     },
   },
 };
 ```
 
-Then use your custom colors:
+Then use your custom theme:
 
 ```tsx
 <View className="bg-primary p-4">
-  <Text className="text-brand">Custom branded text</Text>
+  <Text className="text-brand font-custom">Custom branded text</Text>
+  <Text className="font-sans">SF Pro Rounded text</Text>
   <View className="bg-brand-light rounded-lg" />
 </View>
 ```
@@ -1946,13 +1955,14 @@ Then use your custom colors:
 **How it works:**
 
 - Babel plugin discovers config by traversing up from source files
-- Custom colors merged with defaults at build time (custom takes precedence)
-- Nested objects flattened with dash notation: `brand.light` → `brand-light`
+- Custom theme merged with defaults at build time (custom takes precedence)
+- Nested color objects flattened with dash notation: `brand.light` → `brand-light`
+- Font families use first font in array (React Native doesn't support font stacks)
 - Zero runtime overhead — all loading happens during compilation
 
 **Supported formats:** `.js`, `.mjs`, `.cjs`, `.ts`
 
-> **Tip:** Use `theme.extend.colors` to keep default Tailwind colors. Using `theme.colors` directly will override all defaults.
+> **Tip:** Use `theme.extend.*` to keep defaults. Using `theme.colors` or `theme.fontFamily` directly will override all defaults.
 
 ### Programmatic API
 
@@ -1961,9 +1971,16 @@ Access the parser and constants programmatically:
 ```typescript
 import { parseClassName, COLORS, SPACING_SCALE } from "@mgcrea/react-native-tailwind";
 
-// Parse className strings
-const _twStyles = parseClassName("m-4 p-2 bg-blue-500");
+// Parse className strings (no custom theme)
+const styles = parseClassName("m-4 p-2 bg-blue-500");
 // Returns: { margin: 16, padding: 8, backgroundColor: '#3B82F6' }
+
+// Parse with custom theme
+const customStyles = parseClassName("m-4 bg-primary font-custom", {
+  colors: { primary: "#1d4ed8" },
+  fontFamily: { custom: "My Custom Font" },
+});
+// Returns: { margin: 16, backgroundColor: '#1d4ed8', fontFamily: 'My Custom Font' }
 
 // Access default scales
 const blueColor = COLORS["blue-500"]; // '#3B82F6'
