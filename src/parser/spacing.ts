@@ -43,14 +43,14 @@ export const SPACING_SCALE: Record<string, number> = {
 };
 
 /**
- * Parse arbitrary spacing value: [16px], [20]
- * Returns number for px values, null for unsupported formats
+ * Parse arbitrary spacing value: [16px], [20], [4.5px], [16.75]
+ * Returns number for px values (including decimals), null for unsupported formats
  */
 function parseArbitrarySpacing(value: string): number | null {
-  // Match: [16px] or [16] (pixels only)
-  const pxMatch = value.match(/^\[(\d+)(?:px)?\]$/);
+  // Match: [16px], [16], [4.5px], [4.5] (pixels, including decimals)
+  const pxMatch = value.match(/^\[(-?\d+(?:\.\d+)?)(?:px)?\]$/);
   if (pxMatch) {
-    return parseInt(pxMatch[1], 10);
+    return parseFloat(pxMatch[1]);
   }
 
   // Warn about unsupported formats
@@ -58,7 +58,7 @@ function parseArbitrarySpacing(value: string): number | null {
     /* v8 ignore next 5 */
     if (process.env.NODE_ENV !== "production") {
       console.warn(
-        `[react-native-tailwind] Unsupported arbitrary spacing value: ${value}. Only px values are supported (e.g., [16px] or [16]).`,
+        `[react-native-tailwind] Unsupported arbitrary spacing value: ${value}. Only px values are supported (e.g., [16px], [16], [4.5px], [4.5]).`,
       );
     }
     return null;
@@ -69,7 +69,7 @@ function parseArbitrarySpacing(value: string): number | null {
 
 /**
  * Parse spacing classes (margin, padding, gap)
- * Examples: m-4, mx-2, mt-8, p-4, px-2, pt-8, gap-4, m-[16px], -m-4, -mt-[10px]
+ * Examples: m-4, mx-2, mt-8, p-4, px-2, pt-8, gap-4, m-[16px], pl-[4.5px], -m-4, -mt-[10px]
  */
 export function parseSpacing(cls: string): StyleObject | null {
   // Margin: m-4, mx-2, mt-8, m-[16px], -m-4, -mt-2, etc.

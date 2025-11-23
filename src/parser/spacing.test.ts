@@ -238,6 +238,68 @@ describe("parseSpacing - edge cases", () => {
   });
 });
 
+describe("parseSpacing - decimal arbitrary values", () => {
+  it("should parse margin with decimal arbitrary values", () => {
+    expect(parseSpacing("m-[4.5px]")).toEqual({ margin: 4.5 });
+    expect(parseSpacing("m-[4.5]")).toEqual({ margin: 4.5 });
+    expect(parseSpacing("m-[16.75px]")).toEqual({ margin: 16.75 });
+    expect(parseSpacing("m-[16.75]")).toEqual({ margin: 16.75 });
+    expect(parseSpacing("m-[100.25px]")).toEqual({ margin: 100.25 });
+    expect(parseSpacing("m-[0.5]")).toEqual({ margin: 0.5 });
+  });
+
+  it("should parse padding with decimal arbitrary values", () => {
+    expect(parseSpacing("p-[4.5px]")).toEqual({ padding: 4.5 });
+    expect(parseSpacing("p-[4.5]")).toEqual({ padding: 4.5 });
+    expect(parseSpacing("pl-[4.5px]")).toEqual({ paddingLeft: 4.5 });
+    expect(parseSpacing("pl-[4.5]")).toEqual({ paddingLeft: 4.5 });
+    expect(parseSpacing("pr-[16.75px]")).toEqual({ paddingRight: 16.75 });
+    expect(parseSpacing("pt-[10.5]")).toEqual({ paddingTop: 10.5 });
+    expect(parseSpacing("pb-[20.25px]")).toEqual({ paddingBottom: 20.25 });
+  });
+
+  it("should parse padding horizontal/vertical with decimal arbitrary values", () => {
+    expect(parseSpacing("px-[4.5px]")).toEqual({ paddingHorizontal: 4.5 });
+    expect(parseSpacing("py-[10.75]")).toEqual({ paddingVertical: 10.75 });
+  });
+
+  it("should parse gap with decimal arbitrary values", () => {
+    expect(parseSpacing("gap-[4.5px]")).toEqual({ gap: 4.5 });
+    expect(parseSpacing("gap-[4.5]")).toEqual({ gap: 4.5 });
+    expect(parseSpacing("gap-[16.75px]")).toEqual({ gap: 16.75 });
+    expect(parseSpacing("gap-[0.5]")).toEqual({ gap: 0.5 });
+  });
+
+  it("should parse negative margin with decimal arbitrary values", () => {
+    expect(parseSpacing("-m-[4.5px]")).toEqual({ margin: -4.5 });
+    expect(parseSpacing("-m-[4.5]")).toEqual({ margin: -4.5 });
+    expect(parseSpacing("-m-[10.5px]")).toEqual({ margin: -10.5 });
+    expect(parseSpacing("-mt-[16.75px]")).toEqual({ marginTop: -16.75 });
+    expect(parseSpacing("-ml-[8.25]")).toEqual({ marginLeft: -8.25 });
+    expect(parseSpacing("-mx-[12.5px]")).toEqual({ marginHorizontal: -12.5 });
+    expect(parseSpacing("-my-[20.75]")).toEqual({ marginVertical: -20.75 });
+  });
+
+  it("should parse margin directional with decimal arbitrary values", () => {
+    expect(parseSpacing("mt-[4.5px]")).toEqual({ marginTop: 4.5 });
+    expect(parseSpacing("mr-[8.25]")).toEqual({ marginRight: 8.25 });
+    expect(parseSpacing("mb-[16.75px]")).toEqual({ marginBottom: 16.75 });
+    expect(parseSpacing("ml-[12.5]")).toEqual({ marginLeft: 12.5 });
+  });
+
+  it("should parse margin horizontal/vertical with decimal arbitrary values", () => {
+    expect(parseSpacing("mx-[4.5px]")).toEqual({ marginHorizontal: 4.5 });
+    expect(parseSpacing("my-[10.75]")).toEqual({ marginVertical: 10.75 });
+  });
+
+  it("should handle edge case decimal values", () => {
+    expect(parseSpacing("m-[0.1px]")).toEqual({ margin: 0.1 });
+    expect(parseSpacing("p-[0.001]")).toEqual({ padding: 0.001 });
+    expect(parseSpacing("gap-[999.999px]")).toEqual({ gap: 999.999 });
+    expect(parseSpacing("-m-[0.5]")).toEqual({ margin: -0.5 });
+  });
+});
+
 describe("parseSpacing - comprehensive coverage", () => {
   it("should parse all margin directions with same value", () => {
     const value = 16;
