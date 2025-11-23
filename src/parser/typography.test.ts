@@ -149,6 +149,38 @@ describe("parseTypography - letter spacing", () => {
     expect(parseTypography("tracking-wider")).toEqual({ letterSpacing: 0.8 });
     expect(parseTypography("tracking-widest")).toEqual({ letterSpacing: 1.6 });
   });
+
+  it("should parse letter spacing with arbitrary values", () => {
+    expect(parseTypography("tracking-[0.5px]")).toEqual({ letterSpacing: 0.5 });
+    expect(parseTypography("tracking-[0.5]")).toEqual({ letterSpacing: 0.5 });
+    expect(parseTypography("tracking-[0.3]")).toEqual({ letterSpacing: 0.3 });
+    expect(parseTypography("tracking-[1.2px]")).toEqual({ letterSpacing: 1.2 });
+    expect(parseTypography("tracking-[2]")).toEqual({ letterSpacing: 2 });
+  });
+
+  it("should parse letter spacing with Tailwind shorthand decimals", () => {
+    expect(parseTypography("tracking-[.5]")).toEqual({ letterSpacing: 0.5 });
+    expect(parseTypography("tracking-[.3px]")).toEqual({ letterSpacing: 0.3 });
+    expect(parseTypography("tracking-[.75]")).toEqual({ letterSpacing: 0.75 });
+  });
+
+  it("should parse negative letter spacing with arbitrary values", () => {
+    expect(parseTypography("tracking-[-0.4px]")).toEqual({ letterSpacing: -0.4 });
+    expect(parseTypography("tracking-[-0.4]")).toEqual({ letterSpacing: -0.4 });
+    expect(parseTypography("tracking-[-0.5]")).toEqual({ letterSpacing: -0.5 });
+    expect(parseTypography("tracking-[-1px]")).toEqual({ letterSpacing: -1 });
+  });
+
+  it("should parse negative letter spacing with shorthand decimals", () => {
+    expect(parseTypography("tracking-[-.4]")).toEqual({ letterSpacing: -0.4 });
+    expect(parseTypography("tracking-[-.5px]")).toEqual({ letterSpacing: -0.5 });
+  });
+
+  it("should handle edge case letter spacing values", () => {
+    expect(parseTypography("tracking-[0]")).toEqual({ letterSpacing: 0 });
+    expect(parseTypography("tracking-[0.1]")).toEqual({ letterSpacing: 0.1 });
+    expect(parseTypography("tracking-[10]")).toEqual({ letterSpacing: 10 });
+  });
 });
 
 describe("parseTypography - edge cases", () => {

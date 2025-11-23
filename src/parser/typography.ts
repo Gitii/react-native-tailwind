@@ -163,6 +163,31 @@ function parseArbitraryLineHeight(value: string): number | null {
 }
 
 /**
+ * Parse arbitrary letter spacing value: [0.5px], [0.3], [.5], [-0.4]
+ * Returns number for px values (including decimals), null for unsupported formats
+ */
+function parseArbitraryLetterSpacing(value: string): number | null {
+  // Match: [0.5px], [0.3], [.5], [-0.4px] (pixels, including decimals and negatives)
+  const pxMatch = value.match(/^\[(-?\d+(?:\.\d+)?|-?\.\d+)(?:px)?\]$/);
+  if (pxMatch) {
+    return parseFloat(pxMatch[1]);
+  }
+
+  // Warn about unsupported formats
+  if (value.startsWith("[") && value.endsWith("]")) {
+    /* v8 ignore next 5 */
+    if (process.env.NODE_ENV !== "production") {
+      console.warn(
+        `[react-native-tailwind] Unsupported arbitrary letter spacing value: ${value}. Only px values are supported (e.g., [0.5px], [0.3], [.5], [-0.4]).`,
+      );
+    }
+    return null;
+  }
+
+  return null;
+}
+
+/**
  * Parse typography classes
  * @param cls - Class name to parse
  * @param customFontFamily - Optional custom fontFamily from tailwind.config
@@ -209,6 +234,17 @@ export function parseTypography(cls: string, customFontFamily?: Record<string, s
     const lineHeight = LINE_HEIGHT_SCALE[heightKey];
     if (lineHeight !== undefined) {
       return { lineHeight };
+    }
+  }
+
+  // Letter spacing: tracking-wide, tracking-[0.5px], tracking-[.3], etc.
+  if (cls.startsWith("tracking-")) {
+    const trackingKey = cls.substring(9);
+
+    // Try arbitrary value first
+    const arbitraryValue = parseArbitraryLetterSpacing(trackingKey);
+    if (arbitraryValue !== null) {
+      return { letterSpacing: arbitraryValue };
     }
   }
 
