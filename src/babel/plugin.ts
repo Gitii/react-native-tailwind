@@ -540,20 +540,22 @@ export default function reactNativeTailwindBabelPlugin(
         // Determine target style prop based on attribute name
         const targetStyleProp = getTargetStyleProp(attributeName);
 
-        // Handle static string literals
-        if (t.isStringLiteral(value)) {
-          const className = value.value.trim();
+        /**
+         * Process static className string (handles both direct StringLiteral and StringLiteral in JSXExpressionContainer)
+         */
+        const processStaticClassName = (className: string): boolean => {
+          const trimmedClassName = className.trim();
 
           // Skip empty classNames
-          if (!className) {
+          if (!trimmedClassName) {
             path.remove();
-            return;
+            return true;
           }
 
           state.hasClassNames = true;
 
           // Check if className contains modifiers (active:, hover:, focus:, placeholder:, ios:, android:, web:, dark:, light:, scheme:)
-          const { baseClasses, modifierClasses: rawModifierClasses } = splitModifierClasses(className);
+          const { baseClasses, modifierClasses: rawModifierClasses } = splitModifierClasses(trimmedClassName);
 
           // Expand scheme: modifiers into dark: and light: modifiers
           const modifierClasses: ParsedModifier[] = [];
@@ -720,7 +722,7 @@ export default function reactNativeTailwindBabelPlugin(
               } else {
                 replaceWithStyleFunctionAttribute(path, styleFunctionExpression, targetStyleProp, t);
               }
-              return;
+              return true;
             } else {
               // Component doesn't support state modifiers, but we can still use platform modifiers
               // Fall through to platform-only handling
@@ -794,7 +796,7 @@ export default function reactNativeTailwindBabelPlugin(
               path.node.name = t.jsxIdentifier(targetStyleProp);
               path.node.value = t.jsxExpressionContainer(styleExpression);
             }
-            return;
+            return true;
           }
 
           // If there are state modifiers (and no platform modifiers), check if this component supports them
@@ -852,12 +854,12 @@ export default function reactNativeTailwindBabelPlugin(
                   } else {
                     replaceWithStyleFunctionAttribute(path, styleFunctionExpression, targetStyleProp, t);
                   }
-                  return;
+                  return true;
                 }
               } else {
                 // All modifiers are supported - process normally
                 const styleExpression = processStaticClassNameWithModifiers(
-                  className,
+                  trimmedClassName,
                   state,
                   parseClassName,
                   generateStyleKey,
@@ -874,7 +876,7 @@ export default function reactNativeTailwindBabelPlugin(
                 } else {
                   replaceWithStyleFunctionAttribute(path, styleFunctionExpression, targetStyleProp, t);
                 }
-                return;
+                return true;
               }
             } else {
               // Component doesn't support any modifiers
@@ -894,7 +896,7 @@ export default function reactNativeTailwindBabelPlugin(
           if (!classNameForStyle) {
             // No base classes, only had placeholder modifiers - just remove className
             path.remove();
-            return;
+            return true;
           }
 
           const styleObject = parseClassName(classNameForStyle, state.customTheme);
@@ -911,7 +913,14 @@ export default function reactNativeTailwindBabelPlugin(
             // Replace className with style prop
             replaceWithStyleAttribute(path, styleKey, targetStyleProp, state.stylesIdentifier, t);
           }
-          return;
+          return true;
+        };
+
+        // Handle static string literals
+        if (t.isStringLiteral(value)) {
+          if (processStaticClassName(value.value)) {
+            return;
+          }
         }
 
         // Handle dynamic expressions (JSXExpressionContainer)
@@ -921,6 +930,13 @@ export default function reactNativeTailwindBabelPlugin(
           // Skip JSXEmptyExpression
           if (t.isJSXEmptyExpression(expression)) {
             return;
+          }
+
+          // Fast path: Support string literals wrapped in JSXExpressionContainer: className={"flex-row"}
+          if (t.isStringLiteral(expression)) {
+            if (processStaticClassName(expression.value)) {
+              return;
+            }
           }
 
           try {

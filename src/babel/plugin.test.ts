@@ -334,6 +334,89 @@ describe("Babel plugin - className transformation (existing behavior)", () => {
     // Should not have className in output
     expect(output).not.toContain("className");
   });
+
+  it('should transform className={"..."} (string literal in expression container)', () => {
+    const input = `
+      import { View } from 'react-native';
+      export function Component() {
+        return <View className={"flex-row items-center justify-start"} />;
+      }
+    `;
+
+    const output = transform(input, undefined, true);
+
+    // Should have StyleSheet
+    expect(output).toContain("StyleSheet.create");
+    expect(output).toContain("_twStyles");
+
+    // Should replace className with style
+    expect(output).not.toContain("className");
+    expect(output).toContain("style:");
+
+    // Should have the expected style keys
+    expect(output).toContain("_flex_row_items_center_justify_start");
+  });
+
+  it('should transform className={"..."} with modifiers', () => {
+    const input = `
+      import { Pressable } from 'react-native';
+      export function Component() {
+        return <Pressable className={"bg-blue-500 active:bg-blue-700 p-4"} />;
+      }
+    `;
+
+    const output = transform(input, undefined, true);
+
+    // Should have StyleSheet with both base and active styles
+    expect(output).toContain("_bg_blue_500_p_4");
+    expect(output).toContain("_active_bg_blue_700");
+
+    // Should have style function for active modifier (Pressable uses 'pressed' parameter)
+    expect(output).toMatch(/(pressed|_state)/);
+
+    // Should not have className in output
+    expect(output).not.toContain("className");
+  });
+
+  it('should transform className={"..."} with platform modifiers', () => {
+    const input = `
+      import { View } from 'react-native';
+      export function Component() {
+        return <View className={"p-4 ios:p-6 android:p-8"} />;
+      }
+    `;
+
+    const output = transform(input, undefined, true);
+
+    // Should have Platform import
+    expect(output).toContain("Platform");
+    expect(output).toMatch(/from ['"]react-native['"]/); // Match both single and double quotes
+
+    // Should have Platform.select
+    expect(output).toContain("Platform.select");
+
+    // Should have platform-specific styles
+    expect(output).toContain("_ios_p_6");
+    expect(output).toContain("_android_p_8");
+
+    // Should not have className in output
+    expect(output).not.toContain("className");
+  });
+
+  it('should handle empty className={""}', () => {
+    const input = `
+      import { View } from 'react-native';
+      export function Component() {
+        return <View className={""} />;
+      }
+    `;
+
+    const output = transform(input, undefined, true);
+
+    // Should remove empty className attribute entirely
+    expect(output).not.toContain("className");
+    expect(output).not.toContain("style=");
+  });
 });
 
 describe("Babel plugin - placeholder: modifier transformation", () => {
