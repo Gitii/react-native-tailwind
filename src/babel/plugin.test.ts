@@ -7,7 +7,9 @@ import babelPlugin, { type PluginOptions } from "./plugin.js";
  * Helper to transform code with the Babel plugin
  */
 function transform(code: string, options?: PluginOptions, includeJsx = false) {
-  const presets = includeJsx ? ["@babel/preset-react"] : [];
+  const presets = includeJsx
+    ? ["@babel/preset-react", ["@babel/preset-typescript", { isTSX: true, allExtensions: true }]]
+    : [];
 
   const result = transformSync(code, {
     presets,
@@ -1090,11 +1092,16 @@ describe("Babel plugin - custom color scheme hook import", () => {
   it("should merge custom hook with existing import from same source", () => {
     const input = `
       import React from 'react';
-      import { View } from 'react-native';
+      import { View, Text } from 'react-native';
       import { useNavigation } from '@react-navigation/native';
 
       export function Component() {
-        return <View className="dark:bg-gray-900" />;
+        const navigation = useNavigation();
+        return (
+          <View className="dark:bg-gray-900">
+            <Text onPress={() => navigation.navigate('Home')}>Go Home</Text>
+          </View>
+        );
       }
     `;
 
@@ -1109,10 +1116,12 @@ describe("Babel plugin - custom color scheme hook import", () => {
       true,
     );
 
-    // Should merge with existing import
-    expect(output).toContain("useNavigation");
-    expect(output).toContain("useTheme");
-    expect(output).toMatch(/from\s+['"]@react-navigation\/native['"]/);
+    // Should merge with existing import (both useNavigation and useTheme in same import)
+    expect(output).toMatch(
+      /import\s+\{\s*useNavigation[^}]*useTheme[^}]*\}\s+from\s+['"]@react-navigation\/native['"]/,
+    );
+    expect(output).toContain("useNavigation()");
+    expect(output).toContain("useTheme()");
 
     // Should only have one import from that source
     const importCount = (output.match(/@react-navigation\/native/g) ?? []).length;
@@ -1168,6 +1177,122 @@ describe("Babel plugin - custom color scheme hook import", () => {
 
     // Should inject hook call with default name
     expect(output).toContain("_twColorScheme = useColorScheme()");
+  });
+
+  it("should create separate import when only type-only import exists", () => {
+    const input = `
+      import React from 'react';
+      import { View } from 'react-native';
+      import type { NavigationProp } from '@react-navigation/native';
+
+      export function Component() {
+        return <View className="dark:bg-gray-900" />;
+      }
+    `;
+
+    const output = transform(
+      input,
+      {
+        colorScheme: {
+          importFrom: "@react-navigation/native",
+          importName: "useTheme",
+        },
+      },
+      true,
+    );
+
+    // TypeScript preset strips type-only imports, but the important thing is:
+    // 1. useTheme hook is imported (not skipped thinking it was already imported)
+    // 2. Hook is correctly called in the component
+    expect(output).toMatch(/import\s+\{\s*useTheme\s*\}\s+from\s+['"]@react-navigation\/native['"]/);
+    expect(output).toContain("_twColorScheme = useTheme()");
+  });
+
+  it("should use aliased identifier when hook is already imported with alias", () => {
+    const input = `
+      import React from 'react';
+      import { View, Text } from 'react-native';
+      import { useTheme as navTheme } from '@react-navigation/native';
+
+      export function Component() {
+        const theme = navTheme();
+        return (
+          <View className="dark:bg-gray-900">
+            <Text>{theme.dark ? 'Dark' : 'Light'}</Text>
+          </View>
+        );
+      }
+    `;
+
+    const output = transform(
+      input,
+      {
+        colorScheme: {
+          importFrom: "@react-navigation/native",
+          importName: "useTheme",
+        },
+      },
+      true,
+    );
+
+    // Should not add duplicate import
+    const importMatches = output.match(
+      /import\s+\{[^}]*useTheme[^}]*\}\s+from\s+['"]@react-navigation\/native['"]/g,
+    );
+    expect(importMatches).toHaveLength(1);
+
+    // Should still have the aliased import
+    expect(output).toMatch(/useTheme\s+as\s+navTheme/);
+
+    // Should call the aliased name (navTheme), not the export name (useTheme)
+    // Both the user's code and our injected hook should use navTheme
+    expect(output).toContain("_twColorScheme = navTheme()");
+    expect(output).not.toContain("_twColorScheme = useTheme()");
+  });
+
+  it("should handle both type-only and aliased imports together", () => {
+    const input = `
+      import React from 'react';
+      import { View, Text } from 'react-native';
+      import type { Theme } from '@react-navigation/native';
+      import { useTheme as getNavTheme } from '@react-navigation/native';
+
+      export function Component() {
+        const theme = getNavTheme();
+        return (
+          <View className="dark:bg-gray-900">
+            <Text>{theme.dark ? 'Dark Mode' : 'Light Mode'}</Text>
+          </View>
+        );
+      }
+    `;
+
+    const output = transform(
+      input,
+      {
+        colorScheme: {
+          importFrom: "@react-navigation/native",
+          importName: "useTheme",
+        },
+      },
+      true,
+    );
+
+    // TypeScript preset strips type-only imports
+    // The important thing is: should not add duplicate import, and should use aliased name
+    expect(output).toMatch(
+      /import\s+\{[^}]*useTheme\s+as\s+getNavTheme[^}]*\}\s+from\s+['"]@react-navigation\/native['"]/,
+    );
+
+    // Should not add duplicate import - useTheme should only appear in the aliased import
+    const useThemeImports = output.match(
+      /import\s+\{[^}]*useTheme[^}]*\}\s+from\s+['"]@react-navigation\/native['"]/g,
+    );
+    expect(useThemeImports).toHaveLength(1);
+
+    // Should call the aliased name for both user code and our injected hook
+    expect(output).toContain("_twColorScheme = getNavTheme()");
+    expect(output).not.toContain("_twColorScheme = useTheme()");
   });
 });
 

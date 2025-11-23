@@ -138,6 +138,7 @@ type PluginState = PluginPass & {
   colorSchemeVariableName: string;
   colorSchemeImportSource: string; // Where to import the hook from (e.g., 'react-native')
   colorSchemeHookName: string; // Name of the hook to import (e.g., 'useColorScheme')
+  colorSchemeLocalIdentifier?: string; // Local identifier if hook is already imported with an alias
   customTheme: CustomTheme;
   schemeModifierConfig: SchemeModifierConfig;
   supportedAttributes: Set<string>;
@@ -312,7 +313,13 @@ export default function reactNativeTailwindBabelPlugin(
           // Inject color scheme hook in function components that need it
           if (state.needsColorSchemeImport) {
             for (const functionPath of state.functionComponentsNeedingColorScheme) {
-              injectColorSchemeHook(functionPath, state.colorSchemeVariableName, state.colorSchemeHookName, t);
+              injectColorSchemeHook(
+                functionPath,
+                state.colorSchemeVariableName,
+                state.colorSchemeHookName,
+                state.colorSchemeLocalIdentifier,
+                t,
+              );
             }
           }
 
@@ -363,15 +370,16 @@ export default function reactNativeTailwindBabelPlugin(
         if (node.source.value === state.colorSchemeImportSource) {
           const specifiers = node.specifiers;
 
-          const hasColorSchemeHook = specifiers.some((spec) => {
+          for (const spec of specifiers) {
             if (t.isImportSpecifier(spec) && t.isIdentifier(spec.imported)) {
-              return spec.imported.name === state.colorSchemeHookName;
+              if (spec.imported.name === state.colorSchemeHookName) {
+                state.hasColorSchemeImport = true;
+                // Track the local identifier (handles aliased imports)
+                // e.g., import { useTheme as navTheme } → local name is 'navTheme'
+                state.colorSchemeLocalIdentifier = spec.local.name;
+                break;
+              }
             }
-            return false;
-          });
-
-          if (hasColorSchemeHook) {
-            state.hasColorSchemeImport = true;
           }
         }
 

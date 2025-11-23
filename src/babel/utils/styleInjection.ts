@@ -75,28 +75,33 @@ export function addColorSchemeImport(
 ): void {
   // Check if there's already an import from the specified source
   const body = path.node.body;
-  let existingImport: BabelTypes.ImportDeclaration | null = null;
+  let existingValueImport: BabelTypes.ImportDeclaration | null = null;
 
   for (const statement of body) {
     if (t.isImportDeclaration(statement) && statement.source.value === importSource) {
-      existingImport = statement;
-      break;
+      // Only consider value imports (not type-only imports which get erased)
+      if (statement.importKind !== "type") {
+        existingValueImport = statement;
+        break; // Found a value import, we can stop
+      }
     }
   }
 
-  if (existingImport) {
+  // If we found a value import (not type-only), merge with it
+  if (existingValueImport) {
     // Check if the hook is already imported
-    const hasHook = existingImport.specifiers.some(
+    const hasHook = existingValueImport.specifiers.some(
       (spec) =>
         t.isImportSpecifier(spec) && spec.imported.type === "Identifier" && spec.imported.name === hookName,
     );
 
     if (!hasHook) {
-      // Add hook to existing import from the source
-      existingImport.specifiers.push(t.importSpecifier(t.identifier(hookName), t.identifier(hookName)));
+      // Add hook to existing value import
+      existingValueImport.specifiers.push(t.importSpecifier(t.identifier(hookName), t.identifier(hookName)));
     }
   } else {
-    // Create new import with the hook
+    // No value import exists - create a new one
+    // (Don't merge with type-only imports as they get erased by Babel/TypeScript)
     const importDeclaration = t.importDeclaration(
       [t.importSpecifier(t.identifier(hookName), t.identifier(hookName))],
       t.stringLiteral(importSource),
@@ -111,6 +116,7 @@ export function addColorSchemeImport(
  * @param functionPath - Path to the function component
  * @param colorSchemeVariableName - Name for the color scheme variable
  * @param hookName - Name of the hook to call (e.g., 'useColorScheme')
+ * @param localIdentifier - Local identifier if hook is already imported with an alias
  * @param t - Babel types
  * @returns true if hook was injected, false if already exists
  */
@@ -118,6 +124,7 @@ export function injectColorSchemeHook(
   functionPath: NodePath<BabelTypes.Function>,
   colorSchemeVariableName: string,
   hookName: string,
+  localIdentifier: string | undefined,
   t: typeof BabelTypes,
 ): boolean {
   let body = functionPath.node.body;
@@ -154,9 +161,17 @@ export function injectColorSchemeHook(
     return false; // Already injected
   }
 
-  // Create: const _twColorScheme = useColorScheme(); (or custom hook name)
+  // Use the local identifier if hook was already imported with an alias,
+  // otherwise use the configured hook name
+  // e.g., import { useTheme as navTheme } → call navTheme()
+  const identifierToCall = localIdentifier ?? hookName;
+
+  // Create: const _twColorScheme = useColorScheme(); (or aliased name if already imported)
   const hookCall = t.variableDeclaration("const", [
-    t.variableDeclarator(t.identifier(colorSchemeVariableName), t.callExpression(t.identifier(hookName), [])),
+    t.variableDeclarator(
+      t.identifier(colorSchemeVariableName),
+      t.callExpression(t.identifier(identifierToCall), []),
+    ),
   ]);
 
   // Insert at the beginning of function body
