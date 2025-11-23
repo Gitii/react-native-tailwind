@@ -276,6 +276,8 @@ export default function reactNativeTailwindBabelPlugin(
           state.twImportNames = new Set();
           state.hasTwImport = false;
           state.functionComponentsNeedingColorScheme = new Set();
+          state.hasColorSchemeImport = false;
+          state.colorSchemeLocalIdentifier = undefined;
 
           // Load custom theme from tailwind.config.*
           state.customTheme = extractCustomTheme(state.file.opts.filename ?? "");
@@ -367,7 +369,8 @@ export default function reactNativeTailwindBabelPlugin(
 
         // Track color scheme hook import from the configured source
         // (default: react-native, but can be custom like @/hooks/useColorScheme)
-        if (node.source.value === state.colorSchemeImportSource) {
+        // Only track value imports (not type-only imports which get erased)
+        if (node.source.value === state.colorSchemeImportSource && node.importKind !== "type") {
           const specifiers = node.specifiers;
 
           for (const spec of specifiers) {
@@ -444,7 +447,16 @@ export default function reactNativeTailwindBabelPlugin(
         state.hasClassNames = true;
 
         // Process the className with modifiers
-        processTwCall(className, path, state, parseClassName, generateStyleKey, splitModifierClasses, t);
+        processTwCall(
+          className,
+          path,
+          state,
+          parseClassName,
+          generateStyleKey,
+          splitModifierClasses,
+          findComponentScope,
+          t,
+        );
       },
 
       // Handle twStyle('...') call expressions
@@ -494,7 +506,16 @@ export default function reactNativeTailwindBabelPlugin(
         state.hasClassNames = true;
 
         // Process the className with modifiers
-        processTwCall(className, path, state, parseClassName, generateStyleKey, splitModifierClasses, t);
+        processTwCall(
+          className,
+          path,
+          state,
+          parseClassName,
+          generateStyleKey,
+          splitModifierClasses,
+          findComponentScope,
+          t,
+        );
       },
 
       JSXAttribute(path, state) {
