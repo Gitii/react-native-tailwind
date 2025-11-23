@@ -61,12 +61,12 @@ function parseArbitraryZIndex(value: string): number | null {
 }
 
 /**
- * Parse arbitrary grow/shrink value: [1.5], [2], [0.5]
+ * Parse arbitrary grow/shrink value: [1.5], [2], [0.5], [.5]
  * Returns number for valid non-negative values, null otherwise
  */
 function parseArbitraryGrowShrink(value: string): number | null {
-  // Match: [1.5], [2], [0], [0.5] (non-negative decimals)
-  const match = value.match(/^\[(\d+(?:\.\d+)?)\]$/);
+  // Match: [1.5], [2], [0], [0.5], [.5] (non-negative decimals, optional leading digit)
+  const match = value.match(/^\[(\d+(?:\.\d+)?|\.\d+)\]$/);
   if (match) {
     return parseFloat(match[1]);
   }
@@ -76,7 +76,7 @@ function parseArbitraryGrowShrink(value: string): number | null {
     /* v8 ignore next 5 */
     if (process.env.NODE_ENV !== "production") {
       console.warn(
-        `[react-native-tailwind] Invalid arbitrary grow/shrink value: ${value}. Only non-negative numbers are supported (e.g., [1.5], [2], [0.5]).`,
+        `[react-native-tailwind] Invalid arbitrary grow/shrink value: ${value}. Only non-negative numbers are supported (e.g., [1.5], [2], [0.5], [.5]).`,
       );
     }
     return null;

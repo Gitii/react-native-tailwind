@@ -119,6 +119,15 @@ describe("parseLayout - flex grow/shrink utilities", () => {
     expect(parseLayout("shrink-[100]")).toEqual({ flexShrink: 100 });
   });
 
+  it("should parse Tailwind shorthand decimals (no leading zero)", () => {
+    expect(parseLayout("grow-[.5]")).toEqual({ flexGrow: 0.5 });
+    expect(parseLayout("grow-[.75]")).toEqual({ flexGrow: 0.75 });
+    expect(parseLayout("shrink-[.5]")).toEqual({ flexShrink: 0.5 });
+    expect(parseLayout("shrink-[.25]")).toEqual({ flexShrink: 0.25 });
+    expect(parseLayout("flex-grow-[.5]")).toEqual({ flexGrow: 0.5 });
+    expect(parseLayout("flex-shrink-[.5]")).toEqual({ flexShrink: 0.5 });
+  });
+
   it("should reject negative values", () => {
     expect(parseLayout("grow-[-1]")).toBeNull();
     expect(parseLayout("shrink-[-1]")).toBeNull();
