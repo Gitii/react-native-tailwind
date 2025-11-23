@@ -1022,6 +1022,155 @@ describe("Babel plugin - color scheme modifier transformation", () => {
   });
 });
 
+describe("Babel plugin - custom color scheme hook import", () => {
+  it("should use custom import source for color scheme hook", () => {
+    const input = `
+      import React from 'react';
+      import { View } from 'react-native';
+
+      export function Component() {
+        return <View className="dark:bg-gray-900" />;
+      }
+    `;
+
+    const output = transform(
+      input,
+      {
+        colorScheme: {
+          importFrom: "@/hooks/useColorScheme",
+          importName: "useColorScheme",
+        },
+      },
+      true,
+    );
+
+    // Should import from custom source
+    expect(output).toContain('from "@/hooks/useColorScheme"');
+    expect(output).not.toContain('useColorScheme } from "react-native"');
+
+    // Should inject hook call
+    expect(output).toContain("_twColorScheme = useColorScheme()");
+
+    // Should have conditional styling
+    expect(output).toMatch(/_twColorScheme\s*===\s*['"]dark['"]/);
+  });
+
+  it("should use custom hook name", () => {
+    const input = `
+      import React from 'react';
+      import { View } from 'react-native';
+
+      export function Component() {
+        return <View className="dark:bg-gray-900" />;
+      }
+    `;
+
+    const output = transform(
+      input,
+      {
+        colorScheme: {
+          importFrom: "@react-navigation/native",
+          importName: "useTheme",
+        },
+      },
+      true,
+    );
+
+    // Should import useTheme from React Navigation
+    expect(output).toContain('from "@react-navigation/native"');
+    expect(output).toContain("useTheme");
+
+    // Should call useTheme hook
+    expect(output).toContain("_twColorScheme = useTheme()");
+
+    // Should have conditional styling
+    expect(output).toMatch(/_twColorScheme\s*===\s*['"]dark['"]/);
+  });
+
+  it("should merge custom hook with existing import from same source", () => {
+    const input = `
+      import React from 'react';
+      import { View } from 'react-native';
+      import { useNavigation } from '@react-navigation/native';
+
+      export function Component() {
+        return <View className="dark:bg-gray-900" />;
+      }
+    `;
+
+    const output = transform(
+      input,
+      {
+        colorScheme: {
+          importFrom: "@react-navigation/native",
+          importName: "useTheme",
+        },
+      },
+      true,
+    );
+
+    // Should merge with existing import
+    expect(output).toContain("useNavigation");
+    expect(output).toContain("useTheme");
+    expect(output).toMatch(/from\s+['"]@react-navigation\/native['"]/);
+
+    // Should only have one import from that source
+    const importCount = (output.match(/@react-navigation\/native/g) ?? []).length;
+    expect(importCount).toBe(1);
+  });
+
+  it("should not duplicate custom hook if already imported", () => {
+    const input = `
+      import React from 'react';
+      import { View } from 'react-native';
+      import { useColorScheme } from '@/hooks/useColorScheme';
+
+      export function Component() {
+        return <View className="dark:bg-gray-900" />;
+      }
+    `;
+
+    const output = transform(
+      input,
+      {
+        colorScheme: {
+          importFrom: "@/hooks/useColorScheme",
+          importName: "useColorScheme",
+        },
+      },
+      true,
+    );
+
+    // Should not add duplicate import
+    const importMatches = output.match(/import.*useColorScheme.*from ['"]@\/hooks\/useColorScheme['"]/g);
+    expect(importMatches).toHaveLength(1);
+
+    // Should still inject hook call
+    expect(output).toContain("_twColorScheme = useColorScheme()");
+  });
+
+  it("should use react-native by default when no custom config provided", () => {
+    const input = `
+      import React from 'react';
+      import { View } from 'react-native';
+
+      export function Component() {
+        return <View className="dark:bg-gray-900" />;
+      }
+    `;
+
+    const output = transform(input, undefined, true);
+
+    // Should use default react-native import (can be single or double quotes)
+    expect(output).toMatch(/useColorScheme\s*}\s*from\s+['"]react-native['"]/);
+    expect(output).not.toContain("@/hooks");
+    expect(output).not.toContain("@react-navigation");
+
+    // Should inject hook call with default name
+    expect(output).toContain("_twColorScheme = useColorScheme()");
+  });
+});
+
 describe("Babel plugin - import injection", () => {
   it("should not add StyleSheet import to files without className usage", () => {
     const input = `
