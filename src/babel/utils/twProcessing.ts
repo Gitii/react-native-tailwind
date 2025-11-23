@@ -4,7 +4,7 @@
 
 import type { NodePath } from "@babel/core";
 import type * as BabelTypes from "@babel/types";
-import type { ModifierType, ParsedModifier } from "../../parser/index.js";
+import type { CustomTheme, ModifierType, ParsedModifier } from "../../parser/index.js";
 import { expandSchemeModifier, isSchemeModifier } from "../../parser/index.js";
 import type { SchemeModifierConfig } from "../../types/config.js";
 import type { StyleObject } from "../../types/core.js";
@@ -15,7 +15,7 @@ import type { StyleObject } from "../../types/core.js";
 // eslint-disable-next-line @typescript-eslint/consistent-type-definitions
 export interface TwProcessingState {
   styleRegistry: Map<string, StyleObject>;
-  customColors: Record<string, string>;
+  customTheme: CustomTheme;
   schemeModifierConfig: SchemeModifierConfig;
   stylesIdentifier: string;
 }
@@ -28,7 +28,7 @@ export function processTwCall(
   className: string,
   path: NodePath,
   state: TwProcessingState,
-  parseClassName: (className: string, customColors: Record<string, string>) => StyleObject,
+  parseClassName: (className: string, customTheme?: CustomTheme) => StyleObject,
   generateStyleKey: (className: string) => string,
   splitModifierClasses: (className: string) => { baseClasses: string[]; modifierClasses: ParsedModifier[] },
   t: typeof BabelTypes,
@@ -42,7 +42,7 @@ export function processTwCall(
       // Expand scheme: into dark: and light:
       const expanded = expandSchemeModifier(
         modifier,
-        state.customColors,
+        state.customTheme.colors ?? {},
         state.schemeModifierConfig.darkSuffix ?? "-dark",
         state.schemeModifierConfig.lightSuffix ?? "-light",
       );
@@ -59,7 +59,7 @@ export function processTwCall(
   // Parse and add base styles
   if (baseClasses.length > 0) {
     const baseClassName = baseClasses.join(" ");
-    const baseStyleObject = parseClassName(baseClassName, state.customColors);
+    const baseStyleObject = parseClassName(baseClassName, state.customTheme);
     const baseStyleKey = generateStyleKey(baseClassName);
     state.styleRegistry.set(baseStyleKey, baseStyleObject);
 
@@ -89,7 +89,7 @@ export function processTwCall(
   // Add modifier styles
   for (const [modifierType, modifiers] of modifiersByType) {
     const modifierClassNames = modifiers.map((m) => m.baseClass).join(" ");
-    const modifierStyleObject = parseClassName(modifierClassNames, state.customColors);
+    const modifierStyleObject = parseClassName(modifierClassNames, state.customTheme);
     const modifierStyleKey = generateStyleKey(`${modifierType}_${modifierClassNames}`);
     state.styleRegistry.set(modifierStyleKey, modifierStyleObject);
 

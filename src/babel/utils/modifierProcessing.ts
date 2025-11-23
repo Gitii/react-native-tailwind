@@ -3,7 +3,7 @@
  */
 
 import type * as BabelTypes from "@babel/types";
-import type { ModifierType, ParsedModifier } from "../../parser/index.js";
+import type { CustomTheme, ModifierType, ParsedModifier } from "../../parser/index.js";
 import type { StyleObject } from "../../types/core.js";
 import { getStatePropertyForModifier } from "./componentSupport.js";
 
@@ -13,7 +13,7 @@ import { getStatePropertyForModifier } from "./componentSupport.js";
 // eslint-disable-next-line @typescript-eslint/consistent-type-definitions
 export interface ModifierProcessingState {
   styleRegistry: Map<string, StyleObject>;
-  customColors: Record<string, string>;
+  customTheme: CustomTheme;
   stylesIdentifier: string;
 }
 
@@ -24,7 +24,7 @@ export interface ModifierProcessingState {
 export function processStaticClassNameWithModifiers(
   className: string,
   state: ModifierProcessingState,
-  parseClassName: (className: string, customColors: Record<string, string>) => StyleObject,
+  parseClassName: (className: string, customTheme?: CustomTheme) => StyleObject,
   generateStyleKey: (className: string) => string,
   splitModifierClasses: (className: string) => { baseClasses: string[]; modifierClasses: ParsedModifier[] },
   t: typeof BabelTypes,
@@ -35,7 +35,7 @@ export function processStaticClassNameWithModifiers(
   let baseStyleExpression: BabelTypes.Node | null = null;
   if (baseClasses.length > 0) {
     const baseClassName = baseClasses.join(" ");
-    const baseStyleObject = parseClassName(baseClassName, state.customColors);
+    const baseStyleObject = parseClassName(baseClassName, state.customTheme);
     const baseStyleKey = generateStyleKey(baseClassName);
     state.styleRegistry.set(baseStyleKey, baseStyleObject);
     baseStyleExpression = t.memberExpression(t.identifier(state.stylesIdentifier), t.identifier(baseStyleKey));
@@ -66,7 +66,7 @@ export function processStaticClassNameWithModifiers(
   for (const [modifierType, modifiers] of modifiersByType) {
     // Parse all modifier classes together
     const modifierClassNames = modifiers.map((m) => m.baseClass).join(" ");
-    const modifierStyleObject = parseClassName(modifierClassNames, state.customColors);
+    const modifierStyleObject = parseClassName(modifierClassNames, state.customTheme);
     const modifierStyleKey = generateStyleKey(`${modifierType}_${modifierClassNames}`);
     state.styleRegistry.set(modifierStyleKey, modifierStyleObject);
 

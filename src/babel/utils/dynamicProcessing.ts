@@ -4,7 +4,7 @@
 
 import type { NodePath } from "@babel/core";
 import type * as BabelTypes from "@babel/types";
-import type { ParsedModifier } from "../../parser/index.js";
+import type { CustomTheme, ParsedModifier } from "../../parser/index.js";
 import type { SchemeModifierConfig } from "../../types/config.js";
 import type { StyleObject } from "../../types/core.js";
 
@@ -14,7 +14,7 @@ import type { StyleObject } from "../../types/core.js";
 // eslint-disable-next-line @typescript-eslint/consistent-type-definitions
 export interface DynamicProcessingState {
   styleRegistry: Map<string, StyleObject>;
-  customColors: Record<string, string>;
+  customTheme: CustomTheme;
   schemeModifierConfig: SchemeModifierConfig;
   stylesIdentifier: string;
   needsPlatformImport: boolean;
@@ -37,7 +37,7 @@ export type SplitModifierClassesFn = (className: string) => {
 export type ProcessPlatformModifiersFn = (
   modifiers: ParsedModifier[],
   state: DynamicProcessingState,
-  parseClassName: (className: string, customColors: Record<string, string>) => StyleObject,
+  parseClassName: (className: string, customTheme?: CustomTheme) => StyleObject,
   generateStyleKey: (className: string) => string,
   t: typeof BabelTypes,
 ) => BabelTypes.Expression;
@@ -48,7 +48,7 @@ export type ProcessPlatformModifiersFn = (
 export type ProcessColorSchemeModifiersFn = (
   modifiers: ParsedModifier[],
   state: DynamicProcessingState,
-  parseClassName: (className: string, customColors: Record<string, string>) => StyleObject,
+  parseClassName: (className: string, customTheme?: CustomTheme) => StyleObject,
   generateStyleKey: (className: string) => string,
   t: typeof BabelTypes,
 ) => BabelTypes.Expression[];
@@ -85,7 +85,7 @@ export type DynamicExpressionResult = {
 export function processDynamicExpression(
   expression: BabelTypes.Expression,
   state: DynamicProcessingState,
-  parseClassName: (className: string, customColors: Record<string, string>) => StyleObject,
+  parseClassName: (className: string, customTheme?: CustomTheme) => StyleObject,
   generateStyleKey: (className: string) => string,
   splitModifierClasses: SplitModifierClassesFn,
   processPlatformModifiers: ProcessPlatformModifiersFn,
@@ -164,7 +164,7 @@ export function processDynamicExpression(
 function processTemplateLiteral(
   node: BabelTypes.TemplateLiteral,
   state: DynamicProcessingState,
-  parseClassName: (className: string, customColors: Record<string, string>) => StyleObject,
+  parseClassName: (className: string, customTheme?: CustomTheme) => StyleObject,
   generateStyleKey: (className: string) => string,
   splitModifierClasses: SplitModifierClassesFn,
   processPlatformModifiers: ProcessPlatformModifiersFn,
@@ -262,7 +262,7 @@ function processTemplateLiteral(
 function processConditionalExpression(
   node: BabelTypes.ConditionalExpression,
   state: DynamicProcessingState,
-  parseClassName: (className: string, customColors: Record<string, string>) => StyleObject,
+  parseClassName: (className: string, customTheme?: CustomTheme) => StyleObject,
   generateStyleKey: (className: string) => string,
   splitModifierClasses: SplitModifierClassesFn,
   processPlatformModifiers: ProcessPlatformModifiersFn,
@@ -325,7 +325,7 @@ function processConditionalExpression(
 function processLogicalExpression(
   node: BabelTypes.LogicalExpression,
   state: DynamicProcessingState,
-  parseClassName: (className: string, customColors: Record<string, string>) => StyleObject,
+  parseClassName: (className: string, customTheme?: CustomTheme) => StyleObject,
   generateStyleKey: (className: string) => string,
   splitModifierClasses: SplitModifierClassesFn,
   processPlatformModifiers: ProcessPlatformModifiersFn,
@@ -376,7 +376,7 @@ function processLogicalExpression(
 function processStringOrExpressionHelper(
   node: BabelTypes.StringLiteral | BabelTypes.Expression,
   state: DynamicProcessingState,
-  parseClassName: (className: string, customColors: Record<string, string>) => StyleObject,
+  parseClassName: (className: string, customTheme?: CustomTheme) => StyleObject,
   generateStyleKey: (className: string) => string,
   splitModifierClasses: SplitModifierClassesFn,
   processPlatformModifiers: ProcessPlatformModifiersFn,
@@ -405,7 +405,7 @@ function processStringOrExpressionHelper(
         // Expand scheme: into dark: and light:
         const expanded = expandSchemeModifier(
           modifier,
-          state.customColors,
+          state.customTheme.colors ?? {},
           state.schemeModifierConfig.darkSuffix ?? "-dark",
           state.schemeModifierConfig.lightSuffix ?? "-light",
         );
@@ -425,7 +425,7 @@ function processStringOrExpressionHelper(
     // Process base classes
     if (baseClasses.length > 0) {
       const baseClassName = baseClasses.join(" ");
-      const styleObject = parseClassName(baseClassName, state.customColors);
+      const styleObject = parseClassName(baseClassName, state.customTheme);
       const styleKey = generateStyleKey(baseClassName);
       state.styleRegistry.set(styleKey, styleObject);
       styleElements.push(t.memberExpression(t.identifier(state.stylesIdentifier), t.identifier(styleKey)));

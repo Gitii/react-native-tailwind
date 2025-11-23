@@ -3,7 +3,7 @@
  */
 
 import type * as BabelTypes from "@babel/types";
-import type { ColorSchemeModifierType, ParsedModifier } from "../../parser/index.js";
+import type { ColorSchemeModifierType, CustomTheme, ParsedModifier } from "../../parser/index.js";
 import type { StyleObject } from "../../types/core.js";
 
 /**
@@ -12,7 +12,7 @@ import type { StyleObject } from "../../types/core.js";
 // eslint-disable-next-line @typescript-eslint/consistent-type-definitions
 export interface ColorSchemeModifierProcessingState {
   styleRegistry: Map<string, StyleObject>;
-  customColors: Record<string, string>;
+  customTheme: CustomTheme;
   stylesIdentifier: string;
   needsColorSchemeImport: boolean;
   colorSchemeVariableName: string;
@@ -38,7 +38,7 @@ export interface ColorSchemeModifierProcessingState {
 export function processColorSchemeModifiers(
   colorSchemeModifiers: ParsedModifier[],
   state: ColorSchemeModifierProcessingState,
-  parseClassName: (className: string, customColors: Record<string, string>) => StyleObject,
+  parseClassName: (className: string, customTheme?: CustomTheme) => StyleObject,
   generateStyleKey: (className: string) => string,
   t: typeof BabelTypes,
 ): BabelTypes.Expression[] {
@@ -65,7 +65,7 @@ export function processColorSchemeModifiers(
   for (const [scheme, modifiers] of modifiersByScheme) {
     // Parse all classes for this color scheme together
     const classNames = modifiers.map((m) => m.baseClass).join(" ");
-    const styleObject = parseClassName(classNames, state.customColors);
+    const styleObject = parseClassName(classNames, state.customTheme);
     const styleKey = generateStyleKey(`${scheme}_${classNames}`);
 
     // Register style in the registry

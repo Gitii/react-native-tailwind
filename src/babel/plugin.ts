@@ -18,7 +18,8 @@ import {
 } from "../parser/index.js";
 import type { StyleObject } from "../types/core.js";
 import { generateStyleKey } from "../utils/styleKey.js";
-import { extractCustomColors } from "./config-loader.js";
+import type { CustomTheme } from "./config-loader.js";
+import { extractCustomTheme } from "./config-loader.js";
 
 // Import utility functions
 import type { SchemeModifierConfig } from "../types/config.js";
@@ -99,7 +100,7 @@ type PluginState = PluginPass & {
   hasColorSchemeImport: boolean;
   needsColorSchemeImport: boolean;
   colorSchemeVariableName: string;
-  customColors: Record<string, string>;
+  customTheme: CustomTheme;
   schemeModifierConfig: SchemeModifierConfig;
   supportedAttributes: Set<string>;
   attributePatterns: RegExp[];
@@ -231,8 +232,8 @@ export default function reactNativeTailwindBabelPlugin(
           state.hasTwImport = false;
           state.functionComponentsNeedingColorScheme = new Set();
 
-          // Load custom colors from tailwind.config.*
-          state.customColors = extractCustomColors(state.file.opts.filename ?? "");
+          // Load custom theme from tailwind.config.*
+          state.customTheme = extractCustomTheme(state.file.opts.filename ?? "");
 
           // Use scheme modifier config from plugin options
           state.schemeModifierConfig = schemeModifierConfig;
@@ -480,7 +481,7 @@ export default function reactNativeTailwindBabelPlugin(
               // Expand scheme: into dark: and light:
               const expanded = expandSchemeModifier(
                 modifier,
-                state.customColors,
+                state.customTheme.colors ?? {},
                 state.schemeModifierConfig.darkSuffix,
                 state.schemeModifierConfig.lightSuffix,
               );
@@ -507,7 +508,7 @@ export default function reactNativeTailwindBabelPlugin(
 
             if (componentSupport?.supportedModifiers.includes("placeholder")) {
               const placeholderClasses = placeholderModifiers.map((m) => m.baseClass).join(" ");
-              const placeholderColor = parsePlaceholderClasses(placeholderClasses, state.customColors);
+              const placeholderColor = parsePlaceholderClasses(placeholderClasses, state.customTheme.colors);
 
               if (placeholderColor) {
                 // Add or merge placeholderTextColor prop
@@ -561,7 +562,7 @@ export default function reactNativeTailwindBabelPlugin(
               // Add base classes
               if (hasBaseClasses) {
                 const baseClassName = baseClasses.join(" ");
-                const baseStyleObject = parseClassName(baseClassName, state.customColors);
+                const baseStyleObject = parseClassName(baseClassName, state.customTheme);
                 const baseStyleKey = generateStyleKey(baseClassName);
                 state.styleRegistry.set(baseStyleKey, baseStyleObject);
                 styleArrayElements.push(
@@ -611,7 +612,7 @@ export default function reactNativeTailwindBabelPlugin(
                 }
 
                 const modifierClassNames = modifiers.map((m) => m.baseClass).join(" ");
-                const modifierStyleObject = parseClassName(modifierClassNames, state.customColors);
+                const modifierStyleObject = parseClassName(modifierClassNames, state.customTheme);
                 const modifierStyleKey = generateStyleKey(`${modifierType}_${modifierClassNames}`);
                 state.styleRegistry.set(modifierStyleKey, modifierStyleObject);
 
@@ -653,7 +654,7 @@ export default function reactNativeTailwindBabelPlugin(
             // Add base classes
             if (hasBaseClasses) {
               const baseClassName = baseClasses.join(" ");
-              const baseStyleObject = parseClassName(baseClassName, state.customColors);
+              const baseStyleObject = parseClassName(baseClassName, state.customTheme);
               const baseStyleKey = generateStyleKey(baseClassName);
               state.styleRegistry.set(baseStyleKey, baseStyleObject);
               styleExpressions.push(
@@ -815,7 +816,7 @@ export default function reactNativeTailwindBabelPlugin(
             return;
           }
 
-          const styleObject = parseClassName(classNameForStyle, state.customColors);
+          const styleObject = parseClassName(classNameForStyle, state.customTheme);
           const styleKey = generateStyleKey(classNameForStyle);
           state.styleRegistry.set(styleKey, styleObject);
 

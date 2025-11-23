@@ -3,7 +3,7 @@
  */
 
 import type * as BabelTypes from "@babel/types";
-import type { ParsedModifier, PlatformModifierType } from "../../parser/index.js";
+import type { CustomTheme, ParsedModifier, PlatformModifierType } from "../../parser/index.js";
 import type { StyleObject } from "../../types/core.js";
 
 /**
@@ -12,7 +12,7 @@ import type { StyleObject } from "../../types/core.js";
 // eslint-disable-next-line @typescript-eslint/consistent-type-definitions
 export interface PlatformModifierProcessingState {
   styleRegistry: Map<string, StyleObject>;
-  customColors: Record<string, string>;
+  customTheme: CustomTheme;
   stylesIdentifier: string;
   needsPlatformImport: boolean;
 }
@@ -34,7 +34,7 @@ export interface PlatformModifierProcessingState {
 export function processPlatformModifiers(
   platformModifiers: ParsedModifier[],
   state: PlatformModifierProcessingState,
-  parseClassName: (className: string, customColors: Record<string, string>) => StyleObject,
+  parseClassName: (className: string, customTheme?: CustomTheme) => StyleObject,
   generateStyleKey: (className: string) => string,
   t: typeof BabelTypes,
 ): BabelTypes.Expression {
@@ -61,7 +61,7 @@ export function processPlatformModifiers(
   for (const [platform, modifiers] of modifiersByPlatform) {
     // Parse all classes for this platform together
     const classNames = modifiers.map((m) => m.baseClass).join(" ");
-    const styleObject = parseClassName(classNames, state.customColors);
+    const styleObject = parseClassName(classNames, state.customTheme);
     const styleKey = generateStyleKey(`${platform}_${classNames}`);
 
     // Register style in the registry
