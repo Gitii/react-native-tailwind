@@ -5,10 +5,16 @@
 import type { NodePath } from "@babel/core";
 import type * as BabelTypes from "@babel/types";
 import type { CustomTheme, ModifierType, ParsedModifier } from "../../parser/index.js";
-import { expandSchemeModifier, isColorSchemeModifier, isSchemeModifier } from "../../parser/index.js";
+import {
+  expandSchemeModifier,
+  isColorSchemeModifier,
+  isPlatformModifier,
+  isSchemeModifier,
+} from "../../parser/index.js";
 import type { SchemeModifierConfig } from "../../types/config.js";
 import type { StyleObject } from "../../types/core.js";
 import { processColorSchemeModifiers } from "./colorSchemeModifierProcessing.js";
+import { processPlatformModifiers } from "./platformModifierProcessing.js";
 
 /**
  * Plugin state interface (subset needed for tw processing)
@@ -24,12 +30,15 @@ export interface TwProcessingState {
   colorSchemeVariableName: string;
   functionComponentsNeedingColorScheme: Set<NodePath<BabelTypes.Function>>;
   colorSchemeLocalIdentifier?: string;
+  // Platform support (for ios:/android:/web: modifiers)
+  needsPlatformImport: boolean;
 }
 
 /**
  * Process tw`...` or twStyle('...') call and replace with TwStyle object
  * Generates: { style: styles._base, activeStyle: styles._active, ... }
  * When color-scheme modifiers are present, generates: { style: [base, _twColorScheme === 'dark' && dark, ...] }
+ * When platform modifiers are present, generates: { style: [base, Platform.select({ ios: ..., android: ... })] }
  */
 export function processTwCall(
   className: string,
@@ -82,9 +91,12 @@ export function processTwCall(
     objectProperties.push(t.objectProperty(t.identifier("style"), t.objectExpression([])));
   }
 
-  // Separate color-scheme modifiers from other modifiers
+  // Separate color-scheme and platform modifiers from other modifiers
   const colorSchemeModifiers = modifierClasses.filter((m) => isColorSchemeModifier(m.modifier));
-  const otherModifiers = modifierClasses.filter((m) => !isColorSchemeModifier(m.modifier));
+  const platformModifiers = modifierClasses.filter((m) => isPlatformModifier(m.modifier));
+  const otherModifiers = modifierClasses.filter(
+    (m) => !isColorSchemeModifier(m.modifier) && !isPlatformModifier(m.modifier),
+  );
 
   // Check if we need color scheme support
   const hasColorSchemeModifiers = colorSchemeModifiers.length > 0;
@@ -173,7 +185,104 @@ export function processTwCall(
     }
   }
 
-  // Group other modifiers by type (non-color-scheme modifiers)
+  // Process platform modifiers if present
+  const hasPlatformModifiers = platformModifiers.length > 0;
+
+  if (hasPlatformModifiers) {
+    // Mark that we need Platform import
+    state.needsPlatformImport = true;
+
+    // Generate Platform.select() expression
+    const platformSelectExpression = processPlatformModifiers(
+      platformModifiers,
+      state,
+      parseClassName,
+      generateStyleKey,
+      t,
+    );
+
+    // If we already have a style array (from color scheme modifiers), add to it
+    // Otherwise, convert style property to an array
+    if (hasColorSchemeModifiers && componentScope) {
+      // Already have style array from color scheme processing
+      // Get the current array expression and add Platform.select to it
+      const styleProperty = objectProperties.find(
+        (prop) => t.isIdentifier(prop.key) && prop.key.name === "style",
+      );
+      if (styleProperty && t.isArrayExpression(styleProperty.value)) {
+        styleProperty.value.elements.push(platformSelectExpression);
+      }
+    } else {
+      // No color scheme modifiers, create style array with base + Platform.select
+      const styleArrayElements: BabelTypes.Expression[] = [];
+
+      // Add base style if present
+      if (baseClasses.length > 0) {
+        const baseClassName = baseClasses.join(" ");
+        const baseStyleObject = parseClassName(baseClassName, state.customTheme);
+        const baseStyleKey = generateStyleKey(baseClassName);
+        state.styleRegistry.set(baseStyleKey, baseStyleObject);
+        styleArrayElements.push(
+          t.memberExpression(t.identifier(state.stylesIdentifier), t.identifier(baseStyleKey)),
+        );
+      }
+
+      // Add Platform.select() expression
+      styleArrayElements.push(platformSelectExpression);
+
+      // Replace style property with array
+      objectProperties[0] = t.objectProperty(t.identifier("style"), t.arrayExpression(styleArrayElements));
+    }
+
+    // Also add iosStyle/androidStyle/webStyle properties for manual processing
+    const iosModifiers = platformModifiers.filter((m) => m.modifier === "ios");
+    const androidModifiers = platformModifiers.filter((m) => m.modifier === "android");
+    const webModifiers = platformModifiers.filter((m) => m.modifier === "web");
+
+    if (iosModifiers.length > 0) {
+      const iosClassNames = iosModifiers.map((m) => m.baseClass).join(" ");
+      const iosStyleObject = parseClassName(iosClassNames, state.customTheme);
+      const iosStyleKey = generateStyleKey(`ios_${iosClassNames}`);
+      state.styleRegistry.set(iosStyleKey, iosStyleObject);
+
+      objectProperties.push(
+        t.objectProperty(
+          t.identifier("iosStyle"),
+          t.memberExpression(t.identifier(state.stylesIdentifier), t.identifier(iosStyleKey)),
+        ),
+      );
+    }
+
+    if (androidModifiers.length > 0) {
+      const androidClassNames = androidModifiers.map((m) => m.baseClass).join(" ");
+      const androidStyleObject = parseClassName(androidClassNames, state.customTheme);
+      const androidStyleKey = generateStyleKey(`android_${androidClassNames}`);
+      state.styleRegistry.set(androidStyleKey, androidStyleObject);
+
+      objectProperties.push(
+        t.objectProperty(
+          t.identifier("androidStyle"),
+          t.memberExpression(t.identifier(state.stylesIdentifier), t.identifier(androidStyleKey)),
+        ),
+      );
+    }
+
+    if (webModifiers.length > 0) {
+      const webClassNames = webModifiers.map((m) => m.baseClass).join(" ");
+      const webStyleObject = parseClassName(webClassNames, state.customTheme);
+      const webStyleKey = generateStyleKey(`web_${webClassNames}`);
+      state.styleRegistry.set(webStyleKey, webStyleObject);
+
+      objectProperties.push(
+        t.objectProperty(
+          t.identifier("webStyle"),
+          t.memberExpression(t.identifier(state.stylesIdentifier), t.identifier(webStyleKey)),
+        ),
+      );
+    }
+  }
+
+  // Group other modifiers by type (non-color-scheme and non-platform modifiers)
   const modifiersByType = new Map<ModifierType, ParsedModifier[]>();
   for (const mod of otherModifiers) {
     if (!modifiersByType.has(mod.modifier)) {

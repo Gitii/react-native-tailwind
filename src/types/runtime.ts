@@ -8,6 +8,7 @@ export type NativeStyle = ViewStyle | TextStyle | ImageStyle;
 /**
  * Return type for tw/twStyle functions with separate style properties for modifiers
  * When color-scheme modifiers (dark:, light:) are present, style becomes an array with runtime conditionals
+ * When platform modifiers (ios:, android:, web:) are present, style becomes an array with Platform.select()
  */
 export type TwStyle<T extends NativeStyle = NativeStyle> = {
   style: T | Array<T | false>;
@@ -17,4 +18,7 @@ export type TwStyle<T extends NativeStyle = NativeStyle> = {
   placeholderStyle?: TextStyle;
   lightStyle?: T;
   darkStyle?: T;
+  iosStyle?: T;
+  androidStyle?: T;
+  webStyle?: T;
 };
