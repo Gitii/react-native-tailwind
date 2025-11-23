@@ -1250,6 +1250,34 @@ describe("Babel plugin - custom color scheme hook import", () => {
     expect(output).not.toContain("_twColorScheme = useTheme()");
   });
 
+  it("should not treat type-only imports as having the hook", () => {
+    const input = `
+      import React from 'react';
+      import { View } from 'react-native';
+      import type { useColorScheme } from 'react-native';
+
+      export function Component() {
+        return <View className="dark:bg-gray-900" />;
+      }
+    `;
+
+    const output = transform(input, undefined, true);
+
+    // Should add a VALUE import for useColorScheme (type import doesn't count)
+    expect(output).toMatch(/import\s+\{[^}]*useColorScheme[^}]*\}\s+from\s+['"]react-native['"]/);
+
+    // Should inject the hook
+    expect(output).toContain("_twColorScheme = useColorScheme()");
+
+    // Should have both type-only and value imports in output
+    // (TypeScript preset keeps type imports for type checking)
+    const colorSchemeMatches = output.match(/useColorScheme/g);
+    expect(colorSchemeMatches).toBeTruthy();
+    if (colorSchemeMatches) {
+      expect(colorSchemeMatches.length).toBeGreaterThanOrEqual(2); // At least in import and hook call
+    }
+  });
+
   it("should handle both type-only and aliased imports together", () => {
     const input = `
       import React from 'react';
@@ -1410,5 +1438,215 @@ describe("Babel plugin - scheme: modifier", () => {
     // Should have conditional expressions
     expect(output).toContain("_twColorScheme === 'dark'");
     expect(output).toContain("_twColorScheme === 'light'");
+  });
+});
+
+describe("Babel plugin - color scheme modifiers in tw/twStyle", () => {
+  it("should transform tw with dark: modifier inside component", () => {
+    const input = `
+      import { tw } from '@mgcrea/react-native-tailwind';
+
+      function MyComponent() {
+        const styles = tw\`bg-white dark:bg-gray-900\`;
+        return null;
+      }
+    `;
+
+    const output = transform(input);
+
+    // Should inject useColorScheme hook
+    expect(output).toContain("useColorScheme");
+    expect(output).toContain("_twColorScheme");
+
+    // Should generate style array with conditionals
+    expect(output).toContain("style: [");
+    expect(output).toContain('_twColorScheme === "dark"');
+    expect(output).toContain("_twStyles._dark_bg_gray_900");
+    expect(output).toContain("_twStyles._bg_white");
+
+    // Should have StyleSheet.create
+    expect(output).toContain("StyleSheet.create");
+  });
+
+  it("should transform twStyle with light: modifier inside component", () => {
+    const input = `
+      import { twStyle } from '@mgcrea/react-native-tailwind';
+
+      export const MyComponent = () => {
+        const buttonStyles = twStyle('text-gray-900 light:text-gray-100');
+        return null;
+      };
+    `;
+
+    const output = transform(input);
+
+    // Should inject useColorScheme hook
+    expect(output).toContain("useColorScheme");
+    expect(output).toContain("_twColorScheme");
+
+    // Should generate style array with conditionals
+    expect(output).toContain("style: [");
+    expect(output).toContain('_twColorScheme === "light"');
+    expect(output).toContain("_twStyles._light_text_gray_100");
+    expect(output).toContain("_twStyles._text_gray_900");
+  });
+
+  it("should transform tw with both dark: and light: modifiers", () => {
+    const input = `
+      import { tw } from '@mgcrea/react-native-tailwind';
+
+      function MyComponent() {
+        const styles = tw\`bg-blue-500 dark:bg-blue-900 light:bg-blue-100\`;
+        return null;
+      }
+    `;
+
+    const output = transform(input);
+
+    // Should have both conditionals
+    expect(output).toContain('_twColorScheme === "dark"');
+    expect(output).toContain('_twColorScheme === "light"');
+    expect(output).toContain("_twStyles._dark_bg_blue_900");
+    expect(output).toContain("_twStyles._light_bg_blue_100");
+    expect(output).toContain("_twStyles._bg_blue_500");
+  });
+
+  it("should combine color scheme modifiers with state modifiers", () => {
+    const input = `
+      import { tw } from '@mgcrea/react-native-tailwind';
+
+      function MyComponent() {
+        const styles = tw\`bg-white dark:bg-gray-900 active:bg-blue-500\`;
+        return null;
+      }
+    `;
+
+    const output = transform(input);
+
+    // Should have color scheme conditionals in style array
+    expect(output).toContain("style: [");
+    expect(output).toContain('_twColorScheme === "dark"');
+
+    // Should have activeStyle property (separate from color scheme)
+    expect(output).toContain("activeStyle:");
+    expect(output).toContain("_twStyles._active_bg_blue_500");
+  });
+
+  it("should warn if tw with color scheme modifiers used outside component", () => {
+    const consoleWarnSpy = vi.spyOn(console, "warn").mockImplementation(() => {});
+
+    const input = `
+      import { tw } from '@mgcrea/react-native-tailwind';
+
+      const globalStyles = tw\`bg-white dark:bg-gray-900\`;
+    `;
+
+    const output = transform(input);
+
+    // Should warn about usage outside component
+    expect(consoleWarnSpy).toHaveBeenCalledWith(
+      expect.stringContaining("Color scheme modifiers (dark:, light:) in tw/twStyle calls"),
+    );
+
+    // Should not inject hook (no component scope)
+    expect(output).not.toContain("useColorScheme");
+
+    // Should still generate styles but without runtime conditionals
+    expect(output).toContain("_twStyles");
+
+    consoleWarnSpy.mockRestore();
+  });
+
+  it("should handle tw with only dark: modifier (no base class)", () => {
+    const input = `
+      import { tw } from '@mgcrea/react-native-tailwind';
+
+      function MyComponent() {
+        const styles = tw\`dark:bg-gray-900\`;
+        return null;
+      }
+    `;
+
+    const output = transform(input);
+
+    // Should still generate style array
+    expect(output).toContain("style: [");
+    expect(output).toContain('_twColorScheme === "dark"');
+    expect(output).toContain("_twStyles._dark_bg_gray_900");
+  });
+
+  it("should work with custom color scheme hook import", () => {
+    const input = `
+      import { tw } from '@mgcrea/react-native-tailwind';
+      import { useTheme } from '@react-navigation/native';
+
+      function MyComponent() {
+        const styles = tw\`bg-white dark:bg-gray-900\`;
+        return null;
+      }
+    `;
+
+    const options: PluginOptions = {
+      colorScheme: {
+        importFrom: "@react-navigation/native",
+        importName: "useTheme",
+      },
+    };
+
+    const output = transform(input, options);
+
+    // Should use existing import (not duplicate)
+    const themeImportCount = (output.match(/useTheme/g) ?? []).length;
+    // Should appear in import statement and hook call
+    expect(themeImportCount).toBeGreaterThanOrEqual(2);
+
+    // Should call the custom hook
+    expect(output).toContain("useTheme()");
+  });
+
+  it("should generate both style array and darkStyle/lightStyle properties", () => {
+    const input = `
+      import { tw } from '@mgcrea/react-native-tailwind';
+
+      function MyComponent() {
+        const styles = tw\`bg-white dark:bg-gray-900 light:bg-gray-50\`;
+        return null;
+      }
+    `;
+
+    const output = transform(input);
+
+    // Should have runtime conditional in style array
+    expect(output).toContain("style: [");
+    expect(output).toContain('_twColorScheme === "dark"');
+    expect(output).toContain('_twColorScheme === "light"');
+
+    // Should ALSO have darkStyle and lightStyle properties for manual access
+    expect(output).toContain("darkStyle:");
+    expect(output).toContain("lightStyle:");
+    expect(output).toContain("_twStyles._dark_bg_gray_900");
+    expect(output).toContain("_twStyles._light_bg_gray_50");
+  });
+
+  it("should allow accessing raw color values from darkStyle/lightStyle", () => {
+    const input = `
+      import { tw } from '@mgcrea/react-native-tailwind';
+
+      function MyComponent() {
+        const btnStyles = tw\`bg-blue-500 dark:bg-blue-900\`;
+        // User can access raw hex for Reanimated
+        const darkBgColor = btnStyles.darkStyle?.backgroundColor;
+        return null;
+      }
+    `;
+
+    const output = transform(input);
+
+    // Should have darkStyle property available
+    expect(output).toContain("darkStyle:");
+    expect(output).toContain("_twStyles._dark_bg_blue_900");
+
+    // The actual usage line should be preserved (TypeScript/Babel doesn't remove it)
+    expect(output).toContain("btnStyles.darkStyle");
   });
 });

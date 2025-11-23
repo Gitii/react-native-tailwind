@@ -317,7 +317,10 @@ describe("runtime", () => {
     it("should provide raw hex values for animations", () => {
       const result = tw`bg-blue-500 active:bg-blue-700`;
       // Access raw backgroundColor value for use with reanimated
-      expect(result?.style.backgroundColor).toBe("#2b7fff");
+      const style = Array.isArray(result?.style) ? result.style.find((s) => s !== false) : result?.style;
+      expect(
+        style && typeof style === "object" && "backgroundColor" in style ? style.backgroundColor : undefined,
+      ).toBe("#2b7fff");
       expect(result?.activeStyle?.backgroundColor).toBe("#1447e6");
     });
 
