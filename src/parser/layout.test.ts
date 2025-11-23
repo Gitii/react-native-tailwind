@@ -73,6 +73,58 @@ describe("parseLayout - flex grow/shrink utilities", () => {
   it("should parse shrink-0", () => {
     expect(parseLayout("shrink-0")).toEqual({ flexShrink: 0 });
   });
+
+  it("should parse grow with arbitrary values", () => {
+    expect(parseLayout("grow-[1.5]")).toEqual({ flexGrow: 1.5 });
+    expect(parseLayout("grow-[2]")).toEqual({ flexGrow: 2 });
+    expect(parseLayout("grow-[0.5]")).toEqual({ flexGrow: 0.5 });
+    expect(parseLayout("grow-[3]")).toEqual({ flexGrow: 3 });
+    expect(parseLayout("grow-[0]")).toEqual({ flexGrow: 0 });
+  });
+
+  it("should parse shrink with arbitrary values", () => {
+    expect(parseLayout("shrink-[0.5]")).toEqual({ flexShrink: 0.5 });
+    expect(parseLayout("shrink-[2]")).toEqual({ flexShrink: 2 });
+    expect(parseLayout("shrink-[1.5]")).toEqual({ flexShrink: 1.5 });
+    expect(parseLayout("shrink-[3]")).toEqual({ flexShrink: 3 });
+    expect(parseLayout("shrink-[0]")).toEqual({ flexShrink: 0 });
+  });
+
+  it("should parse CSS-style flex-grow aliases", () => {
+    expect(parseLayout("flex-grow")).toEqual({ flexGrow: 1 });
+    expect(parseLayout("flex-grow-0")).toEqual({ flexGrow: 0 });
+  });
+
+  it("should parse CSS-style flex-shrink aliases", () => {
+    expect(parseLayout("flex-shrink")).toEqual({ flexShrink: 1 });
+    expect(parseLayout("flex-shrink-0")).toEqual({ flexShrink: 0 });
+  });
+
+  it("should parse CSS-style flex-grow with arbitrary values", () => {
+    expect(parseLayout("flex-grow-[1.5]")).toEqual({ flexGrow: 1.5 });
+    expect(parseLayout("flex-grow-[2]")).toEqual({ flexGrow: 2 });
+    expect(parseLayout("flex-grow-[0.5]")).toEqual({ flexGrow: 0.5 });
+  });
+
+  it("should parse CSS-style flex-shrink with arbitrary values", () => {
+    expect(parseLayout("flex-shrink-[0.5]")).toEqual({ flexShrink: 0.5 });
+    expect(parseLayout("flex-shrink-[2]")).toEqual({ flexShrink: 2 });
+    expect(parseLayout("flex-shrink-[1.5]")).toEqual({ flexShrink: 1.5 });
+  });
+
+  it("should handle edge case values", () => {
+    expect(parseLayout("grow-[0.1]")).toEqual({ flexGrow: 0.1 });
+    expect(parseLayout("grow-[10]")).toEqual({ flexGrow: 10 });
+    expect(parseLayout("shrink-[0.01]")).toEqual({ flexShrink: 0.01 });
+    expect(parseLayout("shrink-[100]")).toEqual({ flexShrink: 100 });
+  });
+
+  it("should reject negative values", () => {
+    expect(parseLayout("grow-[-1]")).toBeNull();
+    expect(parseLayout("shrink-[-1]")).toBeNull();
+    expect(parseLayout("flex-grow-[-2]")).toBeNull();
+    expect(parseLayout("flex-shrink-[-0.5]")).toBeNull();
+  });
 });
 
 describe("parseLayout - justify content utilities", () => {

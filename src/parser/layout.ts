@@ -60,6 +60,31 @@ function parseArbitraryZIndex(value: string): number | null {
   return null;
 }
 
+/**
+ * Parse arbitrary grow/shrink value: [1.5], [2], [0.5]
+ * Returns number for valid non-negative values, null otherwise
+ */
+function parseArbitraryGrowShrink(value: string): number | null {
+  // Match: [1.5], [2], [0], [0.5] (non-negative decimals)
+  const match = value.match(/^\[(\d+(?:\.\d+)?)\]$/);
+  if (match) {
+    return parseFloat(match[1]);
+  }
+
+  // Warn about invalid formats (negative values, unsupported formats)
+  if (value.startsWith("[") && value.endsWith("]")) {
+    /* v8 ignore next 5 */
+    if (process.env.NODE_ENV !== "production") {
+      console.warn(
+        `[react-native-tailwind] Invalid arbitrary grow/shrink value: ${value}. Only non-negative numbers are supported (e.g., [1.5], [2], [0.5]).`,
+      );
+    }
+    return null;
+  }
+
+  return null;
+}
+
 // Display utilities
 const DISPLAY_MAP: Record<string, StyleObject> = {
   flex: { display: "flex" },
@@ -88,12 +113,17 @@ const FLEX_MAP: Record<string, StyleObject> = {
   "flex-none": { flex: 0 },
 };
 
-// Flex grow/shrink utilities
+// Flex grow/shrink utilities (includes CSS-style aliases)
 const GROW_SHRINK_MAP: Record<string, StyleObject> = {
   grow: { flexGrow: 1 },
   "grow-0": { flexGrow: 0 },
   shrink: { flexShrink: 1 },
   "shrink-0": { flexShrink: 0 },
+  // CSS-style aliases
+  "flex-grow": { flexGrow: 1 },
+  "flex-grow-0": { flexGrow: 0 },
+  "flex-shrink": { flexShrink: 1 },
+  "flex-shrink-0": { flexShrink: 0 },
 };
 
 // Justify content utilities
@@ -354,6 +384,30 @@ export function parseLayout(cls: string): StyleObject | null {
     const insetValue = INSET_SCALE[insetKey];
     if (insetValue !== undefined) {
       return { top: insetValue, right: insetValue, bottom: insetValue, left: insetValue };
+    }
+  }
+
+  // Flex grow: grow-[1.5], flex-grow-[2], etc. (arbitrary values)
+  if (cls.startsWith("grow-") || cls.startsWith("flex-grow-")) {
+    const prefix = cls.startsWith("flex-grow-") ? "flex-grow-" : "grow-";
+    const growKey = cls.substring(prefix.length);
+
+    // Arbitrary values: grow-[1.5], flex-grow-[2]
+    const arbitraryGrow = parseArbitraryGrowShrink(growKey);
+    if (arbitraryGrow !== null) {
+      return { flexGrow: arbitraryGrow };
+    }
+  }
+
+  // Flex shrink: shrink-[0.5], flex-shrink-[1], etc. (arbitrary values)
+  if (cls.startsWith("shrink-") || cls.startsWith("flex-shrink-")) {
+    const prefix = cls.startsWith("flex-shrink-") ? "flex-shrink-" : "shrink-";
+    const shrinkKey = cls.substring(prefix.length);
+
+    // Arbitrary values: shrink-[0.5], flex-shrink-[1]
+    const arbitraryShrink = parseArbitraryGrowShrink(shrinkKey);
+    if (arbitraryShrink !== null) {
+      return { flexShrink: arbitraryShrink };
     }
   }
 
