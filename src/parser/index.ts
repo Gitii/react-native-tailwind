@@ -15,17 +15,25 @@ import { parseTransform } from "./transforms";
 import { parseTypography } from "./typography";
 
 /**
+ * Custom theme configuration (subset of tailwind.config theme extensions)
+ */
+export type CustomTheme = {
+  colors?: Record<string, string>;
+  fontFamily?: Record<string, string>;
+};
+
+/**
  * Parse a className string and return a React Native style object
  * @param className - Space-separated class names
- * @param customColors - Optional custom colors from tailwind.config
+ * @param customTheme - Optional custom theme from tailwind.config
  * @returns React Native style object
  */
-export function parseClassName(className: string, customColors?: Record<string, string>): StyleObject {
+export function parseClassName(className: string, customTheme?: CustomTheme): StyleObject {
   const classes = className.split(/\s+/).filter(Boolean);
   const style: StyleObject = {};
 
   for (const cls of classes) {
-    const parsedStyle = parseClass(cls, customColors);
+    const parsedStyle = parseClass(cls, customTheme);
     Object.assign(style, parsedStyle);
   }
 
@@ -35,19 +43,19 @@ export function parseClassName(className: string, customColors?: Record<string, 
 /**
  * Parse a single class name
  * @param cls - Single class name
- * @param customColors - Optional custom colors from tailwind.config
+ * @param customTheme - Optional custom theme from tailwind.config
  * @returns React Native style object
  */
-export function parseClass(cls: string, customColors?: Record<string, string>): StyleObject {
+export function parseClass(cls: string, customTheme?: CustomTheme): StyleObject {
   // Try each parser in order
   // Note: parseBorder must come before parseColor to avoid border-[3px] being parsed as a color
-  // parseColor gets custom colors, others don't need it
+  // parseColor and parseTypography get custom theme, others don't need it
   const parsers: Array<(cls: string) => StyleObject | null> = [
     parseSpacing,
     parseBorder,
-    (cls: string) => parseColor(cls, customColors),
+    (cls: string) => parseColor(cls, customTheme?.colors),
     parseLayout,
-    parseTypography,
+    (cls: string) => parseTypography(cls, customTheme?.fontFamily),
     parseSizing,
     parseShadow,
     parseAspectRatio,

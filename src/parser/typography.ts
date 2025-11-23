@@ -164,8 +164,20 @@ function parseArbitraryLineHeight(value: string): number | null {
 
 /**
  * Parse typography classes
+ * @param cls - Class name to parse
+ * @param customFontFamily - Optional custom fontFamily from tailwind.config
  */
-export function parseTypography(cls: string): StyleObject | null {
+export function parseTypography(cls: string, customFontFamily?: Record<string, string>): StyleObject | null {
+  // Merge custom fontFamily with defaults (custom takes precedence)
+  const fontFamilyMap = customFontFamily
+    ? {
+        ...FONT_FAMILY_MAP,
+        ...Object.fromEntries(
+          Object.entries(customFontFamily).map(([key, value]) => [`font-${key}`, { fontFamily: value }]),
+        ),
+      }
+    : FONT_FAMILY_MAP;
+
   // Font size: text-base, text-lg, text-[18px], etc.
   if (cls.startsWith("text-")) {
     const sizeKey = cls.substring(5);
@@ -202,7 +214,7 @@ export function parseTypography(cls: string): StyleObject | null {
 
   // Try each lookup table in order
   return (
-    FONT_FAMILY_MAP[cls] ??
+    fontFamilyMap[cls] ??
     FONT_WEIGHT_MAP[cls] ??
     FONT_STYLE_MAP[cls] ??
     TEXT_ALIGN_MAP[cls] ??
