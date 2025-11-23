@@ -1,6 +1,6 @@
 import * as fs from "fs";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
-import { extractCustomColors, findTailwindConfig, loadTailwindConfig } from "./config-loader";
+import { extractCustomTheme, findTailwindConfig, loadTailwindConfig } from "./config-loader";
 
 // Mock fs
 vi.mock("fs");
@@ -115,15 +115,15 @@ describe("config-loader", () => {
     });
   });
 
-  describe("extractCustomColors", () => {
-    it("should return empty object when no config found", () => {
+  describe("extractCustomTheme", () => {
+    it("should return empty theme when no config found", () => {
       vi.spyOn(fs, "existsSync").mockReturnValue(false);
 
-      const result = extractCustomColors("/project/src/file.ts");
-      expect(result).toEqual({});
+      const result = extractCustomTheme("/project/src/file.ts");
+      expect(result).toEqual({ colors: {}, fontFamily: {} });
     });
 
-    it("should return empty object when config has no theme", () => {
+    it("should return empty theme when config has no theme", () => {
       const configPath = "/project/tailwind.config.js";
 
       vi.spyOn(fs, "existsSync").mockImplementation((filepath) => filepath === configPath);
@@ -131,22 +131,24 @@ describe("config-loader", () => {
 
       // loadTailwindConfig will be called, but we've already tested it
       // For integration, we'd need to mock the entire flow
-      const result = extractCustomColors("/project/src/file.ts");
+      const result = extractCustomTheme("/project/src/file.ts");
 
       // Without actual config loading, this returns empty
-      expect(result).toEqual({});
+      expect(result).toEqual({ colors: {}, fontFamily: {} });
     });
 
-    it("should extract colors from theme.extend.colors", () => {
+    it("should extract colors and fontFamily from theme.extend", () => {
       // This would require complex mocking of the entire require flow
-      // Testing the logic: theme.extend.colors is preferred
+      // Testing the logic: theme.extend is preferred
       const colors = { brand: { light: "#fff", dark: "#000" } };
+      const fontFamily = { sans: ['"SF Pro"'], custom: ['"Custom Font"'] };
       const theme = {
-        extend: { colors },
+        extend: { colors, fontFamily },
       };
 
-      // If we had the config, we'd flatten the colors
+      // If we had the config, we'd flatten the colors and convert fontFamily
       expect(theme.extend.colors).toEqual(colors);
+      expect(theme.extend.fontFamily).toEqual(fontFamily);
     });
   });
 });

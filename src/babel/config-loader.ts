@@ -13,8 +13,10 @@ export type TailwindConfig = {
   theme?: {
     extend?: {
       colors?: Record<string, string | Record<string, string>>;
+      fontFamily?: Record<string, string | string[]>;
     };
     colors?: Record<string, string | Record<string, string>>;
+    fontFamily?: Record<string, string | string[]>;
   };
 };
 
@@ -82,23 +84,31 @@ export function loadTailwindConfig(configPath: string): TailwindConfig | null {
 }
 
 /**
- * Extract custom colors from tailwind config
- * Prefers theme.extend.colors over theme.colors to avoid overriding defaults
+ * Custom theme configuration extracted from tailwind.config
  */
-export function extractCustomColors(filename: string): Record<string, string> {
+export type CustomTheme = {
+  colors: Record<string, string>;
+  fontFamily: Record<string, string>;
+};
+
+/**
+ * Extract all custom theme extensions from tailwind config
+ * Prefers theme.extend.* over theme.* to avoid overriding defaults
+ */
+export function extractCustomTheme(filename: string): CustomTheme {
   const projectDir = path.dirname(filename);
   const configPath = findTailwindConfig(projectDir);
 
   if (!configPath) {
-    return {};
+    return { colors: {}, fontFamily: {} };
   }
 
   const config = loadTailwindConfig(configPath);
   if (!config?.theme) {
-    return {};
+    return { colors: {}, fontFamily: {} };
   }
 
-  // Warn if using theme.colors instead of theme.extend.colors
+  // Extract colors
   /* v8 ignore next 5 */
   if (config.theme.colors && !config.theme.extend?.colors && process.env.NODE_ENV !== "production") {
     console.warn(
@@ -106,9 +116,31 @@ export function extractCustomColors(filename: string): Record<string, string> {
         "Use theme.extend.colors to add custom colors while keeping defaults.",
     );
   }
-
-  // Prefer theme.extend.colors
   const colors = config.theme.extend?.colors ?? config.theme.colors ?? {};
 
-  return flattenColors(colors);
+  // Extract fontFamily
+  /* v8 ignore next 5 */
+  if (config.theme.fontFamily && !config.theme.extend?.fontFamily && process.env.NODE_ENV !== "production") {
+    console.warn(
+      "[react-native-tailwind] Using theme.fontFamily will override all default font families. " +
+        "Use theme.extend.fontFamily to add custom fonts while keeping defaults.",
+    );
+  }
+  const fontFamily = config.theme.extend?.fontFamily ?? config.theme.fontFamily ?? {};
+
+  // Convert fontFamily values to strings (take first value if array)
+  const fontFamilyResult: Record<string, string> = {};
+  for (const [key, value] of Object.entries(fontFamily)) {
+    if (Array.isArray(value)) {
+      // Take first font in the array (React Native doesn't support font stacks)
+      fontFamilyResult[key] = value[0];
+    } else {
+      fontFamilyResult[key] = value;
+    }
+  }
+
+  return {
+    colors: flattenColors(colors),
+    fontFamily: fontFamilyResult,
+  };
 }
