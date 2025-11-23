@@ -278,6 +278,8 @@ export default function reactNativeTailwindBabelPlugin(
           state.functionComponentsNeedingColorScheme = new Set();
           state.hasColorSchemeImport = false;
           state.colorSchemeLocalIdentifier = undefined;
+          state.needsPlatformImport = false;
+          state.hasPlatformImport = false;
 
           // Load custom theme from tailwind.config.*
           state.customTheme = extractCustomTheme(state.file.opts.filename ?? "");
