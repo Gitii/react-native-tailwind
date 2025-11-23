@@ -1,5 +1,5 @@
 import { beforeEach, describe, expect, it } from "vitest";
-import { clearCache, getCacheStats, getCustomColors, setConfig, tw, twStyle } from "./runtime";
+import { clearCache, getCacheStats, getCustomTheme, setConfig, tw, twStyle } from "./runtime";
 
 describe("runtime", () => {
   beforeEach(() => {
@@ -126,8 +126,8 @@ describe("runtime", () => {
         },
       });
 
-      const colors = getCustomColors();
-      expect(colors).toEqual({
+      const theme = getCustomTheme();
+      expect(theme.colors).toEqual({
         primary: "#007AFF",
         secondary: "#5856D6",
       });
@@ -147,8 +147,8 @@ describe("runtime", () => {
         },
       });
 
-      const colors = getCustomColors();
-      expect(colors).toEqual({
+      const theme = getCustomTheme();
+      expect(theme.colors).toEqual({
         "brand-light": "#FF6B6B",
         "brand-dark": "#CC0000",
       });
@@ -169,8 +169,8 @@ describe("runtime", () => {
         },
       });
 
-      const colors = getCustomColors();
-      expect(colors).toEqual({
+      const theme = getCustomTheme();
+      expect(theme.colors).toEqual({
         primary: "#007AFF",
         "brand-light": "#FF6B6B",
         "brand-dark": "#CC0000",

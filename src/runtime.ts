@@ -1,3 +1,4 @@
+import type { CustomTheme } from "./parser/index.js";
 import { parseClassName } from "./parser/index.js";
 import type { NativeStyle, TwStyle } from "./types/runtime.js";
 import { flattenColors } from "./utils/flattenColors.js";
@@ -10,15 +11,13 @@ export type RuntimeConfig = {
   theme?: {
     extend?: {
       colors?: Record<string, string | Record<string, string>>;
-      // Future extensions can be added here:
-      // spacing?: Record<string, number | string>;
-      // fontFamily?: Record<string, string[]>;
+      fontFamily?: Record<string, string | string[]>;
     };
   };
 };
 
-// Global custom colors configuration
-let globalCustomColors: Record<string, string> | undefined;
+// Global custom theme configuration
+const globalCustomTheme: CustomTheme = { colors: {}, fontFamily: {} };
 
 // Simple memoization cache
 const styleCache = new Map<string, TwStyle>();
@@ -52,9 +51,25 @@ const styleCache = new Map<string, TwStyle>();
 export function setConfig(config: RuntimeConfig): void {
   // Extract and flatten custom colors
   if (config.theme?.extend?.colors) {
-    globalCustomColors = flattenColors(config.theme.extend.colors);
+    globalCustomTheme.colors = flattenColors(config.theme?.extend.colors);
   } else {
-    globalCustomColors = undefined;
+    globalCustomTheme.colors = {};
+  }
+
+  // Extract custom fontFamily
+  if (config.theme?.extend?.fontFamily) {
+    const fontFamilyResult: Record<string, string> = {};
+    for (const [key, value] of Object.entries(config.theme.extend.fontFamily)) {
+      if (Array.isArray(value)) {
+        // Take first font in the array (React Native doesn't support font stacks)
+        fontFamilyResult[key] = value[0];
+      } else {
+        fontFamilyResult[key] = value;
+      }
+    }
+    globalCustomTheme.fontFamily = fontFamilyResult;
+  } else {
+    globalCustomTheme.fontFamily = {};
   }
 
   // Clear cache when config changes
@@ -62,10 +77,18 @@ export function setConfig(config: RuntimeConfig): void {
 }
 
 /**
- * Get currently configured custom colors
+ * Get currently configured custom theme
+ */
+export function getCustomTheme(): CustomTheme {
+  return globalCustomTheme;
+}
+
+/**
+ * Get currently configured custom colors (for backwards compatibility)
+ * @deprecated Use getCustomTheme() instead
  */
 export function getCustomColors(): Record<string, string> | undefined {
-  return globalCustomColors;
+  return Object.keys(globalCustomTheme.colors ?? {}).length > 0 ? globalCustomTheme.colors : undefined;
 }
 
 /**
@@ -100,7 +123,7 @@ function parseAndCache(className: string): TwStyle {
   // Check if className contains modifiers
   if (!hasModifiers(className)) {
     // No modifiers - simple case
-    const styleObject = parseClassName(className, globalCustomColors);
+    const styleObject = parseClassName(className, globalCustomTheme);
 
     const result: TwStyle = {
       // @ts-expect-error - StyleObject transform types are broader than React Native's strict types
@@ -118,7 +141,7 @@ function parseAndCache(className: string): TwStyle {
 
   // Parse base styles
   const baseClassName = base.join(" ");
-  const baseStyle = baseClassName ? parseClassName(baseClassName, globalCustomColors) : {};
+  const baseStyle = baseClassName ? parseClassName(baseClassName, globalCustomTheme) : {};
 
   // Build result object
   const result: TwStyle = {
@@ -132,7 +155,7 @@ function parseAndCache(className: string): TwStyle {
     if (activeClasses && activeClasses.length > 0) {
       const activeClassName = activeClasses.join(" ");
       // @ts-expect-error - StyleObject transform types are broader than React Native's strict types
-      result.activeStyle = parseClassName(activeClassName, globalCustomColors);
+      result.activeStyle = parseClassName(activeClassName, globalCustomTheme);
     }
   }
 
@@ -141,7 +164,7 @@ function parseAndCache(className: string): TwStyle {
     if (focusClasses && focusClasses.length > 0) {
       const focusClassName = focusClasses.join(" ");
       // @ts-expect-error - StyleObject transform types are broader than React Native's strict types
-      result.focusStyle = parseClassName(focusClassName, globalCustomColors);
+      result.focusStyle = parseClassName(focusClassName, globalCustomTheme);
     }
   }
 
@@ -150,7 +173,7 @@ function parseAndCache(className: string): TwStyle {
     if (disabledClasses && disabledClasses.length > 0) {
       const disabledClassName = disabledClasses.join(" ");
       // @ts-expect-error - StyleObject transform types are broader than React Native's strict types
-      result.disabledStyle = parseClassName(disabledClassName, globalCustomColors);
+      result.disabledStyle = parseClassName(disabledClassName, globalCustomTheme);
     }
   }
 
