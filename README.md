@@ -1887,6 +1887,135 @@ const styles = StyleSheet.create({
 - Choose a name that won't conflict with existing variables in your files
 - The same identifier is used across all files in your project
 
+### Custom Color Scheme Hook
+
+By default, the plugin uses React Native's built-in `useColorScheme()` hook for `dark:` and `light:` modifiers. You can configure it to use a custom color scheme hook from theme providers like React Navigation, Expo, or your own implementation.
+
+**Configuration:**
+
+```javascript
+// babel.config.js
+module.exports = {
+  plugins: [
+    [
+      "@mgcrea/react-native-tailwind/babel",
+      {
+        colorScheme: {
+          importFrom: "@/hooks/useColorScheme", // Module to import from
+          importName: "useColorScheme",          // Hook name to import
+        },
+      },
+    ],
+  ],
+};
+```
+
+**Use Cases:**
+
+#### 1. Custom Theme Provider
+
+Override system color scheme with user preferences from a store:
+
+```typescript
+// src/hooks/useColorScheme.ts
+import { useColorScheme as useSystemColorScheme } from "react-native";
+import { profileStore } from "@/stores/profileStore";
+import { type ColorSchemeName } from "react-native";
+
+export const useColorScheme = (): ColorSchemeName => {
+  const systemColorScheme = useSystemColorScheme();
+  const userTheme = profileStore.theme; // 'dark' | 'light' | 'auto'
+
+  // Return user preference, or fall back to system if set to 'auto'
+  return userTheme === 'auto' ? systemColorScheme : userTheme;
+};
+```
+
+```javascript
+// babel.config.js
+{
+  colorScheme: {
+    importFrom: "@/hooks/useColorScheme",
+    importName: "useColorScheme"
+  }
+}
+```
+
+#### 2. React Navigation Theme
+
+Integrate with React Navigation's theme system:
+
+```typescript
+// Wrap React Navigation's useTheme to return ColorSchemeName
+import { useTheme as useNavTheme } from "@react-navigation/native";
+import { type ColorSchemeName } from "react-native";
+
+export const useColorScheme = (): ColorSchemeName => {
+  const { dark } = useNavTheme();
+  return dark ? "dark" : "light";
+};
+```
+
+#### 3. Expo Router Theme
+
+Use Expo Router's theme hook:
+
+```javascript
+// babel.config.js
+{
+  colorScheme: {
+    importFrom: "expo-router",
+    importName: "useColorScheme"
+  }
+}
+```
+
+#### 4. Testing
+
+Mock color scheme for tests:
+
+```typescript
+// test/mocks/useColorScheme.ts
+export const useColorScheme = () => "light"; // Or "dark" for dark mode tests
+```
+
+```javascript
+// babel.config.js (test environment)
+{
+  colorScheme: {
+    importFrom: "@/test/mocks/useColorScheme",
+    importName: "useColorScheme"
+  }
+}
+```
+
+#### How it works
+
+When you use `dark:` or `light:` modifiers:
+
+```tsx
+<View className="bg-white dark:bg-gray-900" />
+```
+
+The plugin will:
+
+1. Import your custom hook: `import { useColorScheme } from "@/hooks/useColorScheme"`
+2. Inject it in components: `const _twColorScheme = useColorScheme();`
+3. Generate conditionals: `_twColorScheme === "dark" && styles._dark_bg_gray_900`
+
+#### Default behavior (no configuration)
+
+Without custom configuration, the plugin uses React Native's built-in hook:
+
+- Import: `import { useColorScheme } from "react-native"`
+- This works out of the box for basic system color scheme detection
+
+#### Requirements
+
+- Your custom hook must return `ColorSchemeName` (type from React Native: `"light" | "dark" | null | undefined`)
+- The hook must be compatible with React's rules of hooks (can only be called in function components)
+- Import merging works automatically if you already import from the same source
+
 ### Arbitrary Values
 
 Use arbitrary values for custom sizes, spacing, and borders not in the preset scales:
