@@ -1649,4 +1649,181 @@ describe("Babel plugin - color scheme modifiers in tw/twStyle", () => {
     // The actual usage line should be preserved (TypeScript/Babel doesn't remove it)
     expect(output).toContain("btnStyles.darkStyle");
   });
+
+  // Platform modifier tests for tw/twStyle
+  it("should transform tw with ios: modifier", () => {
+    const input = `
+      import { tw } from '@mgcrea/react-native-tailwind';
+
+      function MyComponent() {
+        const styles = tw\`bg-white ios:p-6\`;
+        return null;
+      }
+    `;
+
+    const output = transform(input);
+
+    // Should add Platform import
+    expect(output).toContain("Platform");
+    expect(output).toContain('from "react-native"');
+
+    // Should generate style array with Platform.select()
+    expect(output).toContain("style: [");
+    expect(output).toContain("Platform.select");
+    expect(output).toContain("ios:");
+    expect(output).toContain("_twStyles._ios_p_6");
+    expect(output).toContain("_twStyles._bg_white");
+
+    // Should have StyleSheet.create
+    expect(output).toContain("StyleSheet.create");
+  });
+
+  it("should transform twStyle with android: modifier", () => {
+    const input = `
+      import { twStyle } from '@mgcrea/react-native-tailwind';
+
+      export const MyComponent = () => {
+        const buttonStyles = twStyle('bg-blue-500 android:p-8');
+        return null;
+      };
+    `;
+
+    const output = transform(input);
+
+    // Should add Platform import
+    expect(output).toContain("Platform");
+
+    // Should generate style array with Platform.select()
+    expect(output).toContain("style: [");
+    expect(output).toContain("Platform.select");
+    expect(output).toContain("android:");
+    expect(output).toContain("_twStyles._android_p_8");
+    expect(output).toContain("_twStyles._bg_blue_500");
+  });
+
+  it("should transform tw with multiple platform modifiers", () => {
+    const input = `
+      import { tw } from '@mgcrea/react-native-tailwind';
+
+      function MyComponent() {
+        const styles = tw\`bg-white ios:p-6 android:p-8 web:p-4\`;
+        return null;
+      }
+    `;
+
+    const output = transform(input);
+
+    // Should generate Platform.select() with all platforms
+    expect(output).toContain("Platform.select");
+    expect(output).toContain("ios:");
+    expect(output).toContain("android:");
+    expect(output).toContain("web:");
+    expect(output).toContain("_twStyles._ios_p_6");
+    expect(output).toContain("_twStyles._android_p_8");
+    expect(output).toContain("_twStyles._web_p_4");
+  });
+
+  it("should combine platform modifiers with color-scheme modifiers", () => {
+    const input = `
+      import { tw } from '@mgcrea/react-native-tailwind';
+
+      function MyComponent() {
+        const styles = tw\`bg-white ios:p-6 dark:bg-gray-900\`;
+        return null;
+      }
+    `;
+
+    const output = transform(input);
+
+    // Should have both Platform and useColorScheme
+    expect(output).toContain("Platform");
+    expect(output).toContain("useColorScheme");
+    expect(output).toContain("_twColorScheme");
+
+    // Should have both conditionals in style array
+    expect(output).toContain("Platform.select");
+    expect(output).toContain('_twColorScheme === "dark"');
+  });
+
+  it("should generate iosStyle/androidStyle/webStyle properties for manual access", () => {
+    const input = `
+      import { tw } from '@mgcrea/react-native-tailwind';
+
+      function MyComponent() {
+        const styles = tw\`bg-white ios:p-6 android:p-8 web:p-4\`;
+        return null;
+      }
+    `;
+
+    const output = transform(input);
+
+    // Should have separate platform style properties
+    expect(output).toContain("iosStyle:");
+    expect(output).toContain("_twStyles._ios_p_6");
+    expect(output).toContain("androidStyle:");
+    expect(output).toContain("_twStyles._android_p_8");
+    expect(output).toContain("webStyle:");
+    expect(output).toContain("_twStyles._web_p_4");
+
+    // Should also have runtime Platform.select() in style array
+    expect(output).toContain("Platform.select");
+  });
+
+  it("should work with only platform modifiers (no base class)", () => {
+    const input = `
+      import { tw } from '@mgcrea/react-native-tailwind';
+
+      function MyComponent() {
+        const styles = tw\`ios:p-6 android:p-8\`;
+        return null;
+      }
+    `;
+
+    const output = transform(input);
+
+    // Should generate Platform.select() even without base classes
+    expect(output).toContain("Platform.select");
+    expect(output).toContain("_twStyles._ios_p_6");
+    expect(output).toContain("_twStyles._android_p_8");
+  });
+
+  it("should allow accessing platform-specific styles manually", () => {
+    const input = `
+      import { tw } from '@mgcrea/react-native-tailwind';
+
+      function MyComponent() {
+        const btnStyles = tw\`bg-blue-500 ios:p-6\`;
+        const iosPadding = btnStyles.iosStyle;
+        return null;
+      }
+    `;
+
+    const output = transform(input);
+
+    // Should have iosStyle property available
+    expect(output).toContain("iosStyle:");
+    expect(output).toContain("_twStyles._ios_p_6");
+
+    // The actual usage line should be preserved
+    expect(output).toContain("btnStyles.iosStyle");
+  });
+
+  it("should combine state modifiers with platform modifiers", () => {
+    const input = `
+      import { tw } from '@mgcrea/react-native-tailwind';
+
+      function MyComponent() {
+        const styles = tw\`bg-white active:bg-blue-500 ios:p-6\`;
+        return null;
+      }
+    `;
+
+    const output = transform(input);
+
+    // Should have both activeStyle and platform modifiers
+    expect(output).toContain("activeStyle:");
+    expect(output).toContain("_twStyles._active_bg_blue_500");
+    expect(output).toContain("Platform.select");
+    expect(output).toContain("_twStyles._ios_p_6");
+  });
 });
