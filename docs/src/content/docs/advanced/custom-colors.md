@@ -219,6 +219,6 @@ If you see warnings about missing colors:
 
 ## Related
 
-- [Colors Reference](/reference/colors/) - Color utilities
-- [Color Scheme](/guides/color-scheme/) - Dark mode support
-- [Troubleshooting](/advanced/troubleshooting/) - Common issues
+- [Colors Reference](../reference/colors/) - Color utilities
+- [Color Scheme](../guides/color-scheme/) - Dark mode support
+- [Troubleshooting](./troubleshooting/) - Common issues

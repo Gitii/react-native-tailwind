@@ -117,5 +117,5 @@ description: Border width, radius, and style utilities
 
 ## Related
 
-- [Colors](/reference/colors/) - Border color utilities
-- [Shadows](/reference/shadows/) - Shadow and elevation
+- [Colors](./colors/) - Border color utilities
+- [Shadows](./shadows/) - Shadow and elevation

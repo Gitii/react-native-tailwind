@@ -176,6 +176,6 @@ Other units (`rem`, `em`, `vh`, `vw`) are not supported in React Native.
 
 ## Related
 
-- [Spacing](/reference/spacing/) - Margin and padding
-- [Layout](/reference/layout/) - Flexbox utilities
-- [Aspect Ratio](/reference/aspect-ratio/) - Aspect ratio utilities
+- [Spacing](./spacing/) - Margin and padding
+- [Layout](./layout/) - Flexbox utilities
+- [Aspect Ratio](./aspect-ratio/) - Aspect ratio utilities

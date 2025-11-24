@@ -81,7 +81,7 @@ Configure which props to transform.
 }
 ```
 
-See [Custom Attributes](/advanced/custom-attributes/) for more details.
+See [Custom Attributes](./custom-attributes/) for more details.
 
 ### `stylesIdentifier`
 
@@ -107,7 +107,7 @@ Customize the StyleSheet constant name.
 }
 ```
 
-See [Custom Styles Identifier](/advanced/custom-styles-identifier/) for more details.
+See [Custom Styles Identifier](./custom-styles-identifier/) for more details.
 
 ### `colorScheme`
 
@@ -145,7 +145,7 @@ Configure custom color scheme hook.
 }
 ```
 
-See [Custom Color Scheme Hook](/advanced/custom-color-scheme-hook/) for more details.
+See [Custom Color Scheme Hook](./custom-color-scheme-hook/) for more details.
 
 ### `schemeModifier`
 
@@ -183,7 +183,7 @@ Configure `scheme:` modifier color suffixes.
 }
 ```
 
-See [Color Scheme - Scheme Modifier](/guides/color-scheme/#scheme-modifier-convenience) for more details.
+See [Color Scheme - Scheme Modifier](../guides/color-scheme/#scheme-modifier-convenience) for more details.
 
 ## Complete Example
 
@@ -255,8 +255,8 @@ npx react-native start --reset-cache
 
 ## Related
 
-- [Custom Attributes](/advanced/custom-attributes/)
-- [Custom Styles Identifier](/advanced/custom-styles-identifier/)
-- [Custom Color Scheme Hook](/advanced/custom-color-scheme-hook/)
-- [Custom Colors](/advanced/custom-colors/)
-- [Troubleshooting](/advanced/troubleshooting/)
+- [Custom Attributes](./custom-attributes/)
+- [Custom Styles Identifier](./custom-styles-identifier/)
+- [Custom Color Scheme Hook](./custom-color-scheme-hook/)
+- [Custom Colors](./custom-colors/)
+- [Troubleshooting](./troubleshooting/)

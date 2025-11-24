@@ -96,5 +96,5 @@ The aspect ratio is calculated as `width / height`. When combined with `w-full`,
 
 ## Related
 
-- [Sizing](/reference/sizing/) - Width and height utilities
-- [Layout](/reference/layout/) - Flexbox utilities
+- [Sizing](./sizing/) - Width and height utilities
+- [Layout](./layout/) - Flexbox utilities

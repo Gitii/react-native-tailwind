@@ -162,6 +162,6 @@ Arbitrary spacing values only support pixel values. Percentages and other units 
 
 ## Related
 
-- [Layout](/reference/layout/) - Flexbox utilities
-- [Sizing](/reference/sizing/) - Width and height utilities
-- [Arbitrary Values](/advanced/arbitrary-values/) - Custom spacing values
+- [Layout](./layout/) - Flexbox utilities
+- [Sizing](./sizing/) - Width and height utilities
+- [Arbitrary Values](../advanced/arbitrary-values/) - Custom spacing values

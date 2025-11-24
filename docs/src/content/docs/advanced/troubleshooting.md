@@ -279,6 +279,6 @@ If you can't resolve your issue:
 
 ## Related
 
-- [Babel Configuration](/advanced/babel-configuration/) - Plugin options
-- [Custom Colors](/advanced/custom-colors/) - Theme configuration
-- [Quick Start](/getting-started/quick-start/) - Setup guide
+- [Babel Configuration](./babel-configuration/) - Plugin options
+- [Custom Colors](./custom-colors/) - Theme configuration
+- [Quick Start](../getting-started/quick-start/) - Setup guide

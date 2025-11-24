@@ -210,6 +210,6 @@ function MyComponent() {
 
 ## Related
 
-- [Color Scheme](/guides/color-scheme/) - Using color scheme modifiers
-- [Babel Configuration](/advanced/babel-configuration/) - All plugin options
-- [Custom Colors](/advanced/custom-colors/) - Extend color palette
+- [Color Scheme](../guides/color-scheme/) - Using color scheme modifiers
+- [Babel Configuration](./babel-configuration/) - All plugin options
+- [Custom Colors](./custom-colors/) - Extend color palette

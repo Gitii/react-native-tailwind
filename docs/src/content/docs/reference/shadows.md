@@ -90,6 +90,6 @@ All shadow parsing happens at compile-time with zero runtime overhead. The platf
 
 ## Related
 
-- [Borders](/reference/borders/) - Border utilities
-- [Colors](/reference/colors/) - Background colors
-- [Platform Modifiers](/guides/platform-modifiers/) - Platform-specific styling
+- [Borders](./borders/) - Border utilities
+- [Colors](./colors/) - Background colors
+- [Platform Modifiers](../guides/platform-modifiers/) - Platform-specific styling
