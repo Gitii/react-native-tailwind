@@ -22,8 +22,7 @@ export function MyComponent() {
 Here's a more complete example showing a card component with interactive elements:
 
 ```tsx
-import { View, Text } from "react-native";
-import { Pressable } from "@mgcrea/react-native-tailwind";
+import { View, Text, Pressable } from "react-native";
 
 export function Card({ title, description, onPress }) {
   return (
@@ -53,10 +52,7 @@ export function SafeView({ children }) {
   const insets = useSafeAreaInsets();
 
   return (
-    <View
-      className="flex-1 p-4 bg-blue-500"
-      style={{ paddingTop: insets.top }}
-    >
+    <View className="flex-1 p-4 bg-blue-500" style={{ paddingTop: insets.top }}>
       <Text>Content with safe area</Text>
     </View>
   );
