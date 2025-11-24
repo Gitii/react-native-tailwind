@@ -268,6 +268,6 @@ export function StyledApp() {
 
 ## What's Next?
 
-- Learn about [Runtime tw](/guides/runtime-tw/) for fully dynamic styling
-- Explore [State Modifiers](/guides/state-modifiers/) for interactive components
-- Check out [Color Scheme](/guides/color-scheme/) for dark mode support
+- Learn about [Runtime tw](./runtime-tw/) for fully dynamic styling
+- Explore [State Modifiers](./state-modifiers/) for interactive components
+- Check out [Color Scheme](./color-scheme/) for dark mode support
