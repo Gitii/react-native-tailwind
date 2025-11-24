@@ -26,14 +26,18 @@ import { useState } from "react";
 
 export function RuntimeExample({ color }) {
   const [isActive, setIsActive] = useState(false);
-
+  const bgColor = tw`bg-${color}-500 active:bg-${color}-700`;
+  const textColor = tw`text-${color}-500`;
   return (
     <View className="flex-1 p-4 bg-gray-100">
       <Pressable
         onPress={() => setIsActive(!isActive)}
+        style={bgColor.style}
         className={`p-4 rounded-lg ${isActive ? "bg-green-500" : "bg-red-500"}`}
       >
-        <Text style={tw`text-${color}-500 font-bold text-center`}>{isActive ? "Active" : "Inactive"}</Text>
+        <Text style={textColor.style} className="font-bold text-center">
+          {isActive ? "Active" : "Inactive"}
+        </Text>
       </Pressable>
     </View>
   );
