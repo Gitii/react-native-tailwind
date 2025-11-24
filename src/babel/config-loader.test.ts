@@ -120,7 +120,7 @@ describe("config-loader", () => {
       vi.spyOn(fs, "existsSync").mockReturnValue(false);
 
       const result = extractCustomTheme("/project/src/file.ts");
-      expect(result).toEqual({ colors: {}, fontFamily: {} });
+      expect(result).toEqual({ colors: {}, fontFamily: {}, fontSize: {} });
     });
 
     it("should return empty theme when config has no theme", () => {
@@ -134,7 +134,7 @@ describe("config-loader", () => {
       const result = extractCustomTheme("/project/src/file.ts");
 
       // Without actual config loading, this returns empty
-      expect(result).toEqual({ colors: {}, fontFamily: {} });
+      expect(result).toEqual({ colors: {}, fontFamily: {}, fontSize: {} });
     });
 
     it("should extract colors and fontFamily from theme.extend", () => {

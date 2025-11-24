@@ -191,8 +191,13 @@ function parseArbitraryLetterSpacing(value: string): number | null {
  * Parse typography classes
  * @param cls - Class name to parse
  * @param customFontFamily - Optional custom fontFamily from tailwind.config
+ * @param customFontSize - Optional custom fontSize from tailwind.config
  */
-export function parseTypography(cls: string, customFontFamily?: Record<string, string>): StyleObject | null {
+export function parseTypography(
+  cls: string,
+  customFontFamily?: Record<string, string>,
+  customFontSize?: Record<string, number>,
+): StyleObject | null {
   // Merge custom fontFamily with defaults (custom takes precedence)
   const fontFamilyMap = customFontFamily
     ? {
@@ -207,13 +212,18 @@ export function parseTypography(cls: string, customFontFamily?: Record<string, s
   if (cls.startsWith("text-")) {
     const sizeKey = cls.substring(5);
 
-    // Try arbitrary value first
+    // Try arbitrary value first (highest priority)
     const arbitraryValue = parseArbitraryFontSize(sizeKey);
     if (arbitraryValue !== null) {
       return { fontSize: arbitraryValue };
     }
 
-    // Try preset scale
+    // Try custom fontSize from config
+    if (customFontSize?.[sizeKey] !== undefined) {
+      return { fontSize: customFontSize[sizeKey] };
+    }
+
+    // Try preset scale (fallback)
     const fontSize = FONT_SIZES[sizeKey];
     if (fontSize !== undefined) {
       return { fontSize };

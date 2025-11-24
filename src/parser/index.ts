@@ -20,6 +20,7 @@ import { parseTypography } from "./typography";
 export type CustomTheme = {
   colors?: Record<string, string>;
   fontFamily?: Record<string, string>;
+  fontSize?: Record<string, number>;
 };
 
 /**
@@ -55,7 +56,7 @@ export function parseClass(cls: string, customTheme?: CustomTheme): StyleObject 
     parseBorder,
     (cls: string) => parseColor(cls, customTheme?.colors),
     parseLayout,
-    (cls: string) => parseTypography(cls, customTheme?.fontFamily),
+    (cls: string) => parseTypography(cls, customTheme?.fontFamily, customTheme?.fontSize),
     parseSizing,
     parseShadow,
     parseAspectRatio,

@@ -14,9 +14,11 @@ export type TailwindConfig = {
     extend?: {
       colors?: Record<string, string | Record<string, string>>;
       fontFamily?: Record<string, string | string[]>;
+      fontSize?: Record<string, string | number>;
     };
     colors?: Record<string, string | Record<string, string>>;
     fontFamily?: Record<string, string | string[]>;
+    fontSize?: Record<string, string | number>;
   };
 };
 
@@ -89,6 +91,7 @@ export function loadTailwindConfig(configPath: string): TailwindConfig | null {
 export type CustomTheme = {
   colors: Record<string, string>;
   fontFamily: Record<string, string>;
+  fontSize: Record<string, number>;
 };
 
 /**
@@ -100,12 +103,12 @@ export function extractCustomTheme(filename: string): CustomTheme {
   const configPath = findTailwindConfig(projectDir);
 
   if (!configPath) {
-    return { colors: {}, fontFamily: {} };
+    return { colors: {}, fontFamily: {}, fontSize: {} };
   }
 
   const config = loadTailwindConfig(configPath);
   if (!config?.theme) {
-    return { colors: {}, fontFamily: {} };
+    return { colors: {}, fontFamily: {}, fontSize: {} };
   }
 
   // Extract colors
@@ -139,8 +142,40 @@ export function extractCustomTheme(filename: string): CustomTheme {
     }
   }
 
+  // Extract fontSize
+  /* v8 ignore next 5 */
+  if (config.theme.fontSize && !config.theme.extend?.fontSize && process.env.NODE_ENV !== "production") {
+    console.warn(
+      "[react-native-tailwind] Using theme.fontSize will override all default font sizes. " +
+        "Use theme.extend.fontSize to add custom font sizes while keeping defaults.",
+    );
+  }
+  const fontSize = config.theme.extend?.fontSize ?? config.theme.fontSize ?? {};
+
+  // Convert fontSize values to numbers (handle string or number values)
+  const fontSizeResult: Record<string, number> = {};
+  for (const [key, value] of Object.entries(fontSize)) {
+    if (typeof value === "number") {
+      fontSizeResult[key] = value;
+    } else if (typeof value === "string") {
+      // Parse string values like "18px" or "18" to number
+      const parsed = parseFloat(value.replace(/px$/, ""));
+      if (!isNaN(parsed)) {
+        fontSizeResult[key] = parsed;
+      } else {
+        /* v8 ignore next 5 */
+        if (process.env.NODE_ENV !== "production") {
+          console.warn(
+            `[react-native-tailwind] Invalid fontSize value for "${key}": ${value}. Expected number or string like "18px".`,
+          );
+        }
+      }
+    }
+  }
+
   return {
     colors: flattenColors(colors),
     fontFamily: fontFamilyResult,
+    fontSize: fontSizeResult,
   };
 }

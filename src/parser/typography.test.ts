@@ -211,6 +211,48 @@ describe("parseTypography - letter spacing", () => {
   });
 });
 
+describe("parseTypography - custom fontSize", () => {
+  const customFontSize = {
+    tiny: 10,
+    huge: 96,
+    xl: 22, // Override default (default is 20)
+    custom: 17,
+  };
+
+  it("should support custom font sizes", () => {
+    expect(parseTypography("text-tiny", undefined, customFontSize)).toEqual({ fontSize: 10 });
+    expect(parseTypography("text-huge", undefined, customFontSize)).toEqual({ fontSize: 96 });
+    expect(parseTypography("text-custom", undefined, customFontSize)).toEqual({ fontSize: 17 });
+  });
+
+  it("should allow custom fontSize to override preset sizes", () => {
+    expect(parseTypography("text-xl", undefined, customFontSize)).toEqual({ fontSize: 22 });
+  });
+
+  it("should fallback to preset sizes when custom fontSize not found", () => {
+    expect(parseTypography("text-base", undefined, customFontSize)).toEqual({ fontSize: 16 });
+    expect(parseTypography("text-lg", undefined, customFontSize)).toEqual({ fontSize: 18 });
+    expect(parseTypography("text-2xl", undefined, customFontSize)).toEqual({ fontSize: 24 });
+  });
+
+  it("should prefer arbitrary values over custom fontSize", () => {
+    expect(parseTypography("text-[15px]", undefined, customFontSize)).toEqual({ fontSize: 15 });
+    expect(parseTypography("text-[13.5]", undefined, customFontSize)).toEqual({ fontSize: 13.5 });
+  });
+
+  it("should work with both customFontFamily and customFontSize", () => {
+    const customFontFamily = { brand: "MyCustomFont" };
+    expect(parseTypography("text-tiny", customFontFamily, customFontSize)).toEqual({ fontSize: 10 });
+    expect(parseTypography("font-brand", customFontFamily, customFontSize)).toEqual({
+      fontFamily: "MyCustomFont",
+    });
+  });
+
+  it("should return null for unknown custom fontSize keys", () => {
+    expect(parseTypography("text-nonexistent", undefined, customFontSize)).toBeNull();
+  });
+});
+
 describe("parseTypography - edge cases", () => {
   it("should return null for invalid classes", () => {
     expect(parseTypography("invalid")).toBeNull();
