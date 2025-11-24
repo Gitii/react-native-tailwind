@@ -1,40 +1,123 @@
 ---
-title: Welcome to Starlight
-description: Get started building your docs site with Starlight.
-template: splash # Remove or comment out this line to display the site sidebar on this page.
+title: React Native Tailwind
+description: Compile-time Tailwind CSS for React Native with zero runtime overhead
+template: splash
 hero:
-  tagline: Congrats on setting up a new Starlight project!
+  tagline: Transform className props to optimized StyleSheet.create calls at build time using a Babel plugin
   image:
-    file: ../../assets/houston.webp
+    file: ../../assets/logo.svg
   actions:
-    - text: Example Guide
-      link: /guides/example/
+    - text: Get Started
+      link: /getting-started/installation/
       icon: right-arrow
-    - text: Read the Starlight docs
-      link: https://starlight.astro.build
+      variant: primary
+    - text: View on GitHub
+      link: https://github.com/mgcrea/react-native-tailwind
       icon: external
-      variant: minimal
 ---
 
 import { Card, CardGrid } from '@astrojs/starlight/components';
 
-## Next steps
+## Features
 
-<CardGrid stagger>
-	<Card title="Update content" icon="pencil">
-		Edit `src/content/docs/index.mdx` to see this page change.
-	</Card>
-	<Card title="Change page layout" icon="document">
-		Delete `template: splash` in `src/content/docs/index.mdx` to display a
-		sidebar on this page.
-	</Card>
-	<Card title="Add new content" icon="add-document">
-		Add Markdown or MDX files to `src/content/docs` to create new pages.
-	</Card>
-	<Card title="Configure your site" icon="setting">
-		Edit your `sidebar` and other config in `astro.config.mjs`.
-	</Card>
-	<Card title="Read the docs" icon="open-book">
-		Learn more in [the Starlight Docs](https://starlight.astro.build/).
-	</Card>
+<CardGrid>
+  <Card title="⚡ Zero Runtime Overhead" icon="rocket">
+    All transformations happen at compile time
+  </Card>
+  <Card title="🔧 No Dependencies" icon="setting">
+    Direct-to-React-Native style generation without tailwindcss package
+  </Card>
+  <Card title="🎯 Babel-only Setup" icon="puzzle">
+    No Metro configuration required
+  </Card>
+  <Card title="📝 TypeScript-first" icon="typescript">
+    Full type safety and autocomplete support
+  </Card>
+  <Card title="🚀 Optimized Performance" icon="rocket">
+    Compiles down to StyleSheet.create for optimal performance
+  </Card>
+  <Card title="📦 Small Bundle Size" icon="seti:zip">
+    Only includes actual styles used in your app
+  </Card>
+  <Card title="🎨 Custom Colors" icon="seti:paint">
+    Extend the default palette via tailwind.config.*
+  </Card>
+  <Card title="📐 Arbitrary Values" icon="pencil">
+    Use custom sizes and borders: w-[123px], rounded-[20px]
+  </Card>
+  <Card title="🔀 Dynamic className" icon="random">
+    Conditional styles with hybrid compile-time optimization
+  </Card>
+  <Card title="🏃 Runtime Option" icon="forward-slash">
+    Optional tw template tag for fully dynamic styling (~25KB)
+  </Card>
+  <Card title="🎯 State Modifiers" icon="approve-check">
+    active:, hover:, focus:, and disabled: modifiers for interactive components
+  </Card>
+  <Card title="📱 Platform Modifiers" icon="laptop">
+    ios:, android:, and web: modifiers for platform-specific styling
+  </Card>
+  <Card title="🌓 Color Scheme Modifiers" icon="moon">
+    dark: and light: modifiers for automatic theme adaptation
+  </Card>
+  <Card title="🎨 Scheme Modifier" icon="seti:config">
+    scheme: convenience modifier that expands to both dark: and light: variants
+  </Card>
+  <Card title="📜 Special Style Props" icon="list-format">
+    Support for contentContainerClassName, columnWrapperClassName, and more
+  </Card>
+  <Card title="🎛️ Custom Attributes" icon="setting">
+    Configure which props to transform with exact matching or glob patterns
+  </Card>
 </CardGrid>
+
+## Quick Example
+
+```tsx
+import { View, Text } from "react-native";
+
+export function MyComponent() {
+  return (
+    <View className="flex-1 bg-gray-100 p-4">
+      <Text className="text-xl font-bold text-blue-500">
+        Hello, Tailwind!
+      </Text>
+    </View>
+  );
+}
+```
+
+**Transforms to:**
+
+```tsx
+import { StyleSheet } from "react-native";
+
+export function MyComponent() {
+  return (
+    <View style={_twStyles._bg_gray_100_flex_1_p_4}>
+      <Text style={_twStyles._font_bold_text_blue_500_text_xl}>
+        Hello, Tailwind!
+      </Text>
+    </View>
+  );
+}
+
+const _twStyles = StyleSheet.create({
+  _bg_gray_100_flex_1_p_4: {
+    flex: 1,
+    backgroundColor: "#F3F4F6",
+    padding: 16,
+  },
+  _font_bold_text_blue_500_text_xl: {
+    fontWeight: "700",
+    color: "#3B82F6",
+    fontSize: 20,
+  },
+});
+```
+
+## Ready to get started?
+
+<Card title="Installation Guide" icon="rocket">
+  Follow our [installation guide](/getting-started/installation/) to set up React Native Tailwind in your project.
+</Card>
