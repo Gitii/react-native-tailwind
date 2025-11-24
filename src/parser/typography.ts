@@ -113,14 +113,14 @@ const TRACKING_MAP: Record<string, StyleObject> = {
 };
 
 /**
- * Parse arbitrary font size value: [18px], [20]
- * Returns number for px values, null for unsupported formats
+ * Parse arbitrary font size value: [18px], [20], [13.5px], [.5]
+ * Returns number for px values (including decimals), null for unsupported formats
  */
 function parseArbitraryFontSize(value: string): number | null {
-  // Match: [18px] or [18] (pixels only)
-  const pxMatch = value.match(/^\[(\d+)(?:px)?\]$/);
+  // Match: [18px], [18], [13.5px], [13.5], [.5] (pixels, including decimals)
+  const pxMatch = value.match(/^\[(-?\d+(?:\.\d+)?|-?\.\d+)(?:px)?\]$/);
   if (pxMatch) {
-    return parseInt(pxMatch[1], 10);
+    return parseFloat(pxMatch[1]);
   }
 
   // Warn about unsupported formats
@@ -128,7 +128,7 @@ function parseArbitraryFontSize(value: string): number | null {
     /* v8 ignore next 5 */
     if (process.env.NODE_ENV !== "production") {
       console.warn(
-        `[react-native-tailwind] Unsupported arbitrary font size value: ${value}. Only px values are supported (e.g., [18px] or [18]).`,
+        `[react-native-tailwind] Unsupported arbitrary font size value: ${value}. Only px values are supported (e.g., [18px], [13.5px], [.5]).`,
       );
     }
     return null;
@@ -138,14 +138,14 @@ function parseArbitraryFontSize(value: string): number | null {
 }
 
 /**
- * Parse arbitrary line height value: [24px], [28]
- * Returns number for px values, null for unsupported formats
+ * Parse arbitrary line height value: [24px], [28], [21.5px], [.5]
+ * Returns number for px values (including decimals), null for unsupported formats
  */
 function parseArbitraryLineHeight(value: string): number | null {
-  // Match: [24px] or [24] (pixels only)
-  const pxMatch = value.match(/^\[(\d+)(?:px)?\]$/);
+  // Match: [24px], [24], [21.5px], [21.5], [.5] (pixels, including decimals)
+  const pxMatch = value.match(/^\[(-?\d+(?:\.\d+)?|-?\.\d+)(?:px)?\]$/);
   if (pxMatch) {
-    return parseInt(pxMatch[1], 10);
+    return parseFloat(pxMatch[1]);
   }
 
   // Warn about unsupported formats
@@ -153,7 +153,7 @@ function parseArbitraryLineHeight(value: string): number | null {
     /* v8 ignore next 5 */
     if (process.env.NODE_ENV !== "production") {
       console.warn(
-        `[react-native-tailwind] Unsupported arbitrary line height value: ${value}. Only px values are supported (e.g., [24px] or [24]).`,
+        `[react-native-tailwind] Unsupported arbitrary line height value: ${value}. Only px values are supported (e.g., [24px], [21.5px], [.5]).`,
       );
     }
     return null;

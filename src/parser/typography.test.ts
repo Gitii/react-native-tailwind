@@ -39,6 +39,20 @@ describe("parseTypography - font size", () => {
     expect(parseTypography("text-[22]")).toEqual({ fontSize: 22 });
     expect(parseTypography("text-[100px]")).toEqual({ fontSize: 100 });
   });
+
+  it("should parse font size with decimal arbitrary values", () => {
+    expect(parseTypography("text-[13.5px]")).toEqual({ fontSize: 13.5 });
+    expect(parseTypography("text-[13.5]")).toEqual({ fontSize: 13.5 });
+    expect(parseTypography("text-[18.75px]")).toEqual({ fontSize: 18.75 });
+    expect(parseTypography("text-[18.75]")).toEqual({ fontSize: 18.75 });
+    expect(parseTypography("text-[22.5]")).toEqual({ fontSize: 22.5 });
+  });
+
+  it("should parse font size with Tailwind shorthand decimals", () => {
+    expect(parseTypography("text-[.5]")).toEqual({ fontSize: 0.5 });
+    expect(parseTypography("text-[.75px]")).toEqual({ fontSize: 0.75 });
+    expect(parseTypography("text-[.5px]")).toEqual({ fontSize: 0.5 });
+  });
 });
 
 describe("parseTypography - font family", () => {
@@ -135,6 +149,20 @@ describe("parseTypography - line height", () => {
     expect(parseTypography("leading-[30px]")).toEqual({ lineHeight: 30 });
     expect(parseTypography("leading-[30]")).toEqual({ lineHeight: 30 });
     expect(parseTypography("leading-[50px]")).toEqual({ lineHeight: 50 });
+  });
+
+  it("should parse line height with decimal arbitrary values", () => {
+    expect(parseTypography("leading-[21.5px]")).toEqual({ lineHeight: 21.5 });
+    expect(parseTypography("leading-[21.5]")).toEqual({ lineHeight: 21.5 });
+    expect(parseTypography("leading-[28.75px]")).toEqual({ lineHeight: 28.75 });
+    expect(parseTypography("leading-[28.75]")).toEqual({ lineHeight: 28.75 });
+    expect(parseTypography("leading-[32.5]")).toEqual({ lineHeight: 32.5 });
+  });
+
+  it("should parse line height with Tailwind shorthand decimals", () => {
+    expect(parseTypography("leading-[.5]")).toEqual({ lineHeight: 0.5 });
+    expect(parseTypography("leading-[.75px]")).toEqual({ lineHeight: 0.75 });
+    expect(parseTypography("leading-[.5px]")).toEqual({ lineHeight: 0.5 });
   });
 });
 
