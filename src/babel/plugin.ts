@@ -398,7 +398,7 @@ export default function reactNativeTailwindBabelPlugin(
                 // Track the local name (could be renamed: import { tw as customTw })
                 const localName = spec.local.name;
                 state.twImportNames.add(localName);
-                state.hasTwImport = true;
+                // Don't set hasTwImport yet - only set it when we successfully transform a call
               }
             }
           });
@@ -443,6 +443,8 @@ export default function reactNativeTailwindBabelPlugin(
           path.replaceWith(
             t.objectExpression([t.objectProperty(t.identifier("style"), t.objectExpression([]))]),
           );
+          // Mark as successfully transformed (even if empty)
+          state.hasTwImport = true;
           return;
         }
 
@@ -459,6 +461,9 @@ export default function reactNativeTailwindBabelPlugin(
           findComponentScope,
           t,
         );
+
+        // Mark as successfully transformed
+        state.hasTwImport = true;
       },
 
       // Handle twStyle('...') call expressions
@@ -502,6 +507,8 @@ export default function reactNativeTailwindBabelPlugin(
         if (!className) {
           // Replace with undefined
           path.replaceWith(t.identifier("undefined"));
+          // Mark as successfully transformed (even if empty)
+          state.hasTwImport = true;
           return;
         }
 
@@ -518,6 +525,9 @@ export default function reactNativeTailwindBabelPlugin(
           findComponentScope,
           t,
         );
+
+        // Mark as successfully transformed
+        state.hasTwImport = true;
       },
 
       JSXAttribute(path, state) {
