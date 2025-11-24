@@ -34,7 +34,9 @@ jobs:
           check-latest: true
           cache: "pnpm"
       - name: Install dependencies 🪄
-        run: pnpm install --frozen-lockfile
+        run: |
+          cd docs
+          pnpm install --frozen-lockfile
       - name: Build documentation 💎
         run: |
           cd docs
