@@ -1,6 +1,7 @@
 // @ts-check
 import starlight from "@astrojs/starlight";
 import { defineConfig } from "astro/config";
+import starlightLinksValidator from "starlight-links-validator";
 import starlightThemeRapide from "starlight-theme-rapide";
 
 // https://astro.build/config
@@ -14,7 +15,7 @@ export default defineConfig({
       logo: {
         src: "./src/assets/logo.svg",
       },
-      plugins: [starlightThemeRapide()],
+      plugins: [starlightLinksValidator(), starlightThemeRapide()],
       customCss: ["./src/styles/custom.css"],
       expressiveCode: {
         themes: ["github-dark"],
