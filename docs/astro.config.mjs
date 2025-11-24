@@ -16,21 +16,6 @@ export default defineConfig({
       },
       plugins: [starlightThemeRapide()],
       customCss: ["./src/styles/custom.css"],
-      head: [
-        {
-          tag: "script",
-          attrs: {},
-          content: `
-            (function() {
-              const storedTheme = typeof localStorage !== 'undefined' && localStorage.getItem('starlight-theme');
-              if (!storedTheme) {
-                localStorage.setItem('starlight-theme', 'dark');
-                document.documentElement.setAttribute('data-theme', 'dark');
-              }
-            })();
-          `,
-        },
-      ],
       social: [{ icon: "github", label: "GitHub", href: "https://github.com/mgcrea/react-native-tailwind" }],
       sidebar: [
         {
