@@ -25,4 +25,4 @@ pnpm add @mgcrea/react-native-tailwind
 
 ## Next Steps
 
-After installing the package, proceed to the [Quick Start](/getting-started/quick-start/) guide to configure the Babel plugin and start using className in your components.
+After installing the package, proceed to the [Quick Start](./quick-start/) guide to configure the Babel plugin and start using className in your components.

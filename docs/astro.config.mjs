@@ -7,6 +7,7 @@ import starlightThemeRapide from "starlight-theme-rapide";
 export default defineConfig({
   site: "https://mgcrea.github.io",
   base: "/react-native-tailwind",
+  trailingSlash: "always",
   integrations: [
     starlight({
       title: "React Native Tailwind",

@@ -58,6 +58,6 @@ npx react-native start --reset-cache
 
 ## What's Next?
 
-- Learn [How It Works](/getting-started/how-it-works/) to understand the compile-time transformation
-- Explore [Basic Usage](/guides/basic-usage/) examples
-- Check out the [API Reference](/reference/spacing/) for available utilities
+- Learn [How It Works](./how-it-works/) to understand the compile-time transformation
+- Explore [Basic Usage](../guides/basic-usage/) examples
+- Check out the [API Reference](../reference/spacing/) for available utilities
