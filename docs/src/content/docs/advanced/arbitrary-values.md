@@ -183,7 +183,7 @@ CSS units not available in React Native:
 
 ## Related
 
-- [Spacing](../reference/spacing/) - Preset spacing values
-- [Sizing](../reference/sizing/) - Preset sizing values
-- [Borders](../reference/borders/) - Preset border values
-- [Transforms](../reference/transforms/) - Preset transform values
+- [Spacing](/reference/spacing/) - Preset spacing values
+- [Sizing](/reference/sizing/) - Preset sizing values
+- [Borders](/reference/borders/) - Preset border values
+- [Transforms](/reference/transforms/) - Preset transform values

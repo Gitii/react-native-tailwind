@@ -186,6 +186,6 @@ The programmatic API has some overhead since it parses at runtime:
 
 ## Related
 
-- [Runtime tw](../guides/runtime-tw/) - For fully dynamic styling
-- [Custom Colors](../advanced/custom-colors/) - Extend color palette
-- [Troubleshooting](../advanced/troubleshooting/) - Common issues
+- [Runtime tw](/guides/runtime-tw/) - For fully dynamic styling
+- [Custom Colors](/advanced/custom-colors/) - Extend color palette
+- [Troubleshooting](/advanced/troubleshooting/) - Common issues

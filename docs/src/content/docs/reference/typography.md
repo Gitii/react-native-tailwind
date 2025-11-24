@@ -148,5 +148,5 @@ Control text appearance with font size, weight, alignment, and decoration utilit
 
 ## Related
 
-- [Colors](./colors/) - Text color utilities
-- [Spacing](./spacing/) - Margin and padding
+- [Colors](/reference/colors/) - Text color utilities
+- [Spacing](/reference/spacing/) - Margin and padding

@@ -262,6 +262,6 @@ export function ThemedApp() {
 
 ## What's Next?
 
-- Learn about [Custom Color Scheme Hook](../advanced/custom-color-scheme-hook/) to use theme providers
-- Explore [Custom Colors](../advanced/custom-colors/) for theme customization
-- Check out [Platform Modifiers](./platform-modifiers/) for platform-specific styling
+- Learn about [Custom Color Scheme Hook](/advanced/custom-color-scheme-hook/) to use theme providers
+- Explore [Custom Colors](/advanced/custom-colors/) for theme customization
+- Check out [Platform Modifiers](/guides/platform-modifiers/) for platform-specific styling

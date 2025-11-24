@@ -175,6 +175,6 @@ export function Button({
 
 ## Related
 
-- [Babel Configuration](./babel-configuration/) - All plugin options
-- [Reusable Components](../guides/reusable-components/) - Building component libraries
-- [List Components](../guides/list-components/) - Styling lists
+- [Babel Configuration](/advanced/babel-configuration/) - All plugin options
+- [Reusable Components](/guides/reusable-components/) - Building component libraries
+- [List Components](/guides/list-components/) - Styling lists

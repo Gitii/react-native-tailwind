@@ -24,18 +24,16 @@ import { View, Text, Pressable } from "react-native";
 import { tw } from "@mgcrea/react-native-tailwind/runtime";
 import { useState } from "react";
 
-export function RuntimeExample() {
+export function RuntimeExample({ color }) {
   const [isActive, setIsActive] = useState(false);
 
   return (
-    <View style={tw`flex-1 p-4 bg-gray-100`}>
+    <View className="flex-1 p-4 bg-gray-100">
       <Pressable
         onPress={() => setIsActive(!isActive)}
-        style={tw`p-4 rounded-lg ${isActive ? "bg-green-500" : "bg-red-500"}`}
+        className={`p-4 rounded-lg ${isActive ? "bg-green-500" : "bg-red-500"}`}
       >
-        <Text style={tw`text-white font-bold text-center`}>
-          {isActive ? "Active" : "Inactive"}
-        </Text>
+        <Text style={tw`text-${color}-500 font-bold text-center`}>{isActive ? "Active" : "Inactive"}</Text>
       </Pressable>
     </View>
   );
@@ -157,13 +155,13 @@ const styles2 = tw`p-4 bg-blue-500`;
 
 ## Runtime vs Compile-Time
 
-| Feature | Compile-Time (`className`) | Runtime (`tw` tag) |
-|---------|---------------------------|-------------------|
-| Bundle Size | Only used styles (~4KB typical) | Full parser (~25KB) |
-| Performance | Zero overhead (pre-compiled) | Fast (memoized parsing) |
-| Dynamic Values | Conditional only | Fully dynamic |
-| Custom Colors | Via `tailwind.config.*` | Via `setConfig()` |
-| Type Safety | Full TypeScript support | Full TypeScript support |
+| Feature        | Compile-Time (`className`)      | Runtime (`tw` tag)      |
+| -------------- | ------------------------------- | ----------------------- |
+| Bundle Size    | Only used styles (~4KB typical) | Full parser (~25KB)     |
+| Performance    | Zero overhead (pre-compiled)    | Fast (memoized parsing) |
+| Dynamic Values | Conditional only                | Fully dynamic           |
+| Custom Colors  | Via `tailwind.config.*`         | Via `setConfig()`       |
+| Type Safety    | Full TypeScript support         | Full TypeScript support |
 
 ## Complete Example
 
@@ -211,17 +209,13 @@ export function DynamicThemeApp() {
         <View style={tw`flex-row gap-2`}>
           <Pressable
             onPress={() => setTheme("primary")}
-            style={tw`flex-1 p-3 rounded-lg ${
-              theme === "primary" ? "bg-primary" : "bg-gray-300"
-            }`}
+            style={tw`flex-1 p-3 rounded-lg ${theme === "primary" ? "bg-primary" : "bg-gray-300"}`}
           >
             <Text style={tw`text-center font-semibold`}>Primary</Text>
           </Pressable>
           <Pressable
             onPress={() => setTheme("secondary")}
-            style={tw`flex-1 p-3 rounded-lg ${
-              theme === "secondary" ? "bg-secondary" : "bg-gray-300"
-            }`}
+            style={tw`flex-1 p-3 rounded-lg ${theme === "secondary" ? "bg-secondary" : "bg-gray-300"}`}
           >
             <Text style={tw`text-center font-semibold`}>Secondary</Text>
           </Pressable>
@@ -231,25 +225,19 @@ export function DynamicThemeApp() {
         <View style={tw`flex-row gap-2`}>
           <Pressable
             onPress={() => setSize("sm")}
-            style={tw`flex-1 p-2 rounded-lg ${
-              size === "sm" ? "bg-blue-500" : "bg-gray-300"
-            }`}
+            style={tw`flex-1 p-2 rounded-lg ${size === "sm" ? "bg-blue-500" : "bg-gray-300"}`}
           >
             <Text style={tw`text-center text-sm`}>Small</Text>
           </Pressable>
           <Pressable
             onPress={() => setSize("md")}
-            style={tw`flex-1 p-3 rounded-lg ${
-              size === "md" ? "bg-blue-500" : "bg-gray-300"
-            }`}
+            style={tw`flex-1 p-3 rounded-lg ${size === "md" ? "bg-blue-500" : "bg-gray-300"}`}
           >
             <Text style={tw`text-center text-base`}>Medium</Text>
           </Pressable>
           <Pressable
             onPress={() => setSize("lg")}
-            style={tw`flex-1 p-4 rounded-lg ${
-              size === "lg" ? "bg-blue-500" : "bg-gray-300"
-            }`}
+            style={tw`flex-1 p-4 rounded-lg ${size === "lg" ? "bg-blue-500" : "bg-gray-300"}`}
           >
             <Text style={tw`text-center text-lg`}>Large</Text>
           </Pressable>
@@ -266,6 +254,6 @@ export function DynamicThemeApp() {
 
 ## What's Next?
 
-- Learn about [Compile-Time tw](./compile-time-tw/) for zero runtime overhead
-- Explore [Dynamic ClassNames](./dynamic-classnames/) for hybrid optimization
-- Check out [Custom Colors](../advanced/custom-colors/) for theme configuration
+- Learn about [Compile-Time tw](/guides/compile-time-tw/) for zero runtime overhead
+- Explore [Dynamic ClassNames](/guides/dynamic-classnames/) for hybrid optimization
+- Check out [Custom Colors](/advanced/custom-colors/) for theme configuration

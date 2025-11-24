@@ -181,5 +181,5 @@ All transform parsing happens at compile-time with zero runtime overhead. Each t
 
 ## Related
 
-- [Spacing](./spacing/) - For translate values
-- [Layout](./layout/) - Positioning utilities
+- [Spacing](/reference/spacing/) - For translate values
+- [Layout](/reference/layout/) - Positioning utilities

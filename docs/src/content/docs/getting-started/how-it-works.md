@@ -88,7 +88,7 @@ The plugin automatically converts className-style props to their style equivalen
 | `ListHeaderComponentClassName` | `ListHeaderComponentStyle` |
 | `ListFooterComponentClassName` | `ListFooterComponentStyle` |
 
-You can configure custom attributes in the [Babel configuration](../advanced/babel-configuration/).
+You can configure custom attributes in the [Babel configuration](/advanced/babel-configuration/).
 
 ### 4. Import Management
 
@@ -142,6 +142,6 @@ Generates code that uses React Native's best practices:
 
 ## What's Next?
 
-- Explore [Basic Usage](../guides/basic-usage/) examples
-- Learn about [Dynamic ClassNames](../guides/dynamic-classnames/)
-- Understand [State Modifiers](../guides/state-modifiers/)
+- Explore [Basic Usage](/guides/basic-usage/) examples
+- Learn about [Dynamic ClassNames](/guides/dynamic-classnames/)
+- Understand [State Modifiers](/guides/state-modifiers/)
