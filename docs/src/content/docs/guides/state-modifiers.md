@@ -5,8 +5,8 @@ description: Apply styles based on component state with zero runtime overhead
 
 Apply styles based on component state using modifiers like `active:`, `focus:`, and `disabled:`. The Babel plugin automatically generates optimized style functions.
 
-:::note[Enhanced Components Required]
-State modifiers require using the enhanced `Pressable` and `TextInput` components from `@mgcrea/react-native-tailwind`.
+:::note[Enhanced Components]
+Some state modifiers may require using the enhanced `Pressable` and `TextInput` components from `@mgcrea/react-native-tailwind`.
 :::
 
 ## Active Modifier (Pressable)
@@ -16,8 +16,7 @@ Use the `active:` modifier to apply styles when a Pressable component is pressed
 ### Basic Example
 
 ```tsx
-import { Text } from "react-native";
-import { Pressable } from "@mgcrea/react-native-tailwind";
+import { Text, Pressable } from "react-native";
 
 export function MyButton() {
   return (
@@ -32,10 +31,7 @@ export function MyButton() {
 
 ```tsx
 <Pressable
-  style={({ pressed }) => [
-    _twStyles._bg_blue_500_p_4_rounded_lg,
-    pressed && _twStyles._active_bg_blue_700,
-  ]}
+  style={({ pressed }) => [_twStyles._bg_blue_500_p_4_rounded_lg, pressed && _twStyles._active_bg_blue_700]}
 >
   <Text style={_twStyles._font_semibold_text_white}>Press Me</Text>
 </Pressable>
@@ -89,6 +85,10 @@ export function MyInput() {
 
 Use the `disabled:` modifier to apply styles when a component is disabled.
 
+:::note[How Pressable states are wired]
+`Pressable` gets its `active:` behavior for free from React Native's `style={({ pressed }) => ...}` API, but React Native does not pass `disabled` into that callback. The enhanced `Pressable` shipped by this library injects the `disabled` flag so `disabled:` modifiers work correctly.
+:::
+
 ### Pressable Example
 
 ```tsx
@@ -100,9 +100,7 @@ export function SubmitButton({ isLoading }) {
       disabled={isLoading}
       className="bg-blue-500 active:bg-blue-700 disabled:bg-gray-400 p-4 rounded-lg"
     >
-      <Text className="text-white font-semibold">
-        {isLoading ? "Loading..." : "Submit"}
-      </Text>
+      <Text className="text-white font-semibold">{isLoading ? "Loading..." : "Submit"}</Text>
     </Pressable>
   );
 }
@@ -139,10 +137,10 @@ The enhanced `TextInput` provides a convenient `disabled` prop:
 
 ## Supported Modifiers by Component
 
-| Component | Supported Modifiers | Import From |
-|-----------|---------------------|-------------|
+| Component   | Supported Modifiers                        | Import From                     |
+| ----------- | ------------------------------------------ | ------------------------------- |
 | `Pressable` | `active:`, `hover:`, `focus:`, `disabled:` | `@mgcrea/react-native-tailwind` |
-| `TextInput` | `focus:`, `disabled:` | `@mgcrea/react-native-tailwind` |
+| `TextInput` | `focus:`, `disabled:`                      | `@mgcrea/react-native-tailwind` |
 
 ## Key Features
 
@@ -185,9 +183,7 @@ export function LoginForm() {
         className="bg-blue-500 active:bg-blue-700 disabled:bg-gray-400 p-4 rounded-lg items-center"
         onPress={() => setIsLoading(true)}
       >
-        <Text className="text-white font-semibold">
-          {isLoading ? "Loading..." : "Sign In"}
-        </Text>
+        <Text className="text-white font-semibold">{isLoading ? "Loading..." : "Sign In"}</Text>
       </Pressable>
     </View>
   );
