@@ -10,24 +10,44 @@ import type { StyleObject } from "../../types/core.js";
  * Add StyleSheet import to the file or merge with existing react-native import
  */
 export function addStyleSheetImport(path: NodePath<BabelTypes.Program>, t: typeof BabelTypes): void {
-  // Check if there's already a react-native import
+  // Check if there's already a value import from react-native
   const body = path.node.body;
-  let reactNativeImport: BabelTypes.ImportDeclaration | null = null;
+  let existingValueImport: BabelTypes.ImportDeclaration | null = null;
 
   for (const statement of body) {
     if (t.isImportDeclaration(statement) && statement.source.value === "react-native") {
-      reactNativeImport = statement;
-      break;
+      // Skip type-only imports (they get erased at runtime)
+      if (statement.importKind === "type") {
+        continue;
+      }
+      // Skip namespace imports (import * as RN) - can't add named specifiers to them
+      const hasNamespaceImport = statement.specifiers.some((spec) => t.isImportNamespaceSpecifier(spec));
+      if (hasNamespaceImport) {
+        continue;
+      }
+      existingValueImport = statement;
+      break; // Found a value import, we can stop
     }
   }
 
-  if (reactNativeImport) {
-    // Add StyleSheet to existing react-native import
-    reactNativeImport.specifiers.push(
-      t.importSpecifier(t.identifier("StyleSheet"), t.identifier("StyleSheet")),
+  if (existingValueImport) {
+    // Check if StyleSheet is already imported
+    const hasStyleSheet = existingValueImport.specifiers.some(
+      (spec) =>
+        t.isImportSpecifier(spec) &&
+        spec.imported.type === "Identifier" &&
+        spec.imported.name === "StyleSheet",
     );
+
+    if (!hasStyleSheet) {
+      // Add StyleSheet to existing value import
+      existingValueImport.specifiers.push(
+        t.importSpecifier(t.identifier("StyleSheet"), t.identifier("StyleSheet")),
+      );
+    }
   } else {
-    // Create new react-native import with StyleSheet
+    // No value import exists - create a new one
+    // (Don't merge with type-only or namespace imports)
     const importDeclaration = t.importDeclaration(
       [t.importSpecifier(t.identifier("StyleSheet"), t.identifier("StyleSheet"))],
       t.stringLiteral("react-native"),
@@ -40,22 +60,42 @@ export function addStyleSheetImport(path: NodePath<BabelTypes.Program>, t: typeo
  * Add Platform import to the file or merge with existing react-native import
  */
 export function addPlatformImport(path: NodePath<BabelTypes.Program>, t: typeof BabelTypes): void {
-  // Check if there's already a react-native import
+  // Check if there's already a value import from react-native
   const body = path.node.body;
-  let reactNativeImport: BabelTypes.ImportDeclaration | null = null;
+  let existingValueImport: BabelTypes.ImportDeclaration | null = null;
 
   for (const statement of body) {
     if (t.isImportDeclaration(statement) && statement.source.value === "react-native") {
-      reactNativeImport = statement;
-      break;
+      // Skip type-only imports (they get erased at runtime)
+      if (statement.importKind === "type") {
+        continue;
+      }
+      // Skip namespace imports (import * as RN) - can't add named specifiers to them
+      const hasNamespaceImport = statement.specifiers.some((spec) => t.isImportNamespaceSpecifier(spec));
+      if (hasNamespaceImport) {
+        continue;
+      }
+      existingValueImport = statement;
+      break; // Found a value import, we can stop
     }
   }
 
-  if (reactNativeImport) {
-    // Add Platform to existing react-native import
-    reactNativeImport.specifiers.push(t.importSpecifier(t.identifier("Platform"), t.identifier("Platform")));
+  if (existingValueImport) {
+    // Check if Platform is already imported
+    const hasPlatform = existingValueImport.specifiers.some(
+      (spec) =>
+        t.isImportSpecifier(spec) && spec.imported.type === "Identifier" && spec.imported.name === "Platform",
+    );
+
+    if (!hasPlatform) {
+      // Add Platform to existing value import
+      existingValueImport.specifiers.push(
+        t.importSpecifier(t.identifier("Platform"), t.identifier("Platform")),
+      );
+    }
   } else {
-    // Create new react-native import with Platform
+    // No value import exists - create a new one
+    // (Don't merge with type-only or namespace imports)
     const importDeclaration = t.importDeclaration(
       [t.importSpecifier(t.identifier("Platform"), t.identifier("Platform"))],
       t.stringLiteral("react-native"),
