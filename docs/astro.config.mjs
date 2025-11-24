@@ -5,6 +5,8 @@ import starlightThemeRapide from "starlight-theme-rapide";
 
 // https://astro.build/config
 export default defineConfig({
+  site: "https://mgcrea.github.io",
+  base: "/react-native-tailwind",
   integrations: [
     starlight({
       title: "React Native Tailwind",
