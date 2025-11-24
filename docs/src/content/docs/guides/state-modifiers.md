@@ -196,6 +196,6 @@ export function LoginForm() {
 
 ## What's Next?
 
-- Learn about [Platform Modifiers](/guides/platform-modifiers/) for platform-specific styling
-- Explore [Color Scheme](/guides/color-scheme/) for dark mode support
-- Check out [Dynamic ClassNames](/guides/dynamic-classnames/) for more conditional patterns
+- Learn about [Platform Modifiers](./platform-modifiers/) for platform-specific styling
+- Explore [Color Scheme](./color-scheme/) for dark mode support
+- Check out [Dynamic ClassNames](./dynamic-classnames/) for more conditional patterns

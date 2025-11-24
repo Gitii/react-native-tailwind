@@ -170,6 +170,6 @@ export function PlatformCard({ title, description, imageUrl, onPress }) {
 
 ## What's Next?
 
-- Learn about [Color Scheme](/guides/color-scheme/) for dark mode support
-- Explore [State Modifiers](/guides/state-modifiers/) for interactive components
-- Check out [Custom Colors](/advanced/custom-colors/) for theme customization
+- Learn about [Color Scheme](./color-scheme/) for dark mode support
+- Explore [State Modifiers](./state-modifiers/) for interactive components
+- Check out [Custom Colors](../advanced/custom-colors/) for theme customization
