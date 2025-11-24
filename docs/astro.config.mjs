@@ -16,6 +16,9 @@ export default defineConfig({
       },
       plugins: [starlightThemeRapide()],
       customCss: ["./src/styles/custom.css"],
+      expressiveCode: {
+        themes: ["github-dark"],
+      },
       social: [{ icon: "github", label: "GitHub", href: "https://github.com/mgcrea/react-native-tailwind" }],
       sidebar: [
         {
