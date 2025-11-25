@@ -41,6 +41,8 @@ export function getComponentModifierSupport(
   switch (componentName) {
     case "Pressable":
       return { component: "Pressable", supportedModifiers: ["active", "hover", "focus", "disabled"] };
+    case "TouchableOpacity":
+      return { component: "TouchableOpacity", supportedModifiers: ["active", "disabled"] };
     case "TextInput":
       return { component: "TextInput", supportedModifiers: ["focus", "disabled", "placeholder"] };
     default:
