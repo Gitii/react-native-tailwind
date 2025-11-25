@@ -86,6 +86,26 @@ describe("getComponentModifierSupport", () => {
         supportedModifiers: ["focus", "disabled", "placeholder"],
       });
     });
+
+    it("should recognize TouchableOpacity component", () => {
+      const element = createJSXElement("<TouchableOpacity />");
+      const result = getComponentModifierSupport(element, t);
+
+      expect(result).toEqual({
+        component: "TouchableOpacity",
+        supportedModifiers: ["active", "disabled"],
+      });
+    });
+
+    it("should recognize TouchableOpacity with attributes", () => {
+      const element = createJSXElement('<TouchableOpacity className="m-4" onPress={handlePress} />');
+      const result = getComponentModifierSupport(element, t);
+
+      expect(result).toEqual({
+        component: "TouchableOpacity",
+        supportedModifiers: ["active", "disabled"],
+      });
+    });
   });
 
   describe("Member expressions", () => {
@@ -134,13 +154,6 @@ describe("getComponentModifierSupport", () => {
   describe("Unsupported components", () => {
     it("should return null for View", () => {
       const element = createJSXElement("<View />");
-      const result = getComponentModifierSupport(element, t);
-
-      expect(result).toBeNull();
-    });
-
-    it("should return null for TouchableOpacity", () => {
-      const element = createJSXElement("<TouchableOpacity />");
       const result = getComponentModifierSupport(element, t);
 
       expect(result).toBeNull();
