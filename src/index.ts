@@ -15,6 +15,9 @@ export { generateStyleKey } from "./utils/styleKey";
 export type { StyleObject } from "./types/core";
 export type { NativeStyle, TwStyle } from "./types/runtime";
 
+// Re-export colors
+export { TAILWIND_COLORS } from "./config/tailwind";
+
 // Re-export individual parsers for advanced usage
 export {
   parseAspectRatio,
@@ -39,8 +42,4 @@ export { SPACING_SCALE } from "./parser/spacing";
 export { FONT_SIZES, LETTER_SPACING_SCALE } from "./parser/typography";
 
 // Re-export enhanced components with modifier support
-export { Pressable } from "./components/Pressable";
-export type { PressableProps } from "./components/Pressable";
-export { TextInput } from "./components/TextInput";
-export type { TextInputProps } from "./components/TextInput";
-export { TAILWIND_COLORS } from "./config/tailwind";
+export * from "./components";
