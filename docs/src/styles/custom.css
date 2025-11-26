@@ -1,5 +1,10 @@
 /* Custom theme colors - Blue accent */
 
+/* Layout - Adjust content width */
+:root {
+  --sl-content-width: 55rem; /* Default is 45rem */
+}
+
 /* Code Block Styling */
 
 /* Code block container */
@@ -40,35 +45,4 @@ code:not(pre code) {
 :root[data-theme="dark"] code:not(pre code) {
   background-color: var(--sl-color-gray-5);
   border-color: var(--sl-color-gray-4);
-}
-
-/* Hero Section Styling */
-
-/* Reduce hero height */
-.hero {
-  padding-top: 3rem !important;
-  padding-bottom: 3rem !important;
-}
-
-/* Make hero title more compact */
-.hero h1 {
-  font-size: 2.5rem !important;
-  margin-bottom: 1rem !important;
-}
-
-/* Reduce tagline spacing */
-.hero .tagline {
-  font-size: 1.125rem !important;
-  margin-bottom: 1.5rem !important;
-}
-
-/* Reduce hero image size */
-.hero .hero-image {
-  max-width: 300px !important;
-}
-
-/* Make action buttons more compact */
-.hero .actions {
-  margin-top: 1.5rem !important;
-  gap: 0.75rem !important;
 }
