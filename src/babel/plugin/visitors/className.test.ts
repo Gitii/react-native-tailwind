@@ -1178,3 +1178,135 @@ describe("className visitor - custom color scheme hook", () => {
     expect(output).not.toContain("_twColorScheme = useTheme()");
   });
 });
+
+describe("className visitor - directional border colors", () => {
+  it("should transform directional border colors with preset values", () => {
+    const input = `
+      import { View } from 'react-native';
+      export function Component() {
+        return <View className="border-t-red-500 border-l-blue-500" />;
+      }
+    `;
+
+    const output = transform(input, undefined, true);
+
+    // Should have StyleSheet
+    expect(output).toContain("StyleSheet.create");
+
+    // Should generate styles with borderTopColor and borderLeftColor
+    expect(output).toMatch(/borderTopColor[:\s]*['"]#[0-9A-F]{6}['"]/i);
+    expect(output).toMatch(/borderLeftColor[:\s]*['"]#[0-9A-F]{6}['"]/i);
+
+    // Should not have className in output
+    expect(output).not.toContain("className");
+  });
+
+  it("should combine directional border width and color", () => {
+    const input = `
+      import { View } from 'react-native';
+      export function Component() {
+        return <View className="border-l-2 border-l-red-500" />;
+      }
+    `;
+
+    const output = transform(input, undefined, true);
+
+    // Should have both borderLeftWidth and borderLeftColor in the StyleSheet
+    expect(output).toMatch(/borderLeftWidth[:\s]*2/);
+    expect(output).toMatch(/borderLeftColor[:\s]*['"]#[0-9A-F]{6}['"]/i);
+
+    // Should not have className in output
+    expect(output).not.toContain("className");
+  });
+
+  it("should support directional border colors with opacity", () => {
+    const input = `
+      import { View } from 'react-native';
+      export function Component() {
+        return <View className="border-t-red-500/50 border-b-blue-500/80" />;
+      }
+    `;
+
+    const output = transform(input, undefined, true);
+
+    // Should have 8-digit hex colors with alpha channel
+    expect(output).toMatch(/borderTopColor[:\s]*['"]#[0-9A-F]{8}['"]/i);
+    expect(output).toMatch(/borderBottomColor[:\s]*['"]#[0-9A-F]{8}['"]/i);
+  });
+
+  it("should support directional border colors with arbitrary hex values", () => {
+    const input = `
+      import { View } from 'react-native';
+      export function Component() {
+        return <View className="border-t-[#ff0000] border-r-[#abc]" />;
+      }
+    `;
+
+    const output = transform(input, undefined, true);
+
+    // Should have borderTopColor and borderRightColor
+    expect(output).toMatch(/borderTopColor[:\s]*['"]#[0-9a-fA-F]{6}['"]/);
+    expect(output).toMatch(/borderRightColor[:\s]*['"]#[0-9a-fA-F]{6}['"]/);
+  });
+
+  it("should support all four directional border colors", () => {
+    const input = `
+      import { View } from 'react-native';
+      export function Component() {
+        return (
+          <View className="border-t-red-500 border-r-blue-500 border-b-green-500 border-l-yellow-500" />
+        );
+      }
+    `;
+
+    const output = transform(input, undefined, true);
+
+    // Should have all four directional color properties
+    expect(output).toMatch(/borderTopColor[:\s]*['"]#[0-9A-F]{6}['"]/i);
+    expect(output).toMatch(/borderRightColor[:\s]*['"]#[0-9A-F]{6}['"]/i);
+    expect(output).toMatch(/borderBottomColor[:\s]*['"]#[0-9A-F]{6}['"]/i);
+    expect(output).toMatch(/borderLeftColor[:\s]*['"]#[0-9A-F]{6}['"]/i);
+  });
+
+  it("should combine directional widths, colors, and general border color", () => {
+    const input = `
+      import { View } from 'react-native';
+      export function Component() {
+        return (
+          <View className="border border-gray-300 border-l-4 border-l-blue-500" />
+        );
+      }
+    `;
+
+    const output = transform(input, undefined, true);
+
+    // Should have general border properties
+    expect(output).toMatch(/borderWidth[:\s]*1/);
+    expect(output).toMatch(/borderColor[:\s]*['"]#[0-9A-F]{6}['"]/i);
+
+    // Should have directional left border properties
+    expect(output).toMatch(/borderLeftWidth[:\s]*4/);
+    expect(output).toMatch(/borderLeftColor[:\s]*['"]#[0-9A-F]{6}['"]/i);
+  });
+
+  it("should work with dynamic className containing directional border colors", () => {
+    const input = `
+      import { View } from 'react-native';
+      export function Component({ isError }) {
+        return (
+          <View className={\`border-t-2 \${isError ? 'border-t-red-500' : 'border-t-gray-300'}\`} />
+        );
+      }
+    `;
+
+    const output = transform(input, undefined, true);
+
+    // Should have StyleSheet with both color options
+    expect(output).toContain("_border_t_2");
+    expect(output).toContain("_border_t_red_500");
+    expect(output).toContain("_border_t_gray_300");
+
+    // Should have conditional expression with both styles
+    expect(output).toMatch(/isError\s*\?\s*_twStyles\._border_t_red_500/);
+  });
+});

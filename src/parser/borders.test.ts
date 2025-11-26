@@ -327,3 +327,61 @@ describe("parseBorder - comprehensive coverage", () => {
     });
   });
 });
+
+describe("parseBorder - color pattern detection", () => {
+  it("should return null for directional border colors with preset values", () => {
+    // These should be handled by parseColor
+    expect(parseBorder("border-t-red-500")).toBeNull();
+    expect(parseBorder("border-r-blue-500")).toBeNull();
+    expect(parseBorder("border-b-green-500")).toBeNull();
+    expect(parseBorder("border-l-yellow-500")).toBeNull();
+  });
+
+  it("should return null for directional border colors with basic values", () => {
+    // These should be handled by parseColor
+    expect(parseBorder("border-t-white")).toBeNull();
+    expect(parseBorder("border-r-black")).toBeNull();
+    expect(parseBorder("border-b-transparent")).toBeNull();
+    expect(parseBorder("border-l-white")).toBeNull();
+  });
+
+  it("should return null for directional border colors with arbitrary hex values", () => {
+    // These should be handled by parseColor
+    expect(parseBorder("border-t-[#ff0000]")).toBeNull();
+    expect(parseBorder("border-r-[#3B82F6]")).toBeNull();
+    expect(parseBorder("border-b-[#abc]")).toBeNull();
+    expect(parseBorder("border-l-[#00FF00AA]")).toBeNull();
+  });
+
+  it("should return null for directional border colors with opacity", () => {
+    // These should be handled by parseColor
+    expect(parseBorder("border-t-red-500/50")).toBeNull();
+    expect(parseBorder("border-r-blue-500/80")).toBeNull();
+    expect(parseBorder("border-b-[#ff0000]/60")).toBeNull();
+    expect(parseBorder("border-l-black/25")).toBeNull();
+  });
+
+  it("should return null for directional border colors with custom colors", () => {
+    // These should be handled by parseColor (assuming brand-primary is a custom color)
+    expect(parseBorder("border-t-brand-primary")).toBeNull();
+    expect(parseBorder("border-r-accent")).toBeNull();
+    expect(parseBorder("border-b-brand-secondary")).toBeNull();
+    expect(parseBorder("border-l-custom")).toBeNull();
+  });
+
+  it("should still handle directional border widths correctly", () => {
+    // These should NOT be detected as color patterns
+    expect(parseBorder("border-t-2")).toEqual({ borderTopWidth: 2 });
+    expect(parseBorder("border-r-4")).toEqual({ borderRightWidth: 4 });
+    expect(parseBorder("border-b-8")).toEqual({ borderBottomWidth: 8 });
+    expect(parseBorder("border-l-0")).toEqual({ borderLeftWidth: 0 });
+  });
+
+  it("should still handle directional border width arbitrary values", () => {
+    // These should NOT be detected as color patterns
+    expect(parseBorder("border-t-[3px]")).toEqual({ borderTopWidth: 3 });
+    expect(parseBorder("border-r-[5px]")).toEqual({ borderRightWidth: 5 });
+    expect(parseBorder("border-b-[10]")).toEqual({ borderBottomWidth: 10 });
+    expect(parseBorder("border-l-[8px]")).toEqual({ borderLeftWidth: 8 });
+  });
+});

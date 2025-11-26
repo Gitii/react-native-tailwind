@@ -391,3 +391,252 @@ describe("parseColor - opacity modifiers", () => {
     });
   });
 });
+
+describe("parseColor - directional border colors", () => {
+  it("should parse directional border colors with preset values", () => {
+    expect(parseColor("border-t-red-500")).toEqual({ borderTopColor: COLORS["red-500"] });
+    expect(parseColor("border-r-blue-500")).toEqual({ borderRightColor: COLORS["blue-500"] });
+    expect(parseColor("border-b-green-500")).toEqual({ borderBottomColor: COLORS["green-500"] });
+    expect(parseColor("border-l-yellow-500")).toEqual({ borderLeftColor: COLORS["yellow-500"] });
+  });
+
+  it("should parse directional border colors with basic values", () => {
+    expect(parseColor("border-t-white")).toEqual({ borderTopColor: "#FFFFFF" });
+    expect(parseColor("border-r-black")).toEqual({ borderRightColor: "#000000" });
+    expect(parseColor("border-b-transparent")).toEqual({ borderBottomColor: "transparent" });
+    expect(parseColor("border-l-white")).toEqual({ borderLeftColor: "#FFFFFF" });
+  });
+
+  it("should parse directional border colors with arbitrary 6-digit hex values", () => {
+    expect(parseColor("border-t-[#ff0000]")).toEqual({ borderTopColor: "#ff0000" });
+    expect(parseColor("border-r-[#3B82F6]")).toEqual({ borderRightColor: "#3B82F6" });
+    expect(parseColor("border-b-[#00ff00]")).toEqual({ borderBottomColor: "#00ff00" });
+    expect(parseColor("border-l-[#cccccc]")).toEqual({ borderLeftColor: "#cccccc" });
+  });
+
+  it("should parse directional border colors with arbitrary 3-digit hex values", () => {
+    expect(parseColor("border-t-[#f00]")).toEqual({ borderTopColor: "#ff0000" });
+    expect(parseColor("border-r-[#abc]")).toEqual({ borderRightColor: "#aabbcc" });
+    expect(parseColor("border-b-[#123]")).toEqual({ borderBottomColor: "#112233" });
+    expect(parseColor("border-l-[#999]")).toEqual({ borderLeftColor: "#999999" });
+  });
+
+  it("should parse directional border colors with arbitrary 8-digit hex values (with alpha)", () => {
+    expect(parseColor("border-t-[#ff0000aa]")).toEqual({ borderTopColor: "#ff0000aa" });
+    expect(parseColor("border-r-[#0000FF50]")).toEqual({ borderRightColor: "#0000FF50" });
+    expect(parseColor("border-b-[#00FF0080]")).toEqual({ borderBottomColor: "#00FF0080" });
+    expect(parseColor("border-l-[#FFFFFF00]")).toEqual({ borderLeftColor: "#FFFFFF00" });
+  });
+
+  it("should parse directional border colors with opacity modifiers", () => {
+    expect(parseColor("border-t-red-500/50")).toEqual({
+      borderTopColor: applyOpacity(COLORS["red-500"], 50),
+    });
+    expect(parseColor("border-r-blue-500/80")).toEqual({
+      borderRightColor: applyOpacity(COLORS["blue-500"], 80),
+    });
+    expect(parseColor("border-b-green-500/30")).toEqual({
+      borderBottomColor: applyOpacity(COLORS["green-500"], 30),
+    });
+    expect(parseColor("border-l-black/25")).toEqual({
+      borderLeftColor: applyOpacity(COLORS.black, 25),
+    });
+  });
+
+  it("should parse directional border colors with arbitrary hex and opacity", () => {
+    expect(parseColor("border-t-[#ff0000]/50")).toEqual({ borderTopColor: "#FF000080" });
+    expect(parseColor("border-r-[#3B82F6]/80")).toEqual({ borderRightColor: "#3B82F6CC" });
+    expect(parseColor("border-b-[#abc]/60")).toEqual({ borderBottomColor: "#AABBCC99" });
+    expect(parseColor("border-l-[#000]/100")).toEqual({ borderLeftColor: "#000000FF" });
+  });
+
+  it("should parse directional border colors with custom colors", () => {
+    const customColors = {
+      "brand-primary": "#FF6B6B",
+      "brand-secondary": "#4ECDC4",
+      accent: "#FFE66D",
+    };
+
+    expect(parseColor("border-t-brand-primary", customColors)).toEqual({
+      borderTopColor: "#FF6B6B",
+    });
+    expect(parseColor("border-r-brand-secondary", customColors)).toEqual({
+      borderRightColor: "#4ECDC4",
+    });
+    expect(parseColor("border-b-accent", customColors)).toEqual({ borderBottomColor: "#FFE66D" });
+    expect(parseColor("border-l-brand-primary", customColors)).toEqual({
+      borderLeftColor: "#FF6B6B",
+    });
+  });
+
+  it("should parse directional border colors with custom colors and opacity", () => {
+    const customColors = { "brand-primary": "#FF6B6B" };
+    expect(parseColor("border-t-brand-primary/50", customColors)).toEqual({
+      borderTopColor: "#FF6B6B80",
+    });
+    expect(parseColor("border-l-brand-primary/75", customColors)).toEqual({
+      borderLeftColor: "#FF6B6BBF",
+    });
+  });
+
+  it("should not match border width classes", () => {
+    // These should be handled by parseBorder
+    expect(parseColor("border-t-2")).toBeNull();
+    expect(parseColor("border-r-4")).toBeNull();
+    expect(parseColor("border-b-8")).toBeNull();
+    expect(parseColor("border-l-0")).toBeNull();
+  });
+
+  it("should not match border width arbitrary values", () => {
+    // These should be handled by parseBorder
+    expect(parseColor("border-t-[3px]")).toBeNull();
+    expect(parseColor("border-r-[8px]")).toBeNull();
+    expect(parseColor("border-b-[5]")).toBeNull();
+    expect(parseColor("border-l-[10px]")).toBeNull();
+  });
+
+  it("should return null for invalid directional border color values", () => {
+    expect(parseColor("border-t-invalid")).toBeNull();
+    expect(parseColor("border-r-notacolor")).toBeNull();
+    expect(parseColor("border-b-xyz")).toBeNull();
+    expect(parseColor("border-l-wrongcolor")).toBeNull();
+  });
+
+  it("should handle all directions with same color", () => {
+    const color = COLORS["blue-500"];
+    expect(parseColor("border-t-blue-500")).toEqual({ borderTopColor: color });
+    expect(parseColor("border-r-blue-500")).toEqual({ borderRightColor: color });
+    expect(parseColor("border-b-blue-500")).toEqual({ borderBottomColor: color });
+    expect(parseColor("border-l-blue-500")).toEqual({ borderLeftColor: color });
+  });
+
+  it("should handle all color families for directional borders", () => {
+    const families = ["gray", "red", "blue", "green", "yellow", "purple", "pink", "orange", "indigo"];
+    families.forEach((family) => {
+      expect(parseColor(`border-t-${family}-500`)).toBeTruthy();
+      expect(parseColor(`border-r-${family}-500`)).toBeTruthy();
+      expect(parseColor(`border-b-${family}-500`)).toBeTruthy();
+      expect(parseColor(`border-l-${family}-500`)).toBeTruthy();
+    });
+  });
+
+  it("should handle directional borders with all opacity levels", () => {
+    expect(parseColor("border-t-black/0")).toEqual({ borderTopColor: "#00000000" });
+    expect(parseColor("border-t-black/25")).toEqual({ borderTopColor: "#00000040" });
+    expect(parseColor("border-t-black/50")).toEqual({ borderTopColor: "#00000080" });
+    expect(parseColor("border-t-black/75")).toEqual({ borderTopColor: "#000000BF" });
+    expect(parseColor("border-t-black/100")).toEqual({ borderTopColor: "#000000FF" });
+  });
+});
+
+describe("parseColor - border-x and border-y colors", () => {
+  it("should parse border-x colors (horizontal: left + right)", () => {
+    expect(parseColor("border-x-red-500")).toEqual({
+      borderLeftColor: COLORS["red-500"],
+      borderRightColor: COLORS["red-500"],
+    });
+    expect(parseColor("border-x-blue-500")).toEqual({
+      borderLeftColor: COLORS["blue-500"],
+      borderRightColor: COLORS["blue-500"],
+    });
+  });
+
+  it("should parse border-y colors (vertical: top + bottom)", () => {
+    expect(parseColor("border-y-green-500")).toEqual({
+      borderTopColor: COLORS["green-500"],
+      borderBottomColor: COLORS["green-500"],
+    });
+    expect(parseColor("border-y-yellow-500")).toEqual({
+      borderTopColor: COLORS["yellow-500"],
+      borderBottomColor: COLORS["yellow-500"],
+    });
+  });
+
+  it("should parse border-x with basic colors", () => {
+    expect(parseColor("border-x-white")).toEqual({
+      borderLeftColor: "#FFFFFF",
+      borderRightColor: "#FFFFFF",
+    });
+    expect(parseColor("border-x-black")).toEqual({
+      borderLeftColor: "#000000",
+      borderRightColor: "#000000",
+    });
+  });
+
+  it("should parse border-y with basic colors", () => {
+    expect(parseColor("border-y-white")).toEqual({
+      borderTopColor: "#FFFFFF",
+      borderBottomColor: "#FFFFFF",
+    });
+    expect(parseColor("border-y-transparent")).toEqual({
+      borderTopColor: "transparent",
+      borderBottomColor: "transparent",
+    });
+  });
+
+  it("should parse border-x with opacity", () => {
+    expect(parseColor("border-x-red-500/50")).toEqual({
+      borderLeftColor: applyOpacity(COLORS["red-500"], 50),
+      borderRightColor: applyOpacity(COLORS["red-500"], 50),
+    });
+  });
+
+  it("should parse border-y with opacity", () => {
+    expect(parseColor("border-y-blue-500/80")).toEqual({
+      borderTopColor: applyOpacity(COLORS["blue-500"], 80),
+      borderBottomColor: applyOpacity(COLORS["blue-500"], 80),
+    });
+  });
+
+  it("should parse border-x with arbitrary hex colors", () => {
+    expect(parseColor("border-x-[#ff0000]")).toEqual({
+      borderLeftColor: "#ff0000",
+      borderRightColor: "#ff0000",
+    });
+    expect(parseColor("border-x-[#abc]")).toEqual({
+      borderLeftColor: "#aabbcc",
+      borderRightColor: "#aabbcc",
+    });
+  });
+
+  it("should parse border-y with arbitrary hex colors", () => {
+    expect(parseColor("border-y-[#00ff00]")).toEqual({
+      borderTopColor: "#00ff00",
+      borderBottomColor: "#00ff00",
+    });
+    expect(parseColor("border-y-[#123]")).toEqual({
+      borderTopColor: "#112233",
+      borderBottomColor: "#112233",
+    });
+  });
+
+  it("should parse border-x with custom colors", () => {
+    const customColors = { "brand-primary": "#FF6B6B" };
+    expect(parseColor("border-x-brand-primary", customColors)).toEqual({
+      borderLeftColor: "#FF6B6B",
+      borderRightColor: "#FF6B6B",
+    });
+  });
+
+  it("should parse border-y with custom colors", () => {
+    const customColors = { accent: "#FFE66D" };
+    expect(parseColor("border-y-accent", customColors)).toEqual({
+      borderTopColor: "#FFE66D",
+      borderBottomColor: "#FFE66D",
+    });
+  });
+
+  it("should not match border-x/border-y width classes", () => {
+    expect(parseColor("border-x-2")).toBeNull();
+    expect(parseColor("border-y-4")).toBeNull();
+    expect(parseColor("border-x-0")).toBeNull();
+    expect(parseColor("border-y-8")).toBeNull();
+  });
+
+  it("should not match border-x/border-y arbitrary width values", () => {
+    expect(parseColor("border-x-[3px]")).toBeNull();
+    expect(parseColor("border-y-[5px]")).toBeNull();
+    expect(parseColor("border-x-[10]")).toBeNull();
+    expect(parseColor("border-y-[8px]")).toBeNull();
+  });
+});
