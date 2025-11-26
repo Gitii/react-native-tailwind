@@ -1,145 +1,8 @@
 /* eslint-disable @typescript-eslint/no-empty-function */
-import { transformSync } from "@babel/core";
 import { describe, expect, it, vi } from "vitest";
-import babelPlugin, { type PluginOptions } from "./plugin.js";
+import { transform } from "../../../../test/helpers/babelTransform.js";
 
-/**
- * Helper to transform code with the Babel plugin
- */
-function transform(code: string, options?: PluginOptions, includeJsx = false) {
-  const presets = includeJsx
-    ? ["@babel/preset-react", ["@babel/preset-typescript", { isTSX: true, allExtensions: true }]]
-    : [];
-
-  const result = transformSync(code, {
-    presets,
-    plugins: [[babelPlugin, options]],
-    filename: "test.tsx",
-    configFile: false,
-    babelrc: false,
-  });
-
-  return result?.code ?? "";
-}
-
-describe("Babel plugin - import injection", () => {
-  it("should not add StyleSheet import to files without className usage", () => {
-    const input = `
-      import { View, Text } from 'react-native';
-
-      function MyComponent() {
-        return <View><Text>Hello</Text></View>;
-      }
-    `;
-
-    const output = transform(input, undefined, true);
-
-    // Should not mutate the import by adding StyleSheet
-    // Count occurrences of "StyleSheet" in output
-    const styleSheetCount = (output.match(/StyleSheet/g) ?? []).length;
-    expect(styleSheetCount).toBe(0);
-
-    // Should not have _twStyles definition
-    expect(output).not.toContain("_twStyles");
-    expect(output).not.toContain("StyleSheet.create");
-
-    // Original imports should remain unchanged
-    expect(output).toContain("View");
-    expect(output).toContain("Text");
-  });
-
-  it("should add StyleSheet import only when className is used", () => {
-    const input = `
-      import { View } from 'react-native';
-
-      function MyComponent() {
-        return <View className="m-4 p-2" />;
-      }
-    `;
-
-    const output = transform(input, undefined, true);
-
-    // Should have StyleSheet import (both single and double quotes)
-    expect(output).toMatch(/import.*StyleSheet.*from ['"]react-native['"]|require\(['"]react-native['"]\)/);
-
-    // Should have _twStyles definition
-    expect(output).toContain("_twStyles");
-    expect(output).toContain("StyleSheet.create");
-  });
-
-  it("should add Platform import only when platform modifiers are used", () => {
-    const input = `
-      import { View } from 'react-native';
-
-      function MyComponent() {
-        return <View className="ios:m-4 android:m-2" />;
-      }
-    `;
-
-    const output = transform(input, undefined, true);
-
-    // Should have Platform import
-    expect(output).toContain("Platform");
-
-    // Should have StyleSheet import too
-    expect(output).toContain("StyleSheet");
-
-    // Should use Platform.select
-    expect(output).toContain("Platform.select");
-  });
-
-  it("should not add Platform import without platform modifiers", () => {
-    const input = `
-      import { View } from 'react-native';
-
-      function MyComponent() {
-        return <View className="m-4 p-2" />;
-      }
-    `;
-
-    const output = transform(input, undefined, true);
-
-    // Should not have Platform import
-    const platformCount = (output.match(/Platform/g) ?? []).length;
-    expect(platformCount).toBe(0);
-
-    // Should still have StyleSheet
-    expect(output).toContain("StyleSheet");
-  });
-});
-
-describe("Babel plugin - scheme: modifier", () => {
-  it.skip("should expand scheme: modifier into dark: and light: modifiers", () => {
-    // Note: This test requires tailwind.config.js with custom colors defined
-    // The scheme: modifier expands to dark: and light: modifiers which require
-    // the color variants to exist in customColors (e.g., systemGray-dark, systemGray-light)
-    //
-    // Integration test should be done in a real project with tailwind.config.js
-    const input = `
-      import { View } from 'react-native';
-
-      function MyComponent() {
-        return <View className="scheme:text-systemGray" />;
-      }
-    `;
-
-    const output = transform(input, undefined, true);
-
-    // Should generate both dark and light variants
-    expect(output).toContain("_dark_text_systemGray_dark");
-    expect(output).toContain("_light_text_systemGray_light");
-
-    // Should inject useColorScheme hook
-    expect(output).toContain("useColorScheme");
-    expect(output).toContain("_twColorScheme");
-
-    // Should have conditional expressions
-    expect(output).toContain("_twColorScheme === 'dark'");
-    expect(output).toContain("_twColorScheme === 'light'");
-  });
-});
-
-describe("Babel plugin - window dimensions (w-screen/h-screen)", () => {
+describe("className visitor - window dimensions (w-screen/h-screen)", () => {
   it("should inject useWindowDimensions hook for w-screen in function component", () => {
     const input = `
       import React from 'react';
@@ -354,9 +217,7 @@ describe("Babel plugin - window dimensions (w-screen/h-screen)", () => {
     // Should still generate _twDimensions variable for our use
     expect(output).toContain("_twDimensions");
   });
-});
 
-describe("Babel plugin - w-screen/h-screen error handling", () => {
   it("should error when w-screen is combined with dark: modifier", () => {
     const input = `
       import { View } from 'react-native';
