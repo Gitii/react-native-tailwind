@@ -6,6 +6,7 @@ import type * as BabelTypes from "@babel/types";
 import type { CustomTheme, ModifierType, ParsedModifier } from "../../parser/index.js";
 import type { StyleObject } from "../../types/core.js";
 import { getStatePropertyForModifier } from "./componentSupport.js";
+import { hasRuntimeDimensions } from "./windowDimensionsProcessing.js";
 
 /**
  * Plugin state interface (subset needed for modifier processing)
@@ -36,6 +37,16 @@ export function processStaticClassNameWithModifiers(
   if (baseClasses.length > 0) {
     const baseClassName = baseClasses.join(" ");
     const baseStyleObject = parseClassName(baseClassName, state.customTheme);
+
+    // Check for runtime dimensions (w-screen, h-screen) in base classes
+    if (hasRuntimeDimensions(baseStyleObject)) {
+      throw new Error(
+        `w-screen and h-screen cannot be combined with state modifiers (active:, hover:, focus:, etc.) or platform modifiers (ios:, android:, web:). ` +
+          `Found in: "${baseClassName}". ` +
+          `Use w-screen/h-screen without modifiers instead.`,
+      );
+    }
+
     const baseStyleKey = generateStyleKey(baseClassName);
     state.styleRegistry.set(baseStyleKey, baseStyleObject);
     baseStyleExpression = t.memberExpression(t.identifier(state.stylesIdentifier), t.identifier(baseStyleKey));
@@ -67,6 +78,16 @@ export function processStaticClassNameWithModifiers(
     // Parse all modifier classes together
     const modifierClassNames = modifiers.map((m) => m.baseClass).join(" ");
     const modifierStyleObject = parseClassName(modifierClassNames, state.customTheme);
+
+    // Check for runtime dimensions (w-screen, h-screen) in modifier classes
+    if (hasRuntimeDimensions(modifierStyleObject)) {
+      throw new Error(
+        `w-screen and h-screen cannot be combined with state modifiers (active:, hover:, focus:, etc.) or platform modifiers (ios:, android:, web:). ` +
+          `Found in: "${modifierType}:${modifierClassNames}". ` +
+          `Use w-screen/h-screen without modifiers instead.`,
+      );
+    }
+
     const modifierStyleKey = generateStyleKey(`${modifierType}_${modifierClassNames}`);
     state.styleRegistry.set(modifierStyleKey, modifierStyleObject);
 

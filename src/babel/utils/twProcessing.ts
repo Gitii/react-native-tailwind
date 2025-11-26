@@ -15,6 +15,7 @@ import type { SchemeModifierConfig } from "../../types/config.js";
 import type { StyleObject } from "../../types/core.js";
 import { processColorSchemeModifiers } from "./colorSchemeModifierProcessing.js";
 import { processPlatformModifiers } from "./platformModifierProcessing.js";
+import { hasRuntimeDimensions } from "./windowDimensionsProcessing.js";
 
 /**
  * Plugin state interface (subset needed for tw processing)
@@ -77,6 +78,16 @@ export function processTwCall(
   if (baseClasses.length > 0) {
     const baseClassName = baseClasses.join(" ");
     const baseStyleObject = parseClassName(baseClassName, state.customTheme);
+
+    // Check for runtime dimensions (w-screen, h-screen)
+    if (hasRuntimeDimensions(baseStyleObject)) {
+      throw path.buildCodeFrameError(
+        `w-screen and h-screen are not supported in tw\`\` or twStyle() calls. ` +
+          `Found: "${baseClassName}". ` +
+          `Use them in className attributes instead.`,
+      );
+    }
+
     const baseStyleKey = generateStyleKey(baseClassName);
     state.styleRegistry.set(baseStyleKey, baseStyleObject);
 

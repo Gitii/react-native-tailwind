@@ -5,6 +5,7 @@
 import type * as BabelTypes from "@babel/types";
 import type { ColorSchemeModifierType, CustomTheme, ParsedModifier } from "../../parser/index.js";
 import type { StyleObject } from "../../types/core.js";
+import { hasRuntimeDimensions } from "./windowDimensionsProcessing.js";
 
 /**
  * Plugin state interface (subset needed for color scheme modifier processing)
@@ -66,6 +67,16 @@ export function processColorSchemeModifiers(
     // Parse all classes for this color scheme together
     const classNames = modifiers.map((m) => m.baseClass).join(" ");
     const styleObject = parseClassName(classNames, state.customTheme);
+
+    // Check for runtime dimensions (w-screen, h-screen)
+    if (hasRuntimeDimensions(styleObject)) {
+      throw new Error(
+        `w-screen and h-screen cannot be combined with color scheme modifiers (dark:, light:, scheme:). ` +
+          `Found in: "${scheme}:${classNames}". ` +
+          `Use w-screen/h-screen without modifiers instead.`,
+      );
+    }
+
     const styleKey = generateStyleKey(`${scheme}_${classNames}`);
 
     // Register style in the registry
