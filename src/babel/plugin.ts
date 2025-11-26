@@ -38,8 +38,10 @@ import {
   addColorSchemeImport,
   addPlatformImport,
   addStyleSheetImport,
+  addWindowDimensionsImport,
   injectColorSchemeHook,
   injectStylesAtTop,
+  injectWindowDimensionsHook,
 } from "./utils/styleInjection.js";
 import {
   addOrMergePlaceholderTextColorProp,
@@ -52,6 +54,11 @@ import {
   replaceWithStyleFunctionAttribute,
 } from "./utils/styleTransforms.js";
 import { processTwCall, removeTwImports } from "./utils/twProcessing.js";
+import {
+  createRuntimeDimensionObject,
+  hasRuntimeDimensions,
+  splitStaticAndRuntimeStyles,
+} from "./utils/windowDimensionsProcessing.js";
 
 /**
  * Plugin options
@@ -139,6 +146,10 @@ type PluginState = PluginPass & {
   colorSchemeImportSource: string; // Where to import the hook from (e.g., 'react-native')
   colorSchemeHookName: string; // Name of the hook to import (e.g., 'useColorScheme')
   colorSchemeLocalIdentifier?: string; // Local identifier if hook is already imported with an alias
+  hasWindowDimensionsImport: boolean;
+  needsWindowDimensionsImport: boolean;
+  windowDimensionsVariableName: string;
+  windowDimensionsLocalIdentifier?: string; // Local identifier if hook is already imported with an alias
   customTheme: CustomTheme;
   schemeModifierConfig: SchemeModifierConfig;
   supportedAttributes: Set<string>;
@@ -151,6 +162,8 @@ type PluginState = PluginPass & {
   reactNativeImportPath?: NodePath<BabelTypes.ImportDeclaration>;
   // Track function components that need colorScheme hook injection
   functionComponentsNeedingColorScheme: Set<NodePath<BabelTypes.Function>>;
+  // Track function components that need windowDimensions hook injection
+  functionComponentsNeedingWindowDimensions: Set<NodePath<BabelTypes.Function>>;
 };
 
 // Default identifier for the generated StyleSheet constant
@@ -270,12 +283,17 @@ export default function reactNativeTailwindBabelPlugin(
           state.colorSchemeVariableName = "_twColorScheme";
           state.colorSchemeImportSource = colorSchemeImportSource;
           state.colorSchemeHookName = colorSchemeHookName;
+          state.hasWindowDimensionsImport = false;
+          state.needsWindowDimensionsImport = false;
+          state.windowDimensionsVariableName = "_twDimensions";
+          state.windowDimensionsLocalIdentifier = undefined;
           state.supportedAttributes = exactMatches;
           state.attributePatterns = patterns;
           state.stylesIdentifier = stylesIdentifier;
           state.twImportNames = new Set();
           state.hasTwImport = false;
           state.functionComponentsNeedingColorScheme = new Set();
+          state.functionComponentsNeedingWindowDimensions = new Set();
           state.hasColorSchemeImport = false;
           state.colorSchemeLocalIdentifier = undefined;
           state.needsPlatformImport = false;
@@ -294,13 +312,13 @@ export default function reactNativeTailwindBabelPlugin(
             removeTwImports(path, t);
           }
 
-          // If no classNames were found, skip StyleSheet generation
-          if (!state.hasClassNames || state.styleRegistry.size === 0) {
+          // If no classNames were found and no hooks needed, skip processing
+          if (!state.hasClassNames && !state.needsWindowDimensionsImport && !state.needsColorSchemeImport) {
             return;
           }
 
-          // Add StyleSheet import if not already present
-          if (!state.hasStyleSheetImport) {
+          // Add StyleSheet import if not already present (and we have styles to inject)
+          if (!state.hasStyleSheetImport && state.styleRegistry.size > 0) {
             addStyleSheetImport(path, t);
           }
 
@@ -327,9 +345,30 @@ export default function reactNativeTailwindBabelPlugin(
             }
           }
 
+          // Add useWindowDimensions import if w-screen/h-screen classes were used and not already present
+          if (state.needsWindowDimensionsImport && !state.hasWindowDimensionsImport) {
+            addWindowDimensionsImport(path, t);
+          }
+
+          // Inject useWindowDimensions hook in function components that need it
+          if (state.needsWindowDimensionsImport) {
+            for (const functionPath of state.functionComponentsNeedingWindowDimensions) {
+              injectWindowDimensionsHook(
+                functionPath,
+                state.windowDimensionsVariableName,
+                "useWindowDimensions",
+                state.windowDimensionsLocalIdentifier,
+                t,
+              );
+            }
+          }
+
           // Generate and inject StyleSheet.create at the beginning of the file (after imports)
           // This ensures _twStyles is defined before any code that references it
-          injectStylesAtTop(path, state.styleRegistry, state.stylesIdentifier, t);
+          // Only inject if we actually have styles to inject
+          if (state.styleRegistry.size > 0) {
+            injectStylesAtTop(path, state.styleRegistry, state.stylesIdentifier, t);
+          }
         },
       },
 
@@ -354,6 +393,21 @@ export default function reactNativeTailwindBabelPlugin(
             }
             return false;
           });
+
+          // Check for useWindowDimensions import (only value imports, not type-only)
+          if (node.importKind !== "type") {
+            for (const spec of specifiers) {
+              if (t.isImportSpecifier(spec) && t.isIdentifier(spec.imported)) {
+                if (spec.imported.name === "useWindowDimensions") {
+                  state.hasWindowDimensionsImport = true;
+                  // Track the local identifier (handles aliased imports)
+                  // e.g., import { useWindowDimensions as useDims } → local name is 'useDims'
+                  state.windowDimensionsLocalIdentifier = spec.local.name;
+                  break;
+                }
+              }
+            }
+          }
 
           // Only track if imports exist - don't mutate yet
           // Actual import injection happens in Program.exit only if needed
@@ -656,6 +710,16 @@ export default function reactNativeTailwindBabelPlugin(
               if (hasBaseClasses) {
                 const baseClassName = baseClasses.join(" ");
                 const baseStyleObject = parseClassName(baseClassName, state.customTheme);
+
+                // Check for runtime dimensions (w-screen, h-screen) in base classes
+                if (hasRuntimeDimensions(baseStyleObject)) {
+                  throw path.buildCodeFrameError(
+                    `w-screen and h-screen cannot be combined with modifiers. ` +
+                      `Found: "${baseClassName}" with state, platform, or color scheme modifiers. ` +
+                      `Use w-screen/h-screen without modifiers instead.`,
+                  );
+                }
+
                 const baseStyleKey = generateStyleKey(baseClassName);
                 state.styleRegistry.set(baseStyleKey, baseStyleObject);
                 styleArrayElements.push(
@@ -748,6 +812,16 @@ export default function reactNativeTailwindBabelPlugin(
             if (hasBaseClasses) {
               const baseClassName = baseClasses.join(" ");
               const baseStyleObject = parseClassName(baseClassName, state.customTheme);
+
+              // Check for runtime dimensions (w-screen, h-screen) in base classes
+              if (hasRuntimeDimensions(baseStyleObject)) {
+                throw path.buildCodeFrameError(
+                  `w-screen and h-screen cannot be combined with modifiers. ` +
+                    `Found: "${baseClassName}" with platform or color scheme modifiers. ` +
+                    `Use w-screen/h-screen without modifiers instead.`,
+                );
+              }
+
               const baseStyleKey = generateStyleKey(baseClassName);
               state.styleRegistry.set(baseStyleKey, baseStyleObject);
               styleExpressions.push(
@@ -910,6 +984,92 @@ export default function reactNativeTailwindBabelPlugin(
           }
 
           const styleObject = parseClassName(classNameForStyle, state.customTheme);
+
+          // Check if the style object contains runtime dimension markers (w-screen, h-screen)
+          if (hasRuntimeDimensions(styleObject)) {
+            // Split into static and runtime parts
+            const { static: staticStyles, runtime: runtimeStyles } = splitStaticAndRuntimeStyles(styleObject);
+
+            // Track component scope for hook injection
+            const componentScope = findComponentScope(path, t);
+            if (componentScope) {
+              state.hasClassNames = true; // Mark that we have classNames to process
+              state.functionComponentsNeedingWindowDimensions.add(componentScope);
+              state.needsWindowDimensionsImport = true;
+
+              // Build style array: [staticStyles, { width: _twDimensions.width }]
+              const styleExpressions: BabelTypes.Expression[] = [];
+
+              // Add static styles if any
+              if (Object.keys(staticStyles).length > 0) {
+                const styleKey = generateStyleKey(classNameForStyle);
+                state.styleRegistry.set(styleKey, staticStyles);
+                styleExpressions.push(
+                  t.memberExpression(t.identifier(state.stylesIdentifier), t.identifier(styleKey)),
+                );
+              }
+
+              // Add runtime dimension object
+              const runtimeDimensionObject = createRuntimeDimensionObject(runtimeStyles, state, t);
+              styleExpressions.push(runtimeDimensionObject);
+
+              // Create style array or single expression
+              const styleExpression =
+                styleExpressions.length === 1 ? styleExpressions[0] : t.arrayExpression(styleExpressions);
+
+              // Check if there's already a style prop on this element
+              const styleAttribute = findStyleAttribute(path, targetStyleProp, t);
+
+              if (styleAttribute) {
+                // Merge with existing style attribute
+                const existingStyle = styleAttribute.value;
+                if (
+                  t.isJSXExpressionContainer(existingStyle) &&
+                  !t.isJSXEmptyExpression(existingStyle.expression)
+                ) {
+                  const existing = existingStyle.expression;
+
+                  // Check if existing style is a function (e.g., Pressable's style prop)
+                  if (t.isArrowFunctionExpression(existing) || t.isFunctionExpression(existing)) {
+                    // Existing style is a function - create wrapper that calls it and merges results
+                    // (_state) => [styleExpression, existingStyleFn(_state)]
+                    const paramIdentifier = t.identifier("_state");
+                    const functionCall = t.callExpression(existing, [paramIdentifier]);
+
+                    const mergedArray = t.arrayExpression([styleExpression, functionCall]);
+
+                    const wrappedFunction = t.arrowFunctionExpression([paramIdentifier], mergedArray);
+                    styleAttribute.value = t.jsxExpressionContainer(wrappedFunction);
+                  } else {
+                    // Merge as array: [ourStyles, existingStyles]
+                    const mergedArray = t.isArrayExpression(existing)
+                      ? t.arrayExpression([styleExpression, ...existing.elements])
+                      : t.arrayExpression([styleExpression, existing]);
+                    styleAttribute.value = t.jsxExpressionContainer(mergedArray);
+                  }
+                } else {
+                  styleAttribute.value = t.jsxExpressionContainer(styleExpression);
+                }
+                path.remove();
+              } else {
+                // Replace className with style prop containing runtime expression
+                path.node.name = t.jsxIdentifier(targetStyleProp);
+                path.node.value = t.jsxExpressionContainer(styleExpression);
+              }
+              return true;
+            } else {
+              // Warn if w-screen/h-screen used in invalid context
+              if (process.env.NODE_ENV !== "production") {
+                console.warn(
+                  `[react-native-tailwind] w-screen/h-screen classes require a function component scope. ` +
+                    `Found in non-component context at ${state.file.opts.filename ?? "unknown"}. ` +
+                    `These classes are not supported in class components or nested callbacks.`,
+                );
+              }
+              // Fall through to normal processing (will generate static styles, which won't work correctly)
+            }
+          }
+
           const styleKey = generateStyleKey(classNameForStyle);
           state.styleRegistry.set(styleKey, styleObject);
 
