@@ -219,6 +219,6 @@ If you see warnings about missing colors:
 
 ## Related
 
-- [Colors Reference](/reference/colors/) - Color utilities
-- [Color Scheme](/guides/color-scheme/) - Dark mode support
-- [Troubleshooting](/advanced/troubleshooting/) - Common issues
+- [Colors Reference](/react-native-tailwind/reference/colors/) - Color utilities
+- [Color Scheme](/react-native-tailwind/guides/color-scheme/) - Dark mode support
+- [Troubleshooting](/react-native-tailwind/advanced/troubleshooting/) - Common issues

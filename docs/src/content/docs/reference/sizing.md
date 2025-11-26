@@ -33,8 +33,9 @@ Control element dimensions with width and height utilities.
 ### Special
 
 ```tsx
-<View className="w-full" /> // width: '100%'
-<View className="w-auto" /> // width: undefined
+<View className="w-full" />   // width: '100%'
+<View className="w-screen" /> // width: window dimensions (runtime)
+<View className="w-auto" />   // width: undefined
 ```
 
 ### Arbitrary
@@ -71,8 +72,9 @@ Control element dimensions with width and height utilities.
 ### Special
 
 ```tsx
-<View className="h-full" /> // height: '100%'
-<View className="h-auto" /> // height: undefined
+<View className="h-full" />   // height: '100%'
+<View className="h-screen" /> // height: window dimensions (runtime)
+<View className="h-auto" />   // height: undefined
 ```
 
 ### Arbitrary
@@ -116,6 +118,84 @@ Control element dimensions with width and height utilities.
 <View className="max-h-[80%]" /> // maxHeight: '80%'
 ```
 
+## Window Dimensions (w-screen / h-screen)
+
+The `w-screen` and `h-screen` classes provide access to the actual window dimensions at runtime using React Native's `useWindowDimensions()` hook.
+
+### How It Works
+
+When you use `w-screen` or `h-screen`, the Babel plugin automatically:
+
+1. **Injects the hook**: Adds `const _twDimensions = useWindowDimensions();` at the top of your component
+2. **Imports the hook**: Adds `useWindowDimensions` to your react-native imports
+3. **Generates runtime access**: Creates inline styles that access `_twDimensions.width` or `_twDimensions.height`
+
+### Usage
+
+```tsx
+function FullScreenModal() {
+  // Hook is automatically injected - you don't need to add it!
+  return (
+    <View className="w-screen h-screen bg-white">
+      <Text>This view fills the entire window</Text>
+    </View>
+  );
+}
+```
+
+### Generated Code
+
+```tsx
+// Input
+<View className="w-screen h-screen bg-white" />
+
+// Generated output
+import { useWindowDimensions } from 'react-native';
+
+function Component() {
+  const _twDimensions = useWindowDimensions();
+
+  return <View style={[
+    styles._bg_white,
+    { width: _twDimensions.width, height: _twDimensions.height }
+  ]} />;
+}
+```
+
+### Requirements
+
+:::note
+`w-screen` and `h-screen` can only be used inside **function components**. They won't work in:
+
+- Class components
+- Nested callbacks (e.g., inside `.map()` or `.filter()`)
+- Global/module-level code
+
+This is because they rely on React hooks, which follow the [Rules of Hooks](https://react.dev/warnings/invalid-hook-call-warning).
+:::
+
+### Dynamic Dimensions
+
+Unlike `w-full` and `h-full` which use percentage-based sizing, `w-screen` and `h-screen` respond to actual window dimension changes:
+
+```tsx
+// w-full/h-full: 100% of parent container
+<View className="w-full h-full" />
+
+// w-screen/h-screen: actual window dimensions (updates on rotation/resize)
+<View className="w-screen h-screen" />
+```
+
+### Combining with Other Classes
+
+You can combine screen dimensions with other utilities:
+
+```tsx
+<View className="w-screen h-screen bg-gray-100 p-4 items-center justify-center">
+  <Text>Centered in full screen</Text>
+</View>
+```
+
 ## Common Patterns
 
 ### Full Screen
@@ -123,6 +203,14 @@ Control element dimensions with width and height utilities.
 ```tsx
 <View className="w-full h-full">
   <Text>Full screen content</Text>
+</View>
+```
+
+### Full Window (Responsive)
+
+```tsx
+<View className="w-screen h-screen">
+  <Text>Fills actual window - responds to rotation</Text>
 </View>
 ```
 
@@ -176,6 +264,6 @@ Other units (`rem`, `em`, `vh`, `vw`) are not supported in React Native.
 
 ## Related
 
-- [Spacing](/reference/spacing/) - Margin and padding
-- [Layout](/reference/layout/) - Flexbox utilities
-- [Aspect Ratio](/reference/aspect-ratio/) - Aspect ratio utilities
+- [Spacing](/react-native-tailwind/reference/spacing/) - Margin and padding
+- [Layout](/react-native-tailwind/reference/layout/) - Flexbox utilities
+- [Aspect Ratio](/react-native-tailwind/reference/aspect-ratio/) - Aspect ratio utilities

@@ -181,5 +181,5 @@ All transform parsing happens at compile-time with zero runtime overhead. Each t
 
 ## Related
 
-- [Spacing](/reference/spacing/) - For translate values
-- [Layout](/reference/layout/) - Positioning utilities
+- [Spacing](/react-native-tailwind/reference/spacing/) - For translate values
+- [Layout](/react-native-tailwind/reference/layout/) - Positioning utilities

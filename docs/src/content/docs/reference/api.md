@@ -35,7 +35,7 @@ function parseClassName(
   customTheme?: {
     colors?: Record<string, string>;
     fontFamily?: Record<string, string>;
-  }
+  },
 ): ViewStyle | TextStyle | ImageStyle;
 ```
 
@@ -178,14 +178,14 @@ function ThemedComponent() {
 
 The programmatic API has some overhead since it parses at runtime:
 
-| Approach | Performance | When to Use |
-|----------|-------------|-------------|
-| `className` prop (compile-time) | ⚡ Zero overhead | Production code (recommended) |
-| Programmatic API | 🐌 Runtime parsing | Testing, tooling, dynamic generation |
-| Runtime `tw` | 🚀 Memoized parsing | Fully dynamic styling needs |
+| Approach                        | Performance         | When to Use                          |
+| ------------------------------- | ------------------- | ------------------------------------ |
+| `className` prop (compile-time) | ⚡ Zero overhead    | Production code (recommended)        |
+| Programmatic API                | 🐌 Runtime parsing  | Testing, tooling, dynamic generation |
+| Runtime `tw`                    | 🚀 Memoized parsing | Fully dynamic styling needs          |
 
 ## Related
 
-- [Runtime tw](/guides/runtime-tw/) - For fully dynamic styling
-- [Custom Colors](/advanced/custom-colors/) - Extend color palette
-- [Troubleshooting](/advanced/troubleshooting/) - Common issues
+- [Runtime tw](/react-native-tailwind/guides/runtime-tw/) - For fully dynamic styling
+- [Custom Colors](/react-native-tailwind/advanced/custom-colors/) - Extend color palette
+- [Troubleshooting](/react-native-tailwind/advanced/troubleshooting/) - Common issues

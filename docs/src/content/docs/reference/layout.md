@@ -152,5 +152,5 @@ Control layout with flexbox, positioning, and display utilities.
 
 ## Related
 
-- [Spacing](/reference/spacing/) - Margin, padding, gap
-- [Sizing](/reference/sizing/) - Width and height utilities
+- [Spacing](/react-native-tailwind/reference/spacing/) - Margin, padding, gap
+- [Sizing](/react-native-tailwind/reference/sizing/) - Width and height utilities

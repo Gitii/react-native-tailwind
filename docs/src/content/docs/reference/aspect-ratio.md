@@ -96,5 +96,5 @@ The aspect ratio is calculated as `width / height`. When combined with `w-full`,
 
 ## Related
 
-- [Sizing](/reference/sizing/) - Width and height utilities
-- [Layout](/reference/layout/) - Flexbox utilities
+- [Sizing](/react-native-tailwind/reference/sizing/) - Width and height utilities
+- [Layout](/react-native-tailwind/reference/layout/) - Flexbox utilities

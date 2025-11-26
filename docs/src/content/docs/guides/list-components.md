@@ -201,7 +201,7 @@ export function CompleteList({ items }) {
 
 ## Custom Attributes
 
-You can configure additional custom attributes using the [Babel configuration](/advanced/babel-configuration/). For example, to support `ListEmptyComponentClassName`:
+You can configure additional custom attributes using the [Babel configuration](/react-native-tailwind/advanced/babel-configuration/). For example, to support `ListEmptyComponentClassName`:
 
 ```javascript
 // babel.config.js
@@ -231,6 +231,6 @@ Then use it:
 
 ## What's Next?
 
-- Learn about [Custom Attributes](/advanced/custom-attributes/) for more control
-- Explore [Babel Configuration](/advanced/babel-configuration/) for plugin options
-- Check out [Reusable Components](/guides/reusable-components/) for building component libraries
+- Learn about [Custom Attributes](/react-native-tailwind/advanced/custom-attributes/) for more control
+- Explore [Babel Configuration](/react-native-tailwind/advanced/babel-configuration/) for plugin options
+- Check out [Reusable Components](/react-native-tailwind/guides/reusable-components/) for building component libraries

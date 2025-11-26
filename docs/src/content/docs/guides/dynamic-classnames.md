@@ -155,6 +155,6 @@ export function StatusCard({ status }) {
 
 ## What's Next?
 
-- Learn about [State Modifiers](/guides/state-modifiers/) for cleaner interactive styling
-- Explore [Runtime tw](/guides/runtime-tw/) for fully dynamic styling needs
-- Check out [Combining with Inline Styles](/guides/basic-usage/#combining-with-inline-styles)
+- Learn about [State Modifiers](/react-native-tailwind/guides/state-modifiers/) for cleaner interactive styling
+- Explore [Runtime tw](/react-native-tailwind/guides/runtime-tw/) for fully dynamic styling needs
+- Check out [Combining with Inline Styles](/react-native-tailwind/guides/basic-usage/#combining-with-inline-styles)

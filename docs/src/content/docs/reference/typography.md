@@ -148,5 +148,5 @@ Control text appearance with font size, weight, alignment, and decoration utilit
 
 ## Related
 
-- [Colors](/reference/colors/) - Text color utilities
-- [Spacing](/reference/spacing/) - Margin and padding
+- [Colors](/react-native-tailwind/reference/colors/) - Text color utilities
+- [Spacing](/react-native-tailwind/reference/spacing/) - Margin and padding

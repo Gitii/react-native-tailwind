@@ -32,6 +32,7 @@ Arbitrary spacing values only support pixel values. Percentages and other units 
 ```
 
 Supports:
+
 - Pixel values: `[123px]` or `[123]`
 - Percentages: `[50%]`, `[33.333%]`
 
@@ -176,14 +177,15 @@ Supports:
 
 :::caution[Unsupported Units]
 CSS units not available in React Native:
+
 - `rem`, `em` - Use pixels instead
 - `vh`, `vw` - Use percentages or Dimensions API
 - `ch`, `ex` - Not supported in React Native
-:::
+  :::
 
 ## Related
 
-- [Spacing](/reference/spacing/) - Preset spacing values
-- [Sizing](/reference/sizing/) - Preset sizing values
-- [Borders](/reference/borders/) - Preset border values
-- [Transforms](/reference/transforms/) - Preset transform values
+- [Spacing](/react-native-tailwind/reference/spacing/) - Preset spacing values
+- [Sizing](/react-native-tailwind/reference/sizing/) - Preset sizing values
+- [Borders](/react-native-tailwind/reference/borders/) - Preset border values
+- [Transforms](/react-native-tailwind/reference/transforms/) - Preset transform values

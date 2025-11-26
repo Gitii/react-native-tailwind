@@ -3,7 +3,7 @@ title: Colors
 description: Background, text, and border color utilities
 ---
 
-Apply colors to backgrounds, text, and borders. Supports custom colors via [tailwind.config.*](/advanced/custom-colors/).
+Apply colors to backgrounds, text, and borders. Supports custom colors via [tailwind.config.*](/react-native-tailwind/advanced/custom-colors/).
 
 ## Color Utilities
 
@@ -106,7 +106,7 @@ Then use them:
 <View className="bg-brand-dark" />
 ```
 
-See [Custom Colors](/advanced/custom-colors/) for more details.
+See [Custom Colors](/react-native-tailwind/advanced/custom-colors/) for more details.
 
 ## Common Patterns
 
@@ -149,6 +149,6 @@ See [Custom Colors](/advanced/custom-colors/) for more details.
 
 ## Related
 
-- [Custom Colors](/advanced/custom-colors/) - Extend the color palette
-- [Color Scheme](/guides/color-scheme/) - Dark mode support
-- [Typography](/reference/typography/) - Text styling
+- [Custom Colors](/react-native-tailwind/advanced/custom-colors/) - Extend the color palette
+- [Color Scheme](/react-native-tailwind/guides/color-scheme/) - Dark mode support
+- [Typography](/react-native-tailwind/reference/typography/) - Text styling

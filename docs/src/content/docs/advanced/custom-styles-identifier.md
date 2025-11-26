@@ -99,5 +99,5 @@ Align with your team's coding standards:
 
 ## Related
 
-- [Babel Configuration](/advanced/babel-configuration/) - All plugin options
-- [Custom Attributes](/advanced/custom-attributes/) - Configure attribute transforms
+- [Babel Configuration](/react-native-tailwind/advanced/babel-configuration/) - All plugin options
+- [Custom Attributes](/react-native-tailwind/advanced/custom-attributes/) - Configure attribute transforms

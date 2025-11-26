@@ -330,6 +330,6 @@ type CardProps = BaseProps & {
 
 ## What's Next?
 
-- Learn about [Custom Attributes](/advanced/custom-attributes/) for more control
-- Explore [Babel Configuration](/advanced/babel-configuration/) for plugin options
-- Check out [TypeScript setup](/getting-started/quick-start/#2-enable-typescript-support-typescript) for type safety
+- Learn about [Custom Attributes](/react-native-tailwind/advanced/custom-attributes/) for more control
+- Explore [Babel Configuration](/react-native-tailwind/advanced/babel-configuration/) for plugin options
+- Check out [TypeScript setup](/react-native-tailwind/getting-started/quick-start/#2-enable-typescript-support-typescript-projects) for type safety

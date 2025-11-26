@@ -162,6 +162,6 @@ Arbitrary spacing values only support pixel values. Percentages and other units 
 
 ## Related
 
-- [Layout](/reference/layout/) - Flexbox utilities
-- [Sizing](/reference/sizing/) - Width and height utilities
-- [Arbitrary Values](/advanced/arbitrary-values/) - Custom spacing values
+- [Layout](/react-native-tailwind/reference/layout/) - Flexbox utilities
+- [Sizing](/react-native-tailwind/reference/sizing/) - Width and height utilities
+- [Arbitrary Values](/react-native-tailwind/advanced/arbitrary-values/) - Custom spacing values

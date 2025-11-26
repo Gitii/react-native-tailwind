@@ -143,19 +143,10 @@ type ButtonProps = {
   containerStyle?: StyleProp<ViewStyle>;
 };
 
-export function Button({
-  title,
-  onPress,
-  buttonStyle,
-  containerStyle,
-}: ButtonProps) {
+export function Button({ title, onPress, buttonStyle, containerStyle }: ButtonProps) {
   return (
     <View containerClassName="p-2 bg-gray-100" style={containerStyle}>
-      <Pressable
-        buttonClassName="bg-blue-500 px-6 py-4 rounded-lg"
-        onPress={onPress}
-        style={buttonStyle}
-      >
+      <Pressable buttonClassName="bg-blue-500 px-6 py-4 rounded-lg" onPress={onPress} style={buttonStyle}>
         <Text className="text-white font-semibold">{title}</Text>
       </Pressable>
     </View>
@@ -175,6 +166,6 @@ export function Button({
 
 ## Related
 
-- [Babel Configuration](/advanced/babel-configuration/) - All plugin options
-- [Reusable Components](/guides/reusable-components/) - Building component libraries
-- [List Components](/guides/list-components/) - Styling lists
+- [Babel Configuration](/react-native-tailwind/advanced/babel-configuration/) - All plugin options
+- [Reusable Components](/react-native-tailwind/guides/reusable-components/) - Building component libraries
+- [List Components](/react-native-tailwind/guides/list-components/) - Styling lists

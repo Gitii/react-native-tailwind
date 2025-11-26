@@ -258,6 +258,6 @@ export function DynamicThemeApp() {
 
 ## What's Next?
 
-- Learn about [Compile-Time tw](/guides/compile-time-tw/) for zero runtime overhead
-- Explore [Dynamic ClassNames](/guides/dynamic-classnames/) for hybrid optimization
-- Check out [Custom Colors](/advanced/custom-colors/) for theme configuration
+- Learn about [Compile-Time tw](/react-native-tailwind/guides/compile-time-tw/) for zero runtime overhead
+- Explore [Dynamic ClassNames](/react-native-tailwind/guides/dynamic-classnames/) for hybrid optimization
+- Check out [Custom Colors](/react-native-tailwind/advanced/custom-colors/) for theme configuration

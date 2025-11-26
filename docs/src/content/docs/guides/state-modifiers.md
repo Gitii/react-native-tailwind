@@ -192,6 +192,6 @@ export function LoginForm() {
 
 ## What's Next?
 
-- Learn about [Platform Modifiers](/guides/platform-modifiers/) for platform-specific styling
-- Explore [Color Scheme](/guides/color-scheme/) for dark mode support
-- Check out [Dynamic ClassNames](/guides/dynamic-classnames/) for more conditional patterns
+- Learn about [Platform Modifiers](/react-native-tailwind/guides/platform-modifiers/) for platform-specific styling
+- Explore [Color Scheme](/react-native-tailwind/guides/color-scheme/) for dark mode support
+- Check out [Dynamic ClassNames](/react-native-tailwind/guides/dynamic-classnames/) for more conditional patterns

@@ -108,6 +108,6 @@ The Babel plugin will merge them automatically:
 
 ## What's Next?
 
-- Learn about [Dynamic ClassNames](/guides/dynamic-classnames/) for conditional styling
-- Explore [State Modifiers](/guides/state-modifiers/) for interactive components
-- Check out the [Spacing Reference](/reference/spacing/) for available utilities
+- Learn about [Dynamic ClassNames](/react-native-tailwind/guides/dynamic-classnames/) for conditional styling
+- Explore [State Modifiers](/react-native-tailwind/guides/state-modifiers/) for interactive components
+- Check out the [Spacing Reference](/react-native-tailwind/reference/spacing/) for available utilities
