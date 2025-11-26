@@ -83,6 +83,55 @@ description: Border width, radius, and style utilities
 <View className="border-dashed" /> // borderStyle: 'dashed'
 ```
 
+## Border Colors (Directional)
+
+Apply colors to individual border sides. See the [Colors reference](/react-native-tailwind/reference/colors/) for all available color utilities.
+
+### Basic Usage
+
+```tsx
+<View className="border-t-red-500" />   // borderTopColor: '#EF4444'
+<View className="border-r-blue-500" />  // borderRightColor: '#3B82F6'
+<View className="border-b-green-500" /> // borderBottomColor: '#10B981'
+<View className="border-l-gray-300" />  // borderLeftColor: '#D1D5DB'
+
+// Horizontal and vertical
+<View className="border-x-blue-500" />  // borderLeftColor & borderRightColor: '#3B82F6'
+<View className="border-y-red-500" />   // borderTopColor & borderBottomColor: '#EF4444'
+```
+
+### With Opacity
+
+```tsx
+<View className="border-t-red-500/50" />  // 50% opacity
+<View className="border-l-blue-500/80" /> // 80% opacity
+```
+
+### Arbitrary Colors
+
+```tsx
+<View className="border-t-[#ff0000]" />  // Custom hex color
+<View className="border-l-[#abc]" />     // 3-digit hex (expands to #aabbcc)
+```
+
+### Combining Width and Color
+
+```tsx
+<View className="border-l-4 border-l-blue-500">
+  // borderLeftWidth: 4
+  // borderLeftColor: '#3B82F6'
+</View>
+```
+
+### Example: Accent Border
+
+```tsx
+<View className="border border-gray-200 border-l-4 border-l-blue-500 rounded-lg p-4">
+  <Text className="font-semibold">Important Notice</Text>
+  <Text className="text-gray-600">This card has a blue left accent border.</Text>
+</View>
+```
+
 ## Common Patterns
 
 ### Card with border

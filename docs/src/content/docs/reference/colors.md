@@ -35,6 +35,39 @@ Apply colors to backgrounds, text, and borders. Supports custom colors via [tail
 <View className="border-4 border-red-600" />
 ```
 
+### Directional Border Colors
+
+Apply different colors to individual border sides:
+
+```tsx
+<View className="border-t-red-500" />   // Top border color
+<View className="border-r-blue-500" />  // Right border color
+<View className="border-b-green-500" /> // Bottom border color
+<View className="border-l-gray-300" />  // Left border color
+
+// Horizontal and vertical shortcuts
+<View className="border-x-blue-500" />  // Left + right borders
+<View className="border-y-red-500" />   // Top + bottom borders
+```
+
+Combine with widths for accent borders:
+
+```tsx
+<View className="border border-gray-200 border-l-4 border-l-blue-500">
+  // Gray border on all sides, thick blue left border
+</View>
+```
+
+Supports all color features (opacity, arbitrary values, custom colors):
+
+```tsx
+<View className="border-t-red-500/50" />        // With opacity
+<View className="border-l-[#ff0000]" />         // Arbitrary hex color
+<View className="border-b-primary" />           // Custom color from config
+```
+
+See [Borders reference](/react-native-tailwind/reference/borders/) for more border utilities.
+
 ## Available Colors
 
 - **gray**: `50`, `100`, `200`, `300`, `400`, `500`, `600`, `700`, `800`, `900`
