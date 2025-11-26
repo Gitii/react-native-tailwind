@@ -2,6 +2,7 @@
  * Sizing utilities (width, height, min/max)
  */
 
+import { RUNTIME_DIMENSIONS_MARKER } from "../config/markers";
 import type { StyleObject } from "../types";
 
 // Size scale (in pixels/percentages)
@@ -100,6 +101,11 @@ export function parseSizing(cls: string): StyleObject | null {
   if (cls.startsWith("w-")) {
     const sizeKey = cls.substring(2);
 
+    // Screen width (requires runtime hook)
+    if (sizeKey === "screen") {
+      return { width: `${RUNTIME_DIMENSIONS_MARKER}width}}` } as StyleObject;
+    }
+
     // Arbitrary values: w-[123px], w-[50%]
     const arbitrarySize = parseArbitrarySize(sizeKey);
     if (arbitrarySize !== null) {
@@ -127,6 +133,11 @@ export function parseSizing(cls: string): StyleObject | null {
   // Height
   if (cls.startsWith("h-")) {
     const sizeKey = cls.substring(2);
+
+    // Screen height (requires runtime hook)
+    if (sizeKey === "screen") {
+      return { height: `${RUNTIME_DIMENSIONS_MARKER}height}}` } as StyleObject;
+    }
 
     // Arbitrary values: h-[123px], h-[50%]
     const arbitrarySize = parseArbitrarySize(sizeKey);
