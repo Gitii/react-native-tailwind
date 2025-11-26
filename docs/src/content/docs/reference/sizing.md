@@ -165,11 +165,13 @@ function Component() {
 ### Requirements
 
 :::note
-`w-screen` and `h-screen` can only be used inside **function components**. They won't work in:
+`w-screen` and `h-screen` can only be used inside **function components** in the `className` attribute. They won't work in:
 
 - Class components
 - Nested callbacks (e.g., inside `.map()` or `.filter()`)
 - Global/module-level code
+- With any modifiers (`dark:`, `ios:`, `active:`, etc.)
+- In `tw` tagged templates or `twStyle()` function calls
 
 This is because they rely on React hooks, which follow the [Rules of Hooks](https://react.dev/warnings/invalid-hook-call-warning).
 :::
@@ -188,12 +190,18 @@ Unlike `w-full` and `h-full` which use percentage-based sizing, `w-screen` and `
 
 ### Combining with Other Classes
 
-You can combine screen dimensions with other utilities:
+You can combine screen dimensions with **static utility classes only** (no modifiers):
 
 ```tsx
+{/* ✅ Allowed: static utilities */}
 <View className="w-screen h-screen bg-gray-100 p-4 items-center justify-center">
   <Text>Centered in full screen</Text>
 </View>
+
+{/* ❌ Not allowed: modifiers */}
+<View className="w-screen dark:h-full" />  {/* Build error */}
+<View className="w-screen ios:bg-blue-500" />  {/* Build error */}
+<Pressable className="h-screen active:opacity-80" />  {/* Build error */}
 ```
 
 ## Common Patterns

@@ -181,7 +181,7 @@ CSS units not available in React Native:
 - `rem`, `em` - Use pixels instead
 - `vh`, `vw` - Use percentages or Dimensions API
 - `ch`, `ex` - Not supported in React Native
-  :::
+:::
 
 ## Related
 
