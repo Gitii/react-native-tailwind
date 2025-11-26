@@ -50,10 +50,10 @@ export function parseClassName(className: string, customTheme?: CustomTheme): St
 export function parseClass(cls: string, customTheme?: CustomTheme): StyleObject {
   // Try each parser in order
   // Note: parseBorder must come before parseColor to avoid border-[3px] being parsed as a color
-  // parseColor and parseTypography get custom theme, others don't need it
+  // parseBorder, parseColor and parseTypography get custom theme
   const parsers: Array<(cls: string) => StyleObject | null> = [
     parseSpacing,
-    parseBorder,
+    (cls: string) => parseBorder(cls, customTheme?.colors),
     (cls: string) => parseColor(cls, customTheme?.colors),
     parseLayout,
     (cls: string) => parseTypography(cls, customTheme?.fontFamily, customTheme?.fontSize),

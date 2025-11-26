@@ -178,5 +178,43 @@ export function parseColor(cls: string, customColors?: Record<string, string>): 
     }
   }
 
+  // Directional border colors: border-t-red-500, border-l-blue-500/50, border-r-[#ff0000]
+  const dirBorderMatch = cls.match(/^border-([trblxy])-(.+)$/);
+  if (dirBorderMatch) {
+    const dir = dirBorderMatch[1];
+    const colorKey = dirBorderMatch[2];
+
+    // Skip arbitrary values that don't look like colors (e.g., border-t-[3px] is width)
+    if (colorKey.startsWith("[") && !colorKey.startsWith("[#")) {
+      return null;
+    }
+
+    const color = parseColorWithOpacity(colorKey);
+    if (color) {
+      // Map direction to React Native property/properties
+      // x and y apply to multiple sides (RN doesn't have borderHorizontalColor/borderVerticalColor)
+      if (dir === "x") {
+        return {
+          borderLeftColor: color,
+          borderRightColor: color,
+        };
+      }
+      if (dir === "y") {
+        return {
+          borderTopColor: color,
+          borderBottomColor: color,
+        };
+      }
+
+      const propMap: Record<string, string> = {
+        t: "borderTopColor",
+        r: "borderRightColor",
+        b: "borderBottomColor",
+        l: "borderLeftColor",
+      };
+      return { [propMap[dir]]: color };
+    }
+  }
+
   return null;
 }

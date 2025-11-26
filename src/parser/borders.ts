@@ -3,6 +3,7 @@
  */
 
 import type { StyleObject } from "../types";
+import { parseColor } from "./colors";
 
 // Border width scale
 export const BORDER_WIDTH_SCALE: Record<string, number> = {
@@ -108,8 +109,10 @@ function parseArbitraryBorderRadius(value: string): number | null {
 
 /**
  * Parse border classes
+ * @param cls - The class name to parse
+ * @param customColors - Optional custom colors from tailwind.config (used to detect color patterns)
  */
-export function parseBorder(cls: string): StyleObject | null {
+export function parseBorder(cls: string, customColors?: Record<string, string>): StyleObject | null {
   // Border style (must come before parseBorderWidth)
   if (cls === "border-solid") return { borderStyle: "solid" };
   if (cls === "border-dotted") return { borderStyle: "dotted" };
@@ -117,7 +120,7 @@ export function parseBorder(cls: string): StyleObject | null {
 
   // Border width (border-0, border-t, border-[8px], etc.)
   if (cls.startsWith("border-")) {
-    return parseBorderWidth(cls);
+    return parseBorderWidth(cls, customColors);
   }
 
   if (cls === "border") {
@@ -134,13 +137,25 @@ export function parseBorder(cls: string): StyleObject | null {
 
 /**
  * Parse border width classes
+ * @param cls - The class name to parse
+ * @param customColors - Optional custom colors (passed to parseColor for pattern detection)
  */
-function parseBorderWidth(cls: string): StyleObject | null {
+function parseBorderWidth(cls: string, customColors?: Record<string, string>): StyleObject | null {
   // Directional borders: border-t, border-t-2, border-t-[8px]
+  // Note: border-x and border-y are handled by parseColor for colors only
   const dirMatch = cls.match(/^border-([trbl])(?:-(.+))?$/);
   if (dirMatch) {
     const dir = dirMatch[1];
     const valueStr = dirMatch[2] || ""; // empty string for border-t
+
+    // If it's a color pattern, let parseColor handle it
+    // Try to parse as color - if it succeeds, return null (let parseColor handle it)
+    if (valueStr) {
+      const colorResult = parseColor(cls, customColors);
+      if (colorResult !== null) {
+        return null; // It's a color, let parseColor handle it
+      }
+    }
 
     // Try arbitrary value first (if it starts with [)
     if (valueStr.startsWith("[")) {
