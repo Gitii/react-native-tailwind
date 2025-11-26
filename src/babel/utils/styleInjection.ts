@@ -221,6 +221,121 @@ export function injectColorSchemeHook(
 }
 
 /**
+ * Add useWindowDimensions import to the file or merge with existing react-native import
+ */
+export function addWindowDimensionsImport(path: NodePath<BabelTypes.Program>, t: typeof BabelTypes): void {
+  // Check if there's already an import from react-native
+  const body = path.node.body;
+  let existingValueImport: BabelTypes.ImportDeclaration | null = null;
+
+  for (const statement of body) {
+    if (t.isImportDeclaration(statement) && statement.source.value === "react-native") {
+      // Only consider value imports (not type-only imports which get erased)
+      if (statement.importKind !== "type") {
+        existingValueImport = statement;
+        break; // Found a value import, we can stop
+      }
+    }
+  }
+
+  // If we found a value import (not type-only), merge with it
+  if (existingValueImport) {
+    // Check if the hook is already imported
+    const hasHook = existingValueImport.specifiers.some(
+      (spec) =>
+        t.isImportSpecifier(spec) &&
+        spec.imported.type === "Identifier" &&
+        spec.imported.name === "useWindowDimensions",
+    );
+
+    if (!hasHook) {
+      // Add hook to existing value import
+      existingValueImport.specifiers.push(
+        t.importSpecifier(t.identifier("useWindowDimensions"), t.identifier("useWindowDimensions")),
+      );
+    }
+  } else {
+    // No value import exists - create a new one
+    // (Don't merge with type-only imports as they get erased by Babel/TypeScript)
+    const importDeclaration = t.importDeclaration(
+      [t.importSpecifier(t.identifier("useWindowDimensions"), t.identifier("useWindowDimensions"))],
+      t.stringLiteral("react-native"),
+    );
+    path.unshiftContainer("body", importDeclaration);
+  }
+}
+
+/**
+ * Inject useWindowDimensions hook call at the top of a function component
+ *
+ * @param functionPath - Path to the function component
+ * @param dimensionsVariableName - Name for the dimensions variable
+ * @param hookName - Name of the hook to call (e.g., 'useWindowDimensions')
+ * @param localIdentifier - Local identifier if hook is already imported with an alias
+ * @param t - Babel types
+ * @returns true if hook was injected, false if already exists
+ */
+export function injectWindowDimensionsHook(
+  functionPath: NodePath<BabelTypes.Function>,
+  dimensionsVariableName: string,
+  hookName: string,
+  localIdentifier: string | undefined,
+  t: typeof BabelTypes,
+): boolean {
+  let body = functionPath.node.body;
+
+  // Handle concise arrow functions: () => <JSX />
+  // Convert to block statement: () => { const _twDimensions = useWindowDimensions(); return <JSX />; }
+  if (!t.isBlockStatement(body)) {
+    if (t.isArrowFunctionExpression(functionPath.node) && t.isExpression(body)) {
+      // Convert concise body to block statement with return
+      const returnStatement = t.returnStatement(body);
+      const blockStatement = t.blockStatement([returnStatement]);
+      functionPath.node.body = blockStatement;
+      body = blockStatement;
+    } else {
+      // Other non-block functions (shouldn't happen for components, but be safe)
+      return false;
+    }
+  }
+
+  // Check if hook is already injected
+  const hasHook = body.body.some((statement) => {
+    if (
+      t.isVariableDeclaration(statement) &&
+      statement.declarations.length > 0 &&
+      t.isVariableDeclarator(statement.declarations[0])
+    ) {
+      const declarator = statement.declarations[0];
+      return t.isIdentifier(declarator.id) && declarator.id.name === dimensionsVariableName;
+    }
+    return false;
+  });
+
+  if (hasHook) {
+    return false; // Already injected
+  }
+
+  // Use the local identifier if hook was already imported with an alias,
+  // otherwise use the configured hook name
+  // e.g., import { useWindowDimensions as useDims } → call useDims()
+  const identifierToCall = localIdentifier ?? hookName;
+
+  // Create: const _twDimensions = useWindowDimensions(); (or aliased name if already imported)
+  const hookCall = t.variableDeclaration("const", [
+    t.variableDeclarator(
+      t.identifier(dimensionsVariableName),
+      t.callExpression(t.identifier(identifierToCall), []),
+    ),
+  ]);
+
+  // Insert at the beginning of function body
+  body.body.unshift(hookCall);
+
+  return true;
+}
+
+/**
  * Inject StyleSheet.create with all collected styles at the top of the file
  * This ensures the styles object is defined before any code that references it
  */
