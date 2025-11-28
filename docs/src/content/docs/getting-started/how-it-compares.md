@@ -6,9 +6,8 @@ description: See how React Native Tailwind stacks up against other solutions
 React Native Tailwind takes a fundamentally different approach from other Tailwind-for-RN solutions. Here's why it stands out:
 
 - ⚡ **Zero runtime overhead** for static styles
-- 📦 **Zero runtime dependencies**
+- 📦 **Zero dependencies** — Minimal supply chain risk
 - 🛠️ **Simplest setup** — just a Babel plugin
-- 🔒 **Minimal supply chain risk**
 
 ## ⚡ At a Glance
 
@@ -142,9 +141,7 @@ export default {
 ```tsx
 // scheme:bg-surface automatically becomes:
 <View className="light:bg-surface-light dark:bg-surface-dark p-4 rounded-lg">
-  <Text className="light:text-label-light dark:text-label-dark">
-    Adapts to any theme!
-  </Text>
+  <Text className="light:text-label-light dark:text-label-dark">Adapts to any theme!</Text>
 </View>
 ```
 
