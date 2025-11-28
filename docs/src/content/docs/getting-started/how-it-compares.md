@@ -54,13 +54,15 @@ const _twStyles = StyleSheet.create({
 
 ## 🏆 Why React Native Tailwind Wins
 
-### 📦 Zero Runtime Dependencies
+### 📦 Zero Dependencies
 
-| Library                   | Runtime Dependencies |
-| ------------------------- | :------------------: |
-| **React Native Tailwind** |       **0** ✅       |
-| NativeWind                |          1           |
-| Uniwind                   |          4           |
+| Library                   |   Deps   | Peer Deps | Total npm Packages |
+| ------------------------- | :------: | :-------: | :----------------: |
+| **React Native Tailwind** | **0** ✅ | **0** ✅  |      **0** ✅      |
+| NativeWind                |    1     |     2     |        ~600        |
+| Uniwind                   |    4     |     1     |        ~780        |
+
+_Deps and peer deps from package.json. Total npm packages includes all transitive dependencies (deps + peer deps) via `npm ls --prod --all`._
 
 Why this matters:
 
