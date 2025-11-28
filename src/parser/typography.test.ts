@@ -91,6 +91,14 @@ describe("parseTypography - text alignment", () => {
     expect(parseTypography("text-right")).toEqual({ textAlign: "right" });
     expect(parseTypography("text-justify")).toEqual({ textAlign: "justify" });
   });
+
+  it("should not parse text-start/text-end (handled via directional modifier expansion)", () => {
+    // text-start/text-end are now handled by splitModifierClasses() in modifiers.ts
+    // They expand to ltr:text-left rtl:text-right and ltr:text-right rtl:text-left
+    // respectively for true RTL support
+    expect(parseTypography("text-start")).toBeNull();
+    expect(parseTypography("text-end")).toBeNull();
+  });
 });
 
 describe("parseTypography - text decoration", () => {

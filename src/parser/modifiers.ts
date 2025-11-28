@@ -1,19 +1,22 @@
 /**
- * Modifier parsing utilities for state-based, platform-specific, and color scheme class names
+ * Modifier parsing utilities for state-based, platform-specific, color scheme, and directional class names
  * - State modifiers: active:, hover:, focus:, disabled:, placeholder:
  * - Platform modifiers: ios:, android:, web:
  * - Color scheme modifiers: dark:, light:
+ * - Directional modifiers: rtl:, ltr: (RTL-aware styling)
  */
 
 export type StateModifierType = "active" | "hover" | "focus" | "disabled" | "placeholder";
 export type PlatformModifierType = "ios" | "android" | "web";
 export type ColorSchemeModifierType = "dark" | "light";
 export type SchemeModifierType = "scheme";
+export type DirectionalModifierType = "rtl" | "ltr";
 export type ModifierType =
   | StateModifierType
   | PlatformModifierType
   | ColorSchemeModifierType
-  | SchemeModifierType;
+  | SchemeModifierType
+  | DirectionalModifierType;
 
 export type ParsedModifier = {
   modifier: ModifierType;
@@ -47,13 +50,19 @@ const COLOR_SCHEME_MODIFIERS: readonly ColorSchemeModifierType[] = ["dark", "lig
 const SCHEME_MODIFIERS: readonly SchemeModifierType[] = ["scheme"] as const;
 
 /**
- * All supported modifiers (state + platform + color scheme + scheme)
+ * Supported directional modifiers that map to I18nManager.isRTL values
+ */
+const DIRECTIONAL_MODIFIERS: readonly DirectionalModifierType[] = ["rtl", "ltr"] as const;
+
+/**
+ * All supported modifiers (state + platform + color scheme + scheme + directional)
  */
 const SUPPORTED_MODIFIERS: readonly ModifierType[] = [
   ...STATE_MODIFIERS,
   ...PLATFORM_MODIFIERS,
   ...COLOR_SCHEME_MODIFIERS,
   ...SCHEME_MODIFIERS,
+  ...DIRECTIONAL_MODIFIERS,
 ] as const;
 
 /**
@@ -150,6 +159,16 @@ export function isSchemeModifier(modifier: ModifierType): modifier is SchemeModi
 }
 
 /**
+ * Check if a modifier is a directional modifier (rtl, ltr)
+ *
+ * @param modifier - Modifier type to check
+ * @returns true if modifier is a directional modifier
+ */
+export function isDirectionalModifier(modifier: ModifierType): modifier is DirectionalModifierType {
+  return DIRECTIONAL_MODIFIERS.includes(modifier as DirectionalModifierType);
+}
+
+/**
  * Check if a class name is a color-based utility class
  *
  * @param className - Class name to check
@@ -243,6 +262,26 @@ export function expandSchemeModifier(
 }
 
 /**
+ * Classes that expand to directional modifiers for true RTL support
+ * text-start -> ltr:text-left rtl:text-right (start = left in LTR, right in RTL)
+ * text-end -> ltr:text-right rtl:text-left (end = right in LTR, left in RTL)
+ */
+const DIRECTIONAL_TEXT_ALIGN_EXPANSIONS: Record<string, { ltr: string; rtl: string }> = {
+  "text-start": { ltr: "text-left", rtl: "text-right" },
+  "text-end": { ltr: "text-right", rtl: "text-left" },
+};
+
+/**
+ * Check if a class should be expanded to directional modifiers
+ *
+ * @param cls - Class name to check
+ * @returns Expansion object if class should expand, undefined otherwise
+ */
+export function getDirectionalExpansion(cls: string): { ltr: string; rtl: string } | undefined {
+  return DIRECTIONAL_TEXT_ALIGN_EXPANSIONS[cls];
+}
+
+/**
  * Split a space-separated className string into base and modifier classes
  *
  * @param className - Space-separated class names
@@ -257,6 +296,17 @@ export function expandSchemeModifier(
  * //     { modifier: "active", baseClass: "p-6" }
  * //   ]
  * // }
+ *
+ * @example
+ * // text-start/text-end auto-expand to directional modifiers for true RTL support
+ * splitModifierClasses("text-start p-4")
+ * // {
+ * //   baseClasses: ["p-4"],
+ * //   modifierClasses: [
+ * //     { modifier: "ltr", baseClass: "text-left" },
+ * //     { modifier: "rtl", baseClass: "text-right" }
+ * //   ]
+ * // }
  */
 export function splitModifierClasses(className: string): {
   baseClasses: string[];
@@ -267,6 +317,15 @@ export function splitModifierClasses(className: string): {
   const modifierClasses: ParsedModifier[] = [];
 
   for (const cls of classes) {
+    // Check for directional text alignment expansion (text-start, text-end)
+    const directionalExpansion = getDirectionalExpansion(cls);
+    if (directionalExpansion) {
+      // Expand to ltr: and rtl: modifiers for true RTL support
+      modifierClasses.push({ modifier: "ltr", baseClass: directionalExpansion.ltr });
+      modifierClasses.push({ modifier: "rtl", baseClass: directionalExpansion.rtl });
+      continue;
+    }
+
     const parsed = parseModifier(cls);
     if (parsed) {
       modifierClasses.push(parsed);

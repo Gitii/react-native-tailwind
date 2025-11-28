@@ -58,6 +58,10 @@ const FONT_STYLE_MAP: Record<string, StyleObject> = {
 };
 
 // Text alignment utilities
+// Note: text-start and text-end are handled via automatic expansion to directional modifiers
+// in splitModifierClasses() for true RTL support:
+//   text-start -> ltr:text-left rtl:text-right
+//   text-end -> ltr:text-right rtl:text-left
 const TEXT_ALIGN_MAP: Record<string, StyleObject> = {
   "text-left": { textAlign: "left" },
   "text-center": { textAlign: "center" },

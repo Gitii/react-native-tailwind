@@ -4,7 +4,11 @@ import {
   expandSchemeModifier,
   hasModifier,
   isColorClass,
+  isColorSchemeModifier,
+  isDirectionalModifier,
+  isPlatformModifier,
   isSchemeModifier,
+  isStateModifier,
   parseModifier,
   splitModifierClasses,
 } from "./modifiers";
@@ -521,5 +525,207 @@ describe("expandSchemeModifier", () => {
     const result = expandSchemeModifier(modifier, customColors);
 
     expect(result).toEqual([]);
+  });
+});
+
+describe("parseModifier - directional modifiers (rtl/ltr)", () => {
+  it("should parse rtl modifier", () => {
+    const result = parseModifier("rtl:text-right");
+    expect(result).toEqual({
+      modifier: "rtl",
+      baseClass: "text-right",
+    });
+  });
+
+  it("should parse ltr modifier", () => {
+    const result = parseModifier("ltr:text-left");
+    expect(result).toEqual({
+      modifier: "ltr",
+      baseClass: "text-left",
+    });
+  });
+
+  it("should parse directional modifiers with various base classes", () => {
+    expect(parseModifier("rtl:ms-4")).toEqual({
+      modifier: "rtl",
+      baseClass: "ms-4",
+    });
+    expect(parseModifier("ltr:me-4")).toEqual({
+      modifier: "ltr",
+      baseClass: "me-4",
+    });
+    expect(parseModifier("rtl:flex-row-reverse")).toEqual({
+      modifier: "rtl",
+      baseClass: "flex-row-reverse",
+    });
+  });
+});
+
+describe("modifier type check functions", () => {
+  it("should identify state modifiers", () => {
+    expect(isStateModifier("active")).toBe(true);
+    expect(isStateModifier("hover")).toBe(true);
+    expect(isStateModifier("focus")).toBe(true);
+    expect(isStateModifier("disabled")).toBe(true);
+    expect(isStateModifier("placeholder")).toBe(true);
+    expect(isStateModifier("ios")).toBe(false);
+    expect(isStateModifier("dark")).toBe(false);
+    expect(isStateModifier("rtl")).toBe(false);
+  });
+
+  it("should identify platform modifiers", () => {
+    expect(isPlatformModifier("ios")).toBe(true);
+    expect(isPlatformModifier("android")).toBe(true);
+    expect(isPlatformModifier("web")).toBe(true);
+    expect(isPlatformModifier("active")).toBe(false);
+    expect(isPlatformModifier("dark")).toBe(false);
+    expect(isPlatformModifier("rtl")).toBe(false);
+  });
+
+  it("should identify color scheme modifiers", () => {
+    expect(isColorSchemeModifier("dark")).toBe(true);
+    expect(isColorSchemeModifier("light")).toBe(true);
+    expect(isColorSchemeModifier("active")).toBe(false);
+    expect(isColorSchemeModifier("ios")).toBe(false);
+    expect(isColorSchemeModifier("rtl")).toBe(false);
+  });
+
+  it("should identify directional modifiers", () => {
+    expect(isDirectionalModifier("rtl")).toBe(true);
+    expect(isDirectionalModifier("ltr")).toBe(true);
+    expect(isDirectionalModifier("active")).toBe(false);
+    expect(isDirectionalModifier("ios")).toBe(false);
+    expect(isDirectionalModifier("dark")).toBe(false);
+  });
+
+  it("should identify scheme modifier", () => {
+    expect(isSchemeModifier("scheme")).toBe(true);
+    expect(isSchemeModifier("active")).toBe(false);
+    expect(isSchemeModifier("dark")).toBe(false);
+    expect(isSchemeModifier("rtl")).toBe(false);
+  });
+});
+
+describe("splitModifierClasses - directional modifiers", () => {
+  it("should split directional modifier classes", () => {
+    const result = splitModifierClasses("bg-white rtl:bg-gray-100 ltr:bg-gray-50");
+    expect(result.baseClasses).toEqual(["bg-white"]);
+    expect(result.modifierClasses).toHaveLength(2);
+    expect(result.modifierClasses[0]).toEqual({
+      modifier: "rtl",
+      baseClass: "bg-gray-100",
+    });
+    expect(result.modifierClasses[1]).toEqual({
+      modifier: "ltr",
+      baseClass: "bg-gray-50",
+    });
+  });
+
+  it("should handle mixed modifiers including directional", () => {
+    const result = splitModifierClasses("p-4 rtl:ps-6 ios:p-8 dark:bg-gray-900");
+    expect(result.baseClasses).toEqual(["p-4"]);
+    expect(result.modifierClasses).toHaveLength(3);
+    expect(result.modifierClasses.map((m) => m.modifier)).toContain("rtl");
+    expect(result.modifierClasses.map((m) => m.modifier)).toContain("ios");
+    expect(result.modifierClasses.map((m) => m.modifier)).toContain("dark");
+  });
+});
+
+describe("splitModifierClasses - text-start/text-end expansion", () => {
+  it("should expand text-start to ltr:text-left rtl:text-right", () => {
+    const result = splitModifierClasses("text-start");
+    expect(result.baseClasses).toEqual([]);
+    expect(result.modifierClasses).toHaveLength(2);
+    expect(result.modifierClasses).toContainEqual({
+      modifier: "ltr",
+      baseClass: "text-left",
+    });
+    expect(result.modifierClasses).toContainEqual({
+      modifier: "rtl",
+      baseClass: "text-right",
+    });
+  });
+
+  it("should expand text-end to ltr:text-right rtl:text-left", () => {
+    const result = splitModifierClasses("text-end");
+    expect(result.baseClasses).toEqual([]);
+    expect(result.modifierClasses).toHaveLength(2);
+    expect(result.modifierClasses).toContainEqual({
+      modifier: "ltr",
+      baseClass: "text-right",
+    });
+    expect(result.modifierClasses).toContainEqual({
+      modifier: "rtl",
+      baseClass: "text-left",
+    });
+  });
+
+  it("should handle text-start with other classes", () => {
+    const result = splitModifierClasses("p-4 text-start bg-white");
+    expect(result.baseClasses).toEqual(["p-4", "bg-white"]);
+    expect(result.modifierClasses).toHaveLength(2);
+    expect(result.modifierClasses).toContainEqual({
+      modifier: "ltr",
+      baseClass: "text-left",
+    });
+    expect(result.modifierClasses).toContainEqual({
+      modifier: "rtl",
+      baseClass: "text-right",
+    });
+  });
+
+  it("should handle both text-start and text-end in same className", () => {
+    // This is unusual but should work
+    const result = splitModifierClasses("text-start text-end");
+    expect(result.baseClasses).toEqual([]);
+    expect(result.modifierClasses).toHaveLength(4);
+    // text-start expands
+    expect(result.modifierClasses).toContainEqual({
+      modifier: "ltr",
+      baseClass: "text-left",
+    });
+    expect(result.modifierClasses).toContainEqual({
+      modifier: "rtl",
+      baseClass: "text-right",
+    });
+    // text-end expands
+    expect(result.modifierClasses).toContainEqual({
+      modifier: "ltr",
+      baseClass: "text-right",
+    });
+    expect(result.modifierClasses).toContainEqual({
+      modifier: "rtl",
+      baseClass: "text-left",
+    });
+  });
+
+  it("should not affect text-left and text-right (no expansion)", () => {
+    const result = splitModifierClasses("text-left text-right text-center");
+    expect(result.baseClasses).toEqual(["text-left", "text-right", "text-center"]);
+    expect(result.modifierClasses).toEqual([]);
+  });
+
+  it("should handle text-start/text-end with other modifiers", () => {
+    const result = splitModifierClasses("text-start active:bg-blue-500 rtl:pr-4");
+    expect(result.baseClasses).toEqual([]);
+    expect(result.modifierClasses).toHaveLength(4);
+    // text-start expansion
+    expect(result.modifierClasses).toContainEqual({
+      modifier: "ltr",
+      baseClass: "text-left",
+    });
+    expect(result.modifierClasses).toContainEqual({
+      modifier: "rtl",
+      baseClass: "text-right",
+    });
+    // explicit modifiers
+    expect(result.modifierClasses).toContainEqual({
+      modifier: "active",
+      baseClass: "bg-blue-500",
+    });
+    expect(result.modifierClasses).toContainEqual({
+      modifier: "rtl",
+      baseClass: "pr-4",
+    });
   });
 });
