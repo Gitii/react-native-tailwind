@@ -8,12 +8,14 @@ import type { CustomTheme, ModifierType, ParsedModifier } from "../../parser/ind
 import {
   expandSchemeModifier,
   isColorSchemeModifier,
+  isDirectionalModifier,
   isPlatformModifier,
   isSchemeModifier,
 } from "../../parser/index.js";
 import type { SchemeModifierConfig } from "../../types/config.js";
 import type { StyleObject } from "../../types/core.js";
 import { processColorSchemeModifiers } from "./colorSchemeModifierProcessing.js";
+import { processDirectionalModifiers } from "./directionalModifierProcessing.js";
 import { processPlatformModifiers } from "./platformModifierProcessing.js";
 import { hasRuntimeDimensions } from "./windowDimensionsProcessing.js";
 
@@ -33,6 +35,9 @@ export interface TwProcessingState {
   colorSchemeLocalIdentifier?: string;
   // Platform support (for ios:/android:/web: modifiers)
   needsPlatformImport: boolean;
+  // Directional support (for rtl:/ltr: modifiers)
+  needsI18nManagerImport: boolean;
+  i18nManagerVariableName: string;
 }
 
 /**
@@ -102,11 +107,15 @@ export function processTwCall(
     objectProperties.push(t.objectProperty(t.identifier("style"), t.objectExpression([])));
   }
 
-  // Separate color-scheme and platform modifiers from other modifiers
+  // Separate color-scheme, platform, and directional modifiers from other modifiers
   const colorSchemeModifiers = modifierClasses.filter((m) => isColorSchemeModifier(m.modifier));
   const platformModifiers = modifierClasses.filter((m) => isPlatformModifier(m.modifier));
+  const directionalModifiers = modifierClasses.filter((m) => isDirectionalModifier(m.modifier));
   const otherModifiers = modifierClasses.filter(
-    (m) => !isColorSchemeModifier(m.modifier) && !isPlatformModifier(m.modifier),
+    (m) =>
+      !isColorSchemeModifier(m.modifier) &&
+      !isPlatformModifier(m.modifier) &&
+      !isDirectionalModifier(m.modifier),
   );
 
   // Check if we need color scheme support
@@ -293,7 +302,87 @@ export function processTwCall(
     }
   }
 
-  // Group other modifiers by type (non-color-scheme and non-platform modifiers)
+  // Process directional modifiers if present
+  const hasDirectionalModifiers = directionalModifiers.length > 0;
+
+  if (hasDirectionalModifiers) {
+    // Mark that we need I18nManager import
+    state.needsI18nManagerImport = true;
+
+    // Generate directional conditional expressions
+    const directionalConditionals = processDirectionalModifiers(
+      directionalModifiers,
+      state,
+      parseClassName,
+      generateStyleKey,
+      t,
+    );
+
+    // If we already have a style array (from color scheme or platform modifiers), add to it
+    // Otherwise, convert style property to an array
+    const styleProperty = objectProperties.find(
+      (prop) => t.isIdentifier(prop.key) && prop.key.name === "style",
+    );
+
+    if (styleProperty && t.isArrayExpression(styleProperty.value)) {
+      // Already have style array, add directional conditionals to it
+      styleProperty.value.elements.push(...directionalConditionals);
+    } else {
+      // No existing array, create style array with base + directional conditionals
+      const styleArrayElements: BabelTypes.Expression[] = [];
+
+      // Add base style if present
+      if (baseClasses.length > 0) {
+        const baseClassName = baseClasses.join(" ");
+        const baseStyleObject = parseClassName(baseClassName, state.customTheme);
+        const baseStyleKey = generateStyleKey(baseClassName);
+        state.styleRegistry.set(baseStyleKey, baseStyleObject);
+        styleArrayElements.push(
+          t.memberExpression(t.identifier(state.stylesIdentifier), t.identifier(baseStyleKey)),
+        );
+      }
+
+      // Add directional conditionals
+      styleArrayElements.push(...directionalConditionals);
+
+      // Replace style property with array
+      objectProperties[0] = t.objectProperty(t.identifier("style"), t.arrayExpression(styleArrayElements));
+    }
+
+    // Also add rtlStyle/ltrStyle properties for manual processing
+    const rtlModifiers = directionalModifiers.filter((m) => m.modifier === "rtl");
+    const ltrModifiers = directionalModifiers.filter((m) => m.modifier === "ltr");
+
+    if (rtlModifiers.length > 0) {
+      const rtlClassNames = rtlModifiers.map((m) => m.baseClass).join(" ");
+      const rtlStyleObject = parseClassName(rtlClassNames, state.customTheme);
+      const rtlStyleKey = generateStyleKey(`rtl_${rtlClassNames}`);
+      state.styleRegistry.set(rtlStyleKey, rtlStyleObject);
+
+      objectProperties.push(
+        t.objectProperty(
+          t.identifier("rtlStyle"),
+          t.memberExpression(t.identifier(state.stylesIdentifier), t.identifier(rtlStyleKey)),
+        ),
+      );
+    }
+
+    if (ltrModifiers.length > 0) {
+      const ltrClassNames = ltrModifiers.map((m) => m.baseClass).join(" ");
+      const ltrStyleObject = parseClassName(ltrClassNames, state.customTheme);
+      const ltrStyleKey = generateStyleKey(`ltr_${ltrClassNames}`);
+      state.styleRegistry.set(ltrStyleKey, ltrStyleObject);
+
+      objectProperties.push(
+        t.objectProperty(
+          t.identifier("ltrStyle"),
+          t.memberExpression(t.identifier(state.stylesIdentifier), t.identifier(ltrStyleKey)),
+        ),
+      );
+    }
+  }
+
+  // Group other modifiers by type (non-color-scheme, non-platform, and non-directional modifiers)
   const modifiersByType = new Map<ModifierType, ParsedModifier[]>();
   for (const mod of otherModifiers) {
     if (!modifiersByType.has(mod.modifier)) {

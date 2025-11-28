@@ -618,3 +618,154 @@ describe("tw/twStyle - integration with className", () => {
     expect(output).toContain("_m_4_p_2");
   });
 });
+
+describe("tw visitor - directional modifiers (RTL/LTR)", () => {
+  it("should transform rtl: modifier in tw template", () => {
+    const input = `
+      import { tw } from '@mgcrea/react-native-tailwind';
+
+      function MyComponent() {
+        const styles = tw\`p-4 rtl:mr-4\`;
+        return null;
+      }
+    `;
+
+    const output = transform(input);
+
+    // Should import I18nManager
+    expect(output).toContain("I18nManager");
+
+    // Should declare _twIsRTL variable
+    expect(output).toContain("_twIsRTL");
+    expect(output).toContain("I18nManager.isRTL");
+
+    // Should have style array with conditional
+    expect(output).toContain("style:");
+    expect(output).toContain("_twStyles._p_4");
+    expect(output).toMatch(/_twIsRTL\s*&&\s*_twStyles\._rtl_mr_4/);
+
+    // Should have rtlStyle property
+    expect(output).toContain("rtlStyle:");
+    expect(output).toContain("_twStyles._rtl_mr_4");
+  });
+
+  it("should transform ltr: modifier with negated conditional", () => {
+    const input = `
+      import { tw } from '@mgcrea/react-native-tailwind';
+
+      function MyComponent() {
+        const styles = tw\`p-4 ltr:ml-4\`;
+        return null;
+      }
+    `;
+
+    const output = transform(input);
+
+    // Should import I18nManager
+    expect(output).toContain("I18nManager");
+
+    // Should have negated conditional for LTR (!_twIsRTL)
+    expect(output).toMatch(/!\s*_twIsRTL\s*&&\s*_twStyles\._ltr_ml_4/);
+
+    // Should have ltrStyle property
+    expect(output).toContain("ltrStyle:");
+  });
+
+  it("should combine rtl: and ltr: modifiers", () => {
+    const input = `
+      import { tw } from '@mgcrea/react-native-tailwind';
+
+      function MyComponent() {
+        const styles = tw\`rtl:mr-4 ltr:ml-4\`;
+        return null;
+      }
+    `;
+
+    const output = transform(input);
+
+    // Should have both conditionals
+    expect(output).toMatch(/_twIsRTL\s*&&\s*_twStyles\._rtl_mr_4/);
+    expect(output).toMatch(/!\s*_twIsRTL\s*&&\s*_twStyles\._ltr_ml_4/);
+
+    // Should have both style properties
+    expect(output).toContain("rtlStyle:");
+    expect(output).toContain("ltrStyle:");
+  });
+
+  it("should combine directional modifiers with platform modifiers", () => {
+    const input = `
+      import { tw } from '@mgcrea/react-native-tailwind';
+
+      function MyComponent() {
+        const styles = tw\`p-4 ios:p-6 rtl:mr-4\`;
+        return null;
+      }
+    `;
+
+    const output = transform(input);
+
+    // Should have Platform import
+    expect(output).toContain("Platform");
+
+    // Should have I18nManager import
+    expect(output).toContain("I18nManager");
+
+    // Should have both modifiers in style array
+    expect(output).toContain("Platform.select");
+    expect(output).toMatch(/_twIsRTL\s*&&/);
+
+    // Should have iosStyle and rtlStyle properties
+    expect(output).toContain("iosStyle:");
+    expect(output).toContain("rtlStyle:");
+  });
+
+  it("should combine directional modifiers with state modifiers", () => {
+    const input = `
+      import { tw } from '@mgcrea/react-native-tailwind';
+
+      function MyComponent() {
+        const styles = tw\`bg-white active:bg-blue-500 rtl:pr-4\`;
+        return null;
+      }
+    `;
+
+    const output = transform(input);
+
+    // Should have I18nManager import
+    expect(output).toContain("I18nManager");
+
+    // Should have directional conditional
+    expect(output).toMatch(/_twIsRTL\s*&&/);
+
+    // Should have activeStyle property
+    expect(output).toContain("activeStyle:");
+    expect(output).toContain("_twStyles._active_bg_blue_500");
+
+    // Should have rtlStyle property
+    expect(output).toContain("rtlStyle:");
+  });
+
+  it("should work with twStyle function for RTL modifiers", () => {
+    const input = `
+      import { twStyle } from '@mgcrea/react-native-tailwind';
+
+      function MyComponent() {
+        const styles = twStyle('p-4 rtl:mr-4 ltr:ml-4');
+        return null;
+      }
+    `;
+
+    const output = transform(input);
+
+    // Should import I18nManager
+    expect(output).toContain("I18nManager");
+
+    // Should have both conditionals
+    expect(output).toMatch(/_twIsRTL\s*&&/);
+    expect(output).toMatch(/!\s*_twIsRTL\s*&&/);
+
+    // Should have both style properties
+    expect(output).toContain("rtlStyle:");
+    expect(output).toContain("ltrStyle:");
+  });
+});
