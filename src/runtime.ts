@@ -12,12 +12,19 @@ export type RuntimeConfig = {
     extend?: {
       colors?: Record<string, string | Record<string, string>>;
       fontFamily?: Record<string, string | string[]>;
+      fontSize?: Record<string, string | number>;
+      spacing?: Record<string, string | number>;
     };
   };
 };
 
 // Global custom theme configuration
-const globalCustomTheme: CustomTheme = { colors: {}, fontFamily: {} };
+const globalCustomTheme: CustomTheme = {
+  colors: {},
+  fontFamily: {},
+  fontSize: {},
+  spacing: {},
+};
 
 // Simple memoization cache
 const styleCache = new Map<string, TwStyle>();
@@ -70,6 +77,51 @@ export function setConfig(config: RuntimeConfig): void {
     globalCustomTheme.fontFamily = fontFamilyResult;
   } else {
     globalCustomTheme.fontFamily = {};
+  }
+
+  // Extract custom fontSize
+  if (config.theme?.extend?.fontSize) {
+    const fontSizeResult: Record<string, number> = {};
+    for (const [key, value] of Object.entries(config.theme.extend.fontSize)) {
+      if (typeof value === "number") {
+        fontSizeResult[key] = value;
+      } else if (typeof value === "string") {
+        // Parse string values like "18px" or "18" to number
+        const parsed = parseFloat(value.replace(/px$/, ""));
+        if (!isNaN(parsed)) {
+          fontSizeResult[key] = parsed;
+        }
+      }
+    }
+    globalCustomTheme.fontSize = fontSizeResult;
+  } else {
+    globalCustomTheme.fontSize = {};
+  }
+
+  // Extract custom spacing
+  if (config.theme?.extend?.spacing) {
+    const spacingResult: Record<string, number> = {};
+    for (const [key, value] of Object.entries(config.theme.extend.spacing)) {
+      if (typeof value === "number") {
+        spacingResult[key] = value;
+      } else if (typeof value === "string") {
+        // Parse string values: "18rem" -> 288, "16px" -> 16, "16" -> 16
+        let parsed: number;
+        if (value.endsWith("rem")) {
+          // Convert rem to px (1rem = 16px)
+          parsed = parseFloat(value.replace(/rem$/, "")) * 16;
+        } else {
+          // Parse px or unitless values
+          parsed = parseFloat(value.replace(/px$/, ""));
+        }
+        if (!isNaN(parsed)) {
+          spacingResult[key] = parsed;
+        }
+      }
+    }
+    globalCustomTheme.spacing = spacingResult;
+  } else {
+    globalCustomTheme.spacing = {};
   }
 
   // Clear cache when config changes

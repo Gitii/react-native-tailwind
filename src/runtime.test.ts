@@ -209,6 +209,155 @@ describe("runtime", () => {
         backgroundColor: "#007AFF",
       });
     });
+
+    it("should set custom fontFamily", () => {
+      setConfig({
+        theme: {
+          extend: {
+            fontFamily: {
+              display: "Inter",
+              body: ["Roboto", "sans-serif"], // Array format - takes first value
+            },
+          },
+        },
+      });
+
+      const theme = getCustomTheme();
+      expect(theme.fontFamily).toEqual({
+        display: "Inter",
+        body: "Roboto",
+      });
+    });
+
+    it("should set custom fontSize", () => {
+      setConfig({
+        theme: {
+          extend: {
+            fontSize: {
+              tiny: 10,
+              small: "12px",
+              medium: 16,
+              large: "24",
+            },
+          },
+        },
+      });
+
+      const theme = getCustomTheme();
+      expect(theme.fontSize).toEqual({
+        tiny: 10,
+        small: 12,
+        medium: 16,
+        large: 24,
+      });
+    });
+
+    it("should set custom spacing", () => {
+      setConfig({
+        theme: {
+          extend: {
+            spacing: {
+              xs: 4,
+              sm: "8px",
+              md: 16,
+              lg: "2rem", // 2rem = 32px
+            },
+          },
+        },
+      });
+
+      const theme = getCustomTheme();
+      expect(theme.spacing).toEqual({
+        xs: 4,
+        sm: 8,
+        md: 16,
+        lg: 32,
+      });
+    });
+
+    it("should use custom fontSize in parsing", () => {
+      setConfig({
+        theme: {
+          extend: {
+            fontSize: {
+              tiny: 10,
+            },
+          },
+        },
+      });
+
+      const result = tw`text-tiny`;
+      expect(result?.style).toEqual({
+        fontSize: 10,
+      });
+    });
+
+    it("should use custom spacing in parsing", () => {
+      setConfig({
+        theme: {
+          extend: {
+            spacing: {
+              xs: 4,
+            },
+          },
+        },
+      });
+
+      const result = tw`m-xs p-xs`;
+      expect(result?.style).toEqual({
+        margin: 4,
+        padding: 4,
+      });
+    });
+
+    it("should reset fontSize and spacing when config is cleared", () => {
+      setConfig({
+        theme: {
+          extend: {
+            fontSize: { tiny: 10 },
+            spacing: { xs: 4 },
+          },
+        },
+      });
+
+      let theme = getCustomTheme();
+      expect(theme.fontSize).toEqual({ tiny: 10 });
+      expect(theme.spacing).toEqual({ xs: 4 });
+
+      setConfig({});
+
+      theme = getCustomTheme();
+      expect(theme.fontSize).toEqual({});
+      expect(theme.spacing).toEqual({});
+    });
+
+    it("should handle all theme extensions together", () => {
+      setConfig({
+        theme: {
+          extend: {
+            colors: { primary: "#007AFF" },
+            fontFamily: { display: "Inter" },
+            fontSize: { tiny: 10 },
+            spacing: { xs: 4 },
+          },
+        },
+      });
+
+      const theme = getCustomTheme();
+      expect(theme.colors).toEqual({ primary: "#007AFF" });
+      expect(theme.fontFamily).toEqual({ display: "Inter" });
+      expect(theme.fontSize).toEqual({ tiny: 10 });
+      expect(theme.spacing).toEqual({ xs: 4 });
+
+      // Test that parsing uses all of them
+      const result = tw`bg-primary font-display text-tiny m-xs`;
+      expect(result?.style).toEqual({
+        backgroundColor: "#007AFF",
+        fontFamily: "Inter",
+        fontSize: 10,
+        margin: 4,
+      });
+    });
   });
 
   describe("cache", () => {
