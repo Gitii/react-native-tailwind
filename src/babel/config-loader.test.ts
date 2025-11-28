@@ -125,7 +125,7 @@ describe("config-loader", () => {
       vi.spyOn(fs, "existsSync").mockReturnValue(false);
 
       const result = extractCustomTheme("/project/src/file.ts");
-      expect(result).toEqual({ colors: {}, fontFamily: {}, fontSize: {} });
+      expect(result).toEqual({ colors: {}, fontFamily: {}, fontSize: {}, spacing: {} });
     });
   });
 
@@ -136,8 +136,9 @@ describe("config-loader", () => {
         theme: {
           extend: {
             colors: { brand: "#123456" },
-            spacing: { "72": "18rem" }, // Unsupported
+            spacing: { "72": "18rem" }, // Supported (now!)
             borderRadius: { xl: "1rem" }, // Unsupported
+            lineHeight: { tight: "1.25" }, // Unsupported
           },
           screens: { tablet: "640px" }, // Unsupported
         },
@@ -150,8 +151,10 @@ describe("config-loader", () => {
       expect(consoleSpy).toHaveBeenCalledWith(
         expect.stringContaining("Unsupported theme configuration detected"),
       );
-      expect(consoleSpy).toHaveBeenCalledWith(expect.stringContaining("theme.extend.spacing"));
+      // spacing is now supported, so should NOT warn about it
+      expect(consoleSpy).not.toHaveBeenCalledWith(expect.stringContaining("theme.extend.spacing"));
       expect(consoleSpy).toHaveBeenCalledWith(expect.stringContaining("theme.extend.borderRadius"));
+      expect(consoleSpy).toHaveBeenCalledWith(expect.stringContaining("theme.extend.lineHeight"));
       expect(consoleSpy).toHaveBeenCalledWith(expect.stringContaining("theme.screens"));
       expect(consoleSpy).toHaveBeenCalledWith(
         expect.stringContaining("https://github.com/mgcrea/react-native-tailwind/issues/new"),
@@ -168,6 +171,7 @@ describe("config-loader", () => {
             colors: { brand: "#123456" },
             fontFamily: { custom: "CustomFont" },
             fontSize: { huge: "48px" },
+            spacing: { "72": "18rem" },
           },
         },
       };
@@ -186,7 +190,7 @@ describe("config-loader", () => {
       const mockConfig = {
         theme: {
           extend: {
-            spacing: { "72": "18rem" },
+            borderRadius: { xl: "1rem" }, // Unsupported
           },
         },
       };

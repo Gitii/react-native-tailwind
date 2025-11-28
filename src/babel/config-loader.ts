@@ -15,11 +15,13 @@ export type TailwindConfig = {
       colors?: Record<string, string | Record<string, string>>;
       fontFamily?: Record<string, string | string[]>;
       fontSize?: Record<string, string | number>;
+      spacing?: Record<string, string | number>;
       [key: string]: unknown;
     };
     colors?: Record<string, string | Record<string, string>>;
     fontFamily?: Record<string, string | string[]>;
     fontSize?: Record<string, string | number>;
+    spacing?: Record<string, string | number>;
     [key: string]: unknown;
   };
 };
@@ -27,7 +29,7 @@ export type TailwindConfig = {
 /**
  * Theme keys currently supported by react-native-tailwind
  */
-const SUPPORTED_THEME_KEYS = new Set(["colors", "fontFamily", "fontSize", "extend"]);
+const SUPPORTED_THEME_KEYS = new Set(["colors", "fontFamily", "fontSize", "spacing", "extend"]);
 
 /**
  * Cache for warned config paths to avoid duplicate warnings
@@ -68,7 +70,7 @@ export function warnUnsupportedThemeKeys(config: TailwindConfig, configPath: str
     console.warn(
       `[react-native-tailwind] Unsupported theme configuration detected:\n` +
         `  ${unsupportedKeys.join(", ")}\n\n` +
-        `  Currently supported: colors, fontFamily, fontSize\n\n` +
+        `  Currently supported: colors, fontFamily, fontSize, spacing\n\n` +
         `  These extensions will be ignored. If you need support for these features,\n` +
         `  please open an issue: https://github.com/mgcrea/react-native-tailwind/issues/new`,
     );
@@ -145,6 +147,7 @@ export type CustomTheme = {
   colors: Record<string, string>;
   fontFamily: Record<string, string>;
   fontSize: Record<string, number>;
+  spacing: Record<string, number>;
 };
 
 /**
@@ -156,12 +159,12 @@ export function extractCustomTheme(filename: string): CustomTheme {
   const configPath = findTailwindConfig(projectDir);
 
   if (!configPath) {
-    return { colors: {}, fontFamily: {}, fontSize: {} };
+    return { colors: {}, fontFamily: {}, fontSize: {}, spacing: {} };
   }
 
   const config = loadTailwindConfig(configPath);
   if (!config?.theme) {
-    return { colors: {}, fontFamily: {}, fontSize: {} };
+    return { colors: {}, fontFamily: {}, fontSize: {}, spacing: {} };
   }
 
   // Warn about unsupported theme keys
@@ -229,9 +232,48 @@ export function extractCustomTheme(filename: string): CustomTheme {
     }
   }
 
+  // Extract spacing
+  /* v8 ignore next 5 */
+  if (config.theme.spacing && !config.theme.extend?.spacing && process.env.NODE_ENV !== "production") {
+    console.warn(
+      "[react-native-tailwind] Using theme.spacing will override all default spacing. " +
+        "Use theme.extend.spacing to add custom spacing while keeping defaults.",
+    );
+  }
+  const spacing = config.theme.extend?.spacing ?? config.theme.spacing ?? {};
+
+  // Convert spacing values to numbers (handle rem, px, or number values)
+  const spacingResult: Record<string, number> = {};
+  for (const [key, value] of Object.entries(spacing)) {
+    if (typeof value === "number") {
+      spacingResult[key] = value;
+    } else if (typeof value === "string") {
+      // Parse string values: "18rem" -> 288, "16px" -> 16, "16" -> 16
+      let parsed: number;
+      if (value.endsWith("rem")) {
+        // Convert rem to px (1rem = 16px)
+        parsed = parseFloat(value.replace(/rem$/, "")) * 16;
+      } else {
+        // Parse px or unitless values
+        parsed = parseFloat(value.replace(/px$/, ""));
+      }
+      if (!isNaN(parsed)) {
+        spacingResult[key] = parsed;
+      } else {
+        /* v8 ignore next 5 */
+        if (process.env.NODE_ENV !== "production") {
+          console.warn(
+            `[react-native-tailwind] Invalid spacing value for "${key}": ${value}. Expected number or string like "16px" or "1rem".`,
+          );
+        }
+      }
+    }
+  }
+
   return {
     colors: flattenColors(colors),
     fontFamily: fontFamilyResult,
     fontSize: fontSizeResult,
+    spacing: spacingResult,
   };
 }
