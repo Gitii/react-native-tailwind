@@ -112,7 +112,7 @@ The Babel plugin transforms your code at compile time:
 **Input** (what you write):
 
 ```tsx
-<View className="m-4 p-2 bg-blue-500 rounded-lg" />
+<View className={`rounded-lg p-4 ${isSelected ? "bg-blue-500 border border-blue-700" : "bg-gray-200"}`} />
 ```
 
 **Output** (what Babel generates):
@@ -120,15 +120,19 @@ The Babel plugin transforms your code at compile time:
 ```tsx
 import { StyleSheet } from "react-native";
 
-<View style={_twStyles._bg_blue_500_m_4_p_2_rounded_lg} />;
+<View
+  style={[
+    _twStyles._rounded_lg,
+    _twStyles._p_4,
+    isSelected ? _twStyles._bg_blue_500_border_border_blue_700 : _twStyles._bg_gray_200,
+  ]}
+/>;
 
 const _twStyles = StyleSheet.create({
-  _bg_blue_500_m_4_p_2_rounded_lg: {
-    margin: 16,
-    padding: 8,
-    backgroundColor: "#3B82F6",
-    borderRadius: 8,
-  },
+  _rounded_lg: { borderRadius: 8 },
+  _p_4: { padding: 16 },
+  _bg_blue_500_border_border_blue_700: { backgroundColor: "#3B82F6", borderWidth: 1, borderColor: "#1D4ED8" },
+  _bg_gray_200: { backgroundColor: "#E5E7EB" },
 });
 ```
 
