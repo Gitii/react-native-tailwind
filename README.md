@@ -27,7 +27,7 @@
     <img src="https://img.shields.io/codecov/c/github/mgcrea/react-native-tailwind?style=for-the-badge" alt="coverage" />
   </a>
   <a href="https://depfu.com/github/mgcrea/react-native-tailwind">
-    <img src="https://img.shields.io/depfu/dependencies/github/mgcrea/react-native-tailwind?style=for-the-badge" alt="dependencies status" />
+    <img src="https://img.shields.io/badge/dependencies-none-brightgreen?style=for-the-badge" alt="dependencies status" />
   </a>
 </p>
 
@@ -200,9 +200,7 @@ import { View, Text } from "react-native";
 export function PlatformCard() {
   return (
     <View className="p-4 ios:p-6 android:p-8 bg-white rounded-lg">
-      <Text className="text-base ios:text-blue-600 android:text-green-600">
-        Platform-specific styles
-      </Text>
+      <Text className="text-base ios:text-blue-600 android:text-green-600">Platform-specific styles</Text>
     </View>
   );
 }
