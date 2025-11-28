@@ -385,3 +385,107 @@ describe("parseBorder - color pattern detection", () => {
     expect(parseBorder("border-l-[8px]")).toEqual({ borderLeftWidth: 8 });
   });
 });
+
+describe("parseBorder - logical border width (RTL-aware)", () => {
+  it("should parse border start width", () => {
+    expect(parseBorder("border-s")).toEqual({ borderStartWidth: 1 });
+    expect(parseBorder("border-s-0")).toEqual({ borderStartWidth: 0 });
+    expect(parseBorder("border-s-2")).toEqual({ borderStartWidth: 2 });
+    expect(parseBorder("border-s-4")).toEqual({ borderStartWidth: 4 });
+    expect(parseBorder("border-s-8")).toEqual({ borderStartWidth: 8 });
+  });
+
+  it("should parse border end width", () => {
+    expect(parseBorder("border-e")).toEqual({ borderEndWidth: 1 });
+    expect(parseBorder("border-e-0")).toEqual({ borderEndWidth: 0 });
+    expect(parseBorder("border-e-2")).toEqual({ borderEndWidth: 2 });
+    expect(parseBorder("border-e-4")).toEqual({ borderEndWidth: 4 });
+    expect(parseBorder("border-e-8")).toEqual({ borderEndWidth: 8 });
+  });
+
+  it("should parse border start/end with arbitrary values", () => {
+    expect(parseBorder("border-s-[3px]")).toEqual({ borderStartWidth: 3 });
+    expect(parseBorder("border-s-[5]")).toEqual({ borderStartWidth: 5 });
+    expect(parseBorder("border-e-[3px]")).toEqual({ borderEndWidth: 3 });
+    expect(parseBorder("border-e-[5]")).toEqual({ borderEndWidth: 5 });
+  });
+});
+
+describe("parseBorder - logical border radius sides (RTL-aware)", () => {
+  it("should parse rounded start (both top and bottom start corners)", () => {
+    expect(parseBorder("rounded-s")).toEqual({
+      borderTopStartRadius: 4,
+      borderBottomStartRadius: 4,
+    });
+    expect(parseBorder("rounded-s-lg")).toEqual({
+      borderTopStartRadius: 8,
+      borderBottomStartRadius: 8,
+    });
+    expect(parseBorder("rounded-s-[12px]")).toEqual({
+      borderTopStartRadius: 12,
+      borderBottomStartRadius: 12,
+    });
+  });
+
+  it("should parse rounded end (both top and bottom end corners)", () => {
+    expect(parseBorder("rounded-e")).toEqual({
+      borderTopEndRadius: 4,
+      borderBottomEndRadius: 4,
+    });
+    expect(parseBorder("rounded-e-lg")).toEqual({
+      borderTopEndRadius: 8,
+      borderBottomEndRadius: 8,
+    });
+    expect(parseBorder("rounded-e-[12px]")).toEqual({
+      borderTopEndRadius: 12,
+      borderBottomEndRadius: 12,
+    });
+  });
+});
+
+describe("parseBorder - logical border radius corners (RTL-aware)", () => {
+  it("should parse rounded start-start (top-start corner)", () => {
+    expect(parseBorder("rounded-ss")).toEqual({ borderTopStartRadius: 4 });
+    expect(parseBorder("rounded-ss-lg")).toEqual({ borderTopStartRadius: 8 });
+    expect(parseBorder("rounded-ss-[12px]")).toEqual({
+      borderTopStartRadius: 12,
+    });
+  });
+
+  it("should parse rounded start-end (top-end corner)", () => {
+    expect(parseBorder("rounded-se")).toEqual({ borderTopEndRadius: 4 });
+    expect(parseBorder("rounded-se-lg")).toEqual({ borderTopEndRadius: 8 });
+    expect(parseBorder("rounded-se-[12px]")).toEqual({
+      borderTopEndRadius: 12,
+    });
+  });
+
+  it("should parse rounded end-start (bottom-start corner)", () => {
+    expect(parseBorder("rounded-es")).toEqual({ borderBottomStartRadius: 4 });
+    expect(parseBorder("rounded-es-lg")).toEqual({ borderBottomStartRadius: 8 });
+    expect(parseBorder("rounded-es-[12px]")).toEqual({
+      borderBottomStartRadius: 12,
+    });
+  });
+
+  it("should parse rounded end-end (bottom-end corner)", () => {
+    expect(parseBorder("rounded-ee")).toEqual({ borderBottomEndRadius: 4 });
+    expect(parseBorder("rounded-ee-lg")).toEqual({ borderBottomEndRadius: 8 });
+    expect(parseBorder("rounded-ee-[12px]")).toEqual({
+      borderBottomEndRadius: 12,
+    });
+  });
+
+  it("should parse all logical corners with different sizes", () => {
+    // Using full scale to verify all sizes work
+    expect(parseBorder("rounded-ss-none")).toEqual({ borderTopStartRadius: 0 });
+    expect(parseBorder("rounded-se-sm")).toEqual({ borderTopEndRadius: 2 });
+    expect(parseBorder("rounded-es-md")).toEqual({ borderBottomStartRadius: 6 });
+    expect(parseBorder("rounded-ee-xl")).toEqual({ borderBottomEndRadius: 12 });
+    expect(parseBorder("rounded-ss-2xl")).toEqual({ borderTopStartRadius: 16 });
+    expect(parseBorder("rounded-se-3xl")).toEqual({ borderTopEndRadius: 24 });
+    expect(parseBorder("rounded-es-full")).toEqual({
+      borderBottomStartRadius: 9999,
+    });
+  });
+});

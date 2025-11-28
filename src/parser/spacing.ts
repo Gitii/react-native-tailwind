@@ -69,12 +69,13 @@ function parseArbitrarySpacing(value: string): number | null {
 
 /**
  * Parse spacing classes (margin, padding, gap)
- * Examples: m-4, mx-2, mt-8, p-4, px-2, pt-8, gap-4, m-[16px], pl-[4.5px], -m-4, -mt-[10px]
+ * Examples: m-4, mx-2, mt-8, p-4, px-2, pt-8, gap-4, m-[16px], pl-[4.5px], -m-4, -mt-[10px], ms-4, pe-2
  */
 export function parseSpacing(cls: string): StyleObject | null {
-  // Margin: m-4, mx-2, mt-8, m-[16px], -m-4, -mt-2, etc.
+  // Margin: m-4, mx-2, mt-8, ms-4, me-2, m-[16px], -m-4, -mt-2, etc.
   // Supports negative values for margins (but not padding or gap)
-  const marginMatch = cls.match(/^(-?)m([xytrbls]?)-(.+)$/);
+  // s = start (RTL-aware), e = end (RTL-aware)
+  const marginMatch = cls.match(/^(-?)m([xytrblse]?)-(.+)$/);
   if (marginMatch) {
     const [, negativePrefix, dir, valueStr] = marginMatch;
     const isNegative = negativePrefix === "-";
@@ -94,8 +95,9 @@ export function parseSpacing(cls: string): StyleObject | null {
     }
   }
 
-  // Padding: p-4, px-2, pt-8, p-[16px], etc.
-  const paddingMatch = cls.match(/^p([xytrbls]?)-(.+)$/);
+  // Padding: p-4, px-2, pt-8, ps-4, pe-2, p-[16px], etc.
+  // s = start (RTL-aware), e = end (RTL-aware)
+  const paddingMatch = cls.match(/^p([xytrblse]?)-(.+)$/);
   if (paddingMatch) {
     const [, dir, valueStr] = paddingMatch;
 
@@ -152,6 +154,10 @@ function getMarginStyle(dir: string, value: number): StyleObject {
       return { marginBottom: value };
     case "l":
       return { marginLeft: value };
+    case "s":
+      return { marginStart: value };
+    case "e":
+      return { marginEnd: value };
     default:
       return {};
   }
@@ -176,6 +182,10 @@ function getPaddingStyle(dir: string, value: number): StyleObject {
       return { paddingBottom: value };
     case "l":
       return { paddingLeft: value };
+    case "s":
+      return { paddingStart: value };
+    case "e":
+      return { paddingEnd: value };
     default:
       return {};
   }

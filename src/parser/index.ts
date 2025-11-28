@@ -97,6 +97,7 @@ export {
   hasModifier,
   isColorClass,
   isColorSchemeModifier,
+  isDirectionalModifier,
   isPlatformModifier,
   isSchemeModifier,
   isStateModifier,
@@ -105,6 +106,7 @@ export {
 } from "./modifiers";
 export type {
   ColorSchemeModifierType,
+  DirectionalModifierType,
   ModifierType,
   ParsedModifier,
   PlatformModifierType,

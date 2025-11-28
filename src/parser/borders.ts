@@ -35,16 +35,30 @@ const BORDER_WIDTH_PROP_MAP: Record<string, string> = {
   r: "borderRightWidth",
   b: "borderBottomWidth",
   l: "borderLeftWidth",
+  s: "borderStartWidth",
+  e: "borderEndWidth",
 };
 
 /**
- * Property mapping for border radius corners
+ * Property mapping for border radius corners (physical)
  */
 const BORDER_RADIUS_CORNER_MAP: Record<string, string> = {
   tl: "borderTopLeftRadius",
   tr: "borderTopRightRadius",
   bl: "borderBottomLeftRadius",
   br: "borderBottomRightRadius",
+};
+
+/**
+ * Property mapping for border radius corners (logical/RTL-aware)
+ * ss = start-start (top-start), se = start-end (top-end)
+ * es = end-start (bottom-start), ee = end-end (bottom-end)
+ */
+const BORDER_RADIUS_LOGICAL_CORNER_MAP: Record<string, string> = {
+  ss: "borderTopStartRadius",
+  se: "borderTopEndRadius",
+  es: "borderBottomStartRadius",
+  ee: "borderBottomEndRadius",
 };
 
 /**
@@ -55,6 +69,8 @@ const BORDER_RADIUS_SIDE_MAP: Record<string, string[]> = {
   r: ["borderTopRightRadius", "borderBottomRightRadius"],
   b: ["borderBottomLeftRadius", "borderBottomRightRadius"],
   l: ["borderTopLeftRadius", "borderBottomLeftRadius"],
+  s: ["borderTopStartRadius", "borderBottomStartRadius"],
+  e: ["borderTopEndRadius", "borderBottomEndRadius"],
 };
 
 /**
@@ -141,16 +157,17 @@ export function parseBorder(cls: string, customColors?: Record<string, string>):
  * @param customColors - Optional custom colors (passed to parseColor for pattern detection)
  */
 function parseBorderWidth(cls: string, customColors?: Record<string, string>): StyleObject | null {
-  // Directional borders: border-t, border-t-2, border-t-[8px]
+  // Directional borders: border-t, border-t-2, border-t-[8px], border-s, border-e (RTL-aware)
   // Note: border-x and border-y are handled by parseColor for colors only
-  const dirMatch = cls.match(/^border-([trbl])(?:-(.+))?$/);
+  const dirMatch = cls.match(/^border-([trblse])(?:-(.+))?$/);
   if (dirMatch) {
     const dir = dirMatch[1];
     const valueStr = dirMatch[2] || ""; // empty string for border-t
 
     // If it's a color pattern, let parseColor handle it
     // Try to parse as color - if it succeeds, return null (let parseColor handle it)
-    if (valueStr) {
+    // Note: We skip color check for s/e since React Native doesn't support borderStartColor/borderEndColor
+    if (valueStr && dir !== "s" && dir !== "e") {
       const colorResult = parseColor(cls, customColors);
       if (colorResult !== null) {
         return null; // It's a color, let parseColor handle it
@@ -220,7 +237,7 @@ function parseBorderRadius(cls: string): StyleObject | null {
     return null;
   }
 
-  // Specific corners: rounded-tl, rounded-tl-lg, rounded-tl-[8px]
+  // Specific physical corners: rounded-tl, rounded-tl-lg, rounded-tl-[8px]
   const cornerMatch = rest.match(/^(tl|tr|bl|br)(?:-(.+))?$/);
   if (cornerMatch) {
     const corner = cornerMatch[1];
@@ -244,8 +261,34 @@ function parseBorderRadius(cls: string): StyleObject | null {
     return null;
   }
 
-  // Sides: rounded-t, rounded-t-lg, rounded-t-[8px]
-  const sideMatch = rest.match(/^([trbl])(?:-(.+))?$/);
+  // Logical corners (RTL-aware): rounded-ss, rounded-se, rounded-es, rounded-ee
+  // ss = start-start (top-start), se = start-end (top-end)
+  // es = end-start (bottom-start), ee = end-end (bottom-end)
+  const logicalCornerMatch = rest.match(/^(ss|se|es|ee)(?:-(.+))?$/);
+  if (logicalCornerMatch) {
+    const corner = logicalCornerMatch[1];
+    const valueStr = logicalCornerMatch[2] || ""; // empty string for rounded-ss
+
+    // Try arbitrary value first
+    if (valueStr.startsWith("[")) {
+      const arbitraryValue = parseArbitraryBorderRadius(valueStr);
+      if (arbitraryValue !== null) {
+        return { [BORDER_RADIUS_LOGICAL_CORNER_MAP[corner]]: arbitraryValue };
+      }
+      return null;
+    }
+
+    // Try preset scale
+    const scaleValue = BORDER_RADIUS_SCALE[valueStr];
+    if (scaleValue !== undefined) {
+      return { [BORDER_RADIUS_LOGICAL_CORNER_MAP[corner]]: scaleValue };
+    }
+
+    return null;
+  }
+
+  // Sides: rounded-t, rounded-t-lg, rounded-t-[8px], rounded-s, rounded-e (RTL-aware)
+  const sideMatch = rest.match(/^([trblse])(?:-(.+))?$/);
   if (sideMatch) {
     const side = sideMatch[1];
     const valueStr = sideMatch[2] || ""; // empty string for rounded-t

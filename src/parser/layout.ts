@@ -339,6 +339,68 @@ export function parseLayout(cls: string): StyleObject | null {
     }
   }
 
+  // Start positioning (RTL-aware): start-0, start-4, start-[10px], -start-4, etc.
+  const startMatch = cls.match(/^(-?)start-(.+)$/);
+  if (startMatch) {
+    const [, negPrefix, startKey] = startMatch;
+    const isNegative = negPrefix === "-";
+
+    // Auto value - return empty object (no-op, removes the property)
+    if (startKey === "auto") {
+      return {};
+    }
+
+    // Arbitrary values: start-[123px], start-[50%], -start-[10px]
+    const arbitraryStart = parseArbitraryInset(startKey);
+    if (arbitraryStart !== null) {
+      if (typeof arbitraryStart === "number") {
+        return { start: isNegative ? -arbitraryStart : arbitraryStart };
+      }
+      // Percentage values with negative prefix
+      if (isNegative && arbitraryStart.endsWith("%")) {
+        const numValue = parseFloat(arbitraryStart);
+        return { start: `${-numValue}%` };
+      }
+      return { start: arbitraryStart };
+    }
+
+    const startValue = INSET_SCALE[startKey];
+    if (startValue !== undefined) {
+      return { start: isNegative ? -startValue : startValue };
+    }
+  }
+
+  // End positioning (RTL-aware): end-0, end-4, end-[10px], -end-4, etc.
+  const endMatch = cls.match(/^(-?)end-(.+)$/);
+  if (endMatch) {
+    const [, negPrefix, endKey] = endMatch;
+    const isNegative = negPrefix === "-";
+
+    // Auto value - return empty object (no-op, removes the property)
+    if (endKey === "auto") {
+      return {};
+    }
+
+    // Arbitrary values: end-[123px], end-[50%], -end-[10px]
+    const arbitraryEnd = parseArbitraryInset(endKey);
+    if (arbitraryEnd !== null) {
+      if (typeof arbitraryEnd === "number") {
+        return { end: isNegative ? -arbitraryEnd : arbitraryEnd };
+      }
+      // Percentage values with negative prefix
+      if (isNegative && arbitraryEnd.endsWith("%")) {
+        const numValue = parseFloat(arbitraryEnd);
+        return { end: `${-numValue}%` };
+      }
+      return { end: arbitraryEnd };
+    }
+
+    const endValue = INSET_SCALE[endKey];
+    if (endValue !== undefined) {
+      return { end: isNegative ? -endValue : endValue };
+    }
+  }
+
   // Inset X (left and right): inset-x-0, inset-x-4, inset-x-[10px], etc.
   if (cls.startsWith("inset-x-")) {
     const insetKey = cls.substring(8);
@@ -368,6 +430,38 @@ export function parseLayout(cls: string): StyleObject | null {
     const insetValue = INSET_SCALE[insetKey];
     if (insetValue !== undefined) {
       return { top: insetValue, bottom: insetValue };
+    }
+  }
+
+  // Inset S (start, RTL-aware): inset-s-0, inset-s-4, inset-s-[10px], etc.
+  if (cls.startsWith("inset-s-")) {
+    const insetKey = cls.substring(8);
+
+    // Arbitrary values: inset-s-[123px], inset-s-[50%]
+    const arbitraryInset = parseArbitraryInset(insetKey);
+    if (arbitraryInset !== null) {
+      return { start: arbitraryInset };
+    }
+
+    const insetValue = INSET_SCALE[insetKey];
+    if (insetValue !== undefined) {
+      return { start: insetValue };
+    }
+  }
+
+  // Inset E (end, RTL-aware): inset-e-0, inset-e-4, inset-e-[10px], etc.
+  if (cls.startsWith("inset-e-")) {
+    const insetKey = cls.substring(8);
+
+    // Arbitrary values: inset-e-[123px], inset-e-[50%]
+    const arbitraryInset = parseArbitraryInset(insetKey);
+    if (arbitraryInset !== null) {
+      return { end: arbitraryInset };
+    }
+
+    const insetValue = INSET_SCALE[insetKey];
+    if (insetValue !== undefined) {
+      return { end: insetValue };
     }
   }
 

@@ -349,3 +349,69 @@ describe("parseSpacing - comprehensive coverage", () => {
     expect(parseSpacing("pl-[50px]")).toEqual({ paddingLeft: 50 });
   });
 });
+
+describe("parseSpacing - logical margin (RTL-aware)", () => {
+  it("should parse margin start", () => {
+    expect(parseSpacing("ms-0")).toEqual({ marginStart: 0 });
+    expect(parseSpacing("ms-4")).toEqual({ marginStart: 16 });
+    expect(parseSpacing("ms-8")).toEqual({ marginStart: 32 });
+  });
+
+  it("should parse margin end", () => {
+    expect(parseSpacing("me-0")).toEqual({ marginEnd: 0 });
+    expect(parseSpacing("me-4")).toEqual({ marginEnd: 16 });
+    expect(parseSpacing("me-8")).toEqual({ marginEnd: 32 });
+  });
+
+  it("should parse margin start/end with fractional values", () => {
+    expect(parseSpacing("ms-0.5")).toEqual({ marginStart: 2 });
+    expect(parseSpacing("me-1.5")).toEqual({ marginEnd: 6 });
+    expect(parseSpacing("ms-2.5")).toEqual({ marginStart: 10 });
+  });
+
+  it("should parse margin start/end with arbitrary values", () => {
+    expect(parseSpacing("ms-[16px]")).toEqual({ marginStart: 16 });
+    expect(parseSpacing("ms-[16]")).toEqual({ marginStart: 16 });
+    expect(parseSpacing("me-[24px]")).toEqual({ marginEnd: 24 });
+    expect(parseSpacing("me-[24]")).toEqual({ marginEnd: 24 });
+  });
+
+  it("should parse negative margin start/end", () => {
+    expect(parseSpacing("-ms-4")).toEqual({ marginStart: -16 });
+    expect(parseSpacing("-me-4")).toEqual({ marginEnd: -16 });
+    expect(parseSpacing("-ms-8")).toEqual({ marginStart: -32 });
+    expect(parseSpacing("-me-8")).toEqual({ marginEnd: -32 });
+  });
+
+  it("should parse negative margin start/end with arbitrary values", () => {
+    expect(parseSpacing("-ms-[16px]")).toEqual({ marginStart: -16 });
+    expect(parseSpacing("-me-[24]")).toEqual({ marginEnd: -24 });
+  });
+});
+
+describe("parseSpacing - logical padding (RTL-aware)", () => {
+  it("should parse padding start", () => {
+    expect(parseSpacing("ps-0")).toEqual({ paddingStart: 0 });
+    expect(parseSpacing("ps-4")).toEqual({ paddingStart: 16 });
+    expect(parseSpacing("ps-8")).toEqual({ paddingStart: 32 });
+  });
+
+  it("should parse padding end", () => {
+    expect(parseSpacing("pe-0")).toEqual({ paddingEnd: 0 });
+    expect(parseSpacing("pe-4")).toEqual({ paddingEnd: 16 });
+    expect(parseSpacing("pe-8")).toEqual({ paddingEnd: 32 });
+  });
+
+  it("should parse padding start/end with fractional values", () => {
+    expect(parseSpacing("ps-0.5")).toEqual({ paddingStart: 2 });
+    expect(parseSpacing("pe-1.5")).toEqual({ paddingEnd: 6 });
+    expect(parseSpacing("ps-2.5")).toEqual({ paddingStart: 10 });
+  });
+
+  it("should parse padding start/end with arbitrary values", () => {
+    expect(parseSpacing("ps-[16px]")).toEqual({ paddingStart: 16 });
+    expect(parseSpacing("ps-[16]")).toEqual({ paddingStart: 16 });
+    expect(parseSpacing("pe-[24px]")).toEqual({ paddingEnd: 24 });
+    expect(parseSpacing("pe-[24]")).toEqual({ paddingEnd: 24 });
+  });
+});

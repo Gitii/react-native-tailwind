@@ -645,3 +645,77 @@ describe("parseLayout - specific property coverage", () => {
     expect(insetY).not.toHaveProperty("right");
   });
 });
+
+describe("parseLayout - logical positioning (RTL-aware)", () => {
+  it("should parse start positioning with preset values", () => {
+    expect(parseLayout("start-0")).toEqual({ start: 0 });
+    expect(parseLayout("start-4")).toEqual({ start: 16 });
+    expect(parseLayout("start-8")).toEqual({ start: 32 });
+    expect(parseLayout("start-0.5")).toEqual({ start: 2 });
+    expect(parseLayout("start-2.5")).toEqual({ start: 10 });
+  });
+
+  it("should parse end positioning with preset values", () => {
+    expect(parseLayout("end-0")).toEqual({ end: 0 });
+    expect(parseLayout("end-4")).toEqual({ end: 16 });
+    expect(parseLayout("end-8")).toEqual({ end: 32 });
+    expect(parseLayout("end-0.5")).toEqual({ end: 2 });
+    expect(parseLayout("end-2.5")).toEqual({ end: 10 });
+  });
+
+  it("should parse start/end with arbitrary pixel values", () => {
+    expect(parseLayout("start-[10px]")).toEqual({ start: 10 });
+    expect(parseLayout("start-[50]")).toEqual({ start: 50 });
+    expect(parseLayout("end-[10px]")).toEqual({ end: 10 });
+    expect(parseLayout("end-[50]")).toEqual({ end: 50 });
+  });
+
+  it("should parse start/end with arbitrary percentage values", () => {
+    expect(parseLayout("start-[10%]")).toEqual({ start: "10%" });
+    expect(parseLayout("start-[50%]")).toEqual({ start: "50%" });
+    expect(parseLayout("end-[10%]")).toEqual({ end: "10%" });
+    expect(parseLayout("end-[50%]")).toEqual({ end: "50%" });
+  });
+
+  it("should parse negative start/end with preset values", () => {
+    expect(parseLayout("-start-4")).toEqual({ start: -16 });
+    expect(parseLayout("-start-8")).toEqual({ start: -32 });
+    expect(parseLayout("-end-4")).toEqual({ end: -16 });
+    expect(parseLayout("-end-8")).toEqual({ end: -32 });
+  });
+
+  it("should parse negative start/end with arbitrary values", () => {
+    expect(parseLayout("-start-[10px]")).toEqual({ start: -10 });
+    expect(parseLayout("-start-[50]")).toEqual({ start: -50 });
+    expect(parseLayout("-end-[10px]")).toEqual({ end: -10 });
+    expect(parseLayout("-end-[50]")).toEqual({ end: -50 });
+    expect(parseLayout("-start-[10%]")).toEqual({ start: "-10%" });
+    expect(parseLayout("-end-[25%]")).toEqual({ end: "-25%" });
+  });
+
+  it("should handle auto value for start/end", () => {
+    expect(parseLayout("start-auto")).toEqual({});
+    expect(parseLayout("end-auto")).toEqual({});
+  });
+});
+
+describe("parseLayout - logical inset (RTL-aware)", () => {
+  it("should parse inset-s (start) with preset values", () => {
+    expect(parseLayout("inset-s-0")).toEqual({ start: 0 });
+    expect(parseLayout("inset-s-4")).toEqual({ start: 16 });
+    expect(parseLayout("inset-s-8")).toEqual({ start: 32 });
+  });
+
+  it("should parse inset-e (end) with preset values", () => {
+    expect(parseLayout("inset-e-0")).toEqual({ end: 0 });
+    expect(parseLayout("inset-e-4")).toEqual({ end: 16 });
+    expect(parseLayout("inset-e-8")).toEqual({ end: 32 });
+  });
+
+  it("should parse inset-s/inset-e with arbitrary values", () => {
+    expect(parseLayout("inset-s-[10px]")).toEqual({ start: 10 });
+    expect(parseLayout("inset-s-[20%]")).toEqual({ start: "20%" });
+    expect(parseLayout("inset-e-[10px]")).toEqual({ end: 10 });
+    expect(parseLayout("inset-e-[20%]")).toEqual({ end: "20%" });
+  });
+});
