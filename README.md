@@ -37,22 +37,19 @@ Compile-time Tailwind CSS for React Native with zero runtime overhead. Transform
 
 ## Features
 
-- ⚡ **Zero runtime overhead** — All transformations happen at compile time
-- 🔧 **No dependencies** — Direct-to-React-Native style generation without tailwindcss package
-- 🎯 **Babel-only setup** — No Metro configuration required
-- 📝 **TypeScript-first** — Full type safety and autocomplete support
-- 🚀 **Optimized performance** — Compiles down to `StyleSheet.create` for optimal performance
-- 📦 **Small bundle size** — Only includes actual styles used in your app
-- 🎨 **Custom colors** — Extend the default palette via `tailwind.config.*`
-- 📐 **Arbitrary values** — Use custom sizes and borders: `w-[123px]`, `rounded-[20px]`
-- 🔀 **Dynamic className** — Conditional styles with hybrid compile-time optimization
-- 🏃 **Runtime option** — Optional `tw` template tag for fully dynamic styling (~25KB)
-- 🎯 **State modifiers** — `active:`, `hover:`, `focus:`, and `disabled:` modifiers for interactive components
-- 📱 **Platform modifiers** — `ios:`, `android:`, and `web:` modifiers for platform-specific styling
-- 🌓 **Color scheme modifiers** — `dark:` and `light:` modifiers for automatic theme adaptation
-- 🎨 **Scheme modifier** — `scheme:` convenience modifier that expands to both `dark:` and `light:` variants
-- 📜 **Special style props** — Support for `contentContainerClassName`, `columnWrapperClassName`, and more
-- 🎛️ **Custom attributes** — Configure which props to transform with exact matching or glob patterns
+- **⚡ Zero Runtime Overhead** - All transformations happen at compile time
+- **🔧 No Dependencies** - Direct-to-React-Native style generation without tailwindcss package
+- **🎯 Babel-only Setup** - No Metro configuration required
+- **📝 TypeScript-first** - Full type safety and autocomplete support
+- **🚀 Optimized Performance** - Compiles down to StyleSheet.create for optimal performance
+- **🔀 Dynamic className** - Conditional styles support with compile-time optimization
+- **📦 Small Bundle Size** - Only includes actual styles used in your app
+- **🎯 State Modifiers** - `active:`, `hover:`, `focus:`, and `disabled:` modifiers for interactive components
+- **📱 Platform Modifiers** - `ios:`, `android:`, and `web:` modifiers for platform-specific styling
+- **🌓 Color Scheme Modifiers** - `dark:` and `light:` and `scheme:` modifiers for automatic theme adaptation
+- **🎨 Custom Colors** - Extend the default palette via tailwind.config.\*
+- **📐 Arbitrary Values** - Use custom sizes and borders: `w-[123px]`, `rounded-[20px]`
+- **📜 Special Style Props** - Support for `contentContainerClassName`, `columnWrapperClassName`, and more
 
 ## Demo
 
