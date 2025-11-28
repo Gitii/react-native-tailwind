@@ -40,6 +40,7 @@ export default defineConfig({
             { label: "State Modifiers", slug: "guides/state-modifiers" },
             { label: "Platform Modifiers", slug: "guides/platform-modifiers" },
             { label: "Color Scheme", slug: "guides/color-scheme" },
+            { label: "RTL Support", slug: "guides/rtl-support" },
             { label: "Compile-Time tw", slug: "guides/compile-time-tw" },
             { label: "Runtime tw", slug: "guides/runtime-tw" },
             { label: "List Components", slug: "guides/list-components" },
