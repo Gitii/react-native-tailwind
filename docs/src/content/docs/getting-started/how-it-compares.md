@@ -109,6 +109,55 @@ With zero runtime dependencies, React Native Tailwind has the smallest attack su
 
 In an era of supply chain attacks, less is more.
 
+### 🎨 Smart Color Scheme Support
+
+React Native Tailwind is all about **developer experience** — making things as smooth as possible. The unique `scheme:` modifier is a perfect example:
+
+**One className, both themes — automatically:**
+
+```tsx
+<View className="scheme:bg-surface p-4 rounded-lg">
+  <Text className="scheme:text-label">Adapts to any theme!</Text>
+</View>
+```
+
+With colors defined in your config:
+
+```javascript
+// tailwind.config.mjs
+export default {
+  theme: {
+    extend: {
+      colors: {
+        surface: { light: "#ffffff", dark: "#1f2937" },
+        label: { light: "#111827", dark: "#f9fafb" },
+      },
+    },
+  },
+};
+```
+
+**The compiler expands `scheme:` to both variants:**
+
+```tsx
+// scheme:bg-surface automatically becomes:
+<View className="light:bg-surface-light dark:bg-surface-dark p-4 rounded-lg">
+  <Text className="light:text-label-light dark:text-label-dark">
+    Adapts to any theme!
+  </Text>
+</View>
+```
+
+🪄 **Magic happens automatically:**
+
+- ✅ `scheme:` expands to both `light:` and `dark:` variants
+- ✅ `useColorScheme()` hook injected only when needed
+- ✅ Define semantic colors once, use everywhere
+- ✅ Perfect for iOS system colors or brand themes
+- ✅ No manual theme context setup required
+
+Your app responds to system theme changes instantly — zero boilerplate, zero configuration.
+
 ## 📊 Feature Comparison
 
 | Feature                                     | React Native Tailwind |      NativeWind       |          Uniwind          |
