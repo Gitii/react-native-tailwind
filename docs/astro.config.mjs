@@ -65,6 +65,7 @@ export default defineConfig({
         {
           label: "Advanced",
           items: [
+            { label: "Component Variants", slug: "advanced/component-variants" },
             { label: "Custom Attributes", slug: "advanced/custom-attributes" },
             { label: "Custom Styles Identifier", slug: "advanced/custom-styles-identifier" },
             { label: "Custom Colors", slug: "advanced/custom-colors" },
