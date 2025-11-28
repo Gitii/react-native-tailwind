@@ -76,6 +76,35 @@ describe("className visitor - basic transformation", () => {
     expect(output).toMatch(/_state\s*=>/);
   });
 
+  it("should preserve 'use client' directive when injecting StyleSheet.create", () => {
+    const input = `
+      'use client';
+      import { View } from 'react-native';
+      export function Component() {
+        return <View className="m-4 p-2" />;
+      }
+    `;
+
+    const output = transform(input, undefined, true);
+
+    // 'use client' should be the first statement
+    const lines = output.split("\n").filter((l: string) => l.trim());
+    const useClientIndex = lines.findIndex(
+      (l: string) => l.includes("'use client'") || l.includes('"use client"'),
+    );
+    expect(useClientIndex).toBe(0);
+
+    // StyleSheet.create should be in the output
+    expect(output).toContain("StyleSheet.create");
+    expect(output).toContain("_twStyles");
+
+    // Imports should come after 'use client', before StyleSheet.create
+    const importIndex = lines.findIndex((l: string) => l.includes("import"));
+    const styleSheetIndex = lines.findIndex((l: string) => l.includes("StyleSheet.create"));
+    expect(importIndex).toBeGreaterThan(useClientIndex);
+    expect(styleSheetIndex).toBeGreaterThan(importIndex);
+  });
+
   it("should merge dynamic className with function-based style prop", () => {
     const input = `
       import { TextInput } from 'react-native';
@@ -1308,5 +1337,289 @@ describe("className visitor - directional border colors", () => {
 
     // Should have conditional expression with both styles
     expect(output).toMatch(/isError\s*\?\s*_twStyles\._border_t_red_500/);
+  });
+});
+
+describe("className visitor - directional modifiers (RTL/LTR)", () => {
+  it("should transform rtl: modifier and inject I18nManager import", () => {
+    const input = `
+      import { View } from 'react-native';
+      export function Component() {
+        return <View className="rtl:mr-4" />;
+      }
+    `;
+
+    const output = transform(input, undefined, true);
+
+    // Should import I18nManager
+    expect(output).toContain("I18nManager");
+
+    // Should declare _twIsRTL variable
+    expect(output).toContain("_twIsRTL");
+    expect(output).toContain("I18nManager.isRTL");
+
+    // Should have StyleSheet with rtl style
+    expect(output).toContain("StyleSheet.create");
+    expect(output).toContain("_rtl_mr_4");
+
+    // Should have conditional for RTL
+    expect(output).toMatch(/_twIsRTL\s*&&\s*_twStyles\._rtl_mr_4/);
+  });
+
+  it("should transform ltr: modifier with negated conditional", () => {
+    const input = `
+      import { View } from 'react-native';
+      export function Component() {
+        return <View className="ltr:ml-4" />;
+      }
+    `;
+
+    const output = transform(input, undefined, true);
+
+    // Should import I18nManager
+    expect(output).toContain("I18nManager");
+
+    // Should have StyleSheet with ltr style
+    expect(output).toContain("_ltr_ml_4");
+
+    // Should have negated conditional for LTR (!_twIsRTL)
+    expect(output).toMatch(/!\s*_twIsRTL\s*&&\s*_twStyles\._ltr_ml_4/);
+  });
+
+  it("should combine rtl: and ltr: modifiers", () => {
+    const input = `
+      import { View } from 'react-native';
+      export function Component() {
+        return <View className="rtl:mr-4 ltr:ml-4" />;
+      }
+    `;
+
+    const output = transform(input, undefined, true);
+
+    // Should have both styles
+    expect(output).toContain("_rtl_mr_4");
+    expect(output).toContain("_ltr_ml_4");
+
+    // Should have both conditionals
+    expect(output).toMatch(/_twIsRTL\s*&&\s*_twStyles\._rtl_mr_4/);
+    expect(output).toMatch(/!\s*_twIsRTL\s*&&\s*_twStyles\._ltr_ml_4/);
+  });
+
+  it("should combine directional modifiers with base classes", () => {
+    const input = `
+      import { View } from 'react-native';
+      export function Component() {
+        return <View className="p-4 bg-white rtl:pr-8 ltr:pl-8" />;
+      }
+    `;
+
+    const output = transform(input, undefined, true);
+
+    // Should have base style
+    expect(output).toContain("_bg_white_p_4");
+
+    // Should have directional styles
+    expect(output).toContain("_rtl_pr_8");
+    expect(output).toContain("_ltr_pl_8");
+
+    // Should generate an array with base and conditional styles
+    expect(output).toMatch(/style:\s*\[/);
+  });
+
+  it("should combine directional modifiers with platform modifiers", () => {
+    const input = `
+      import { View } from 'react-native';
+      export function Component() {
+        return <View className="p-4 ios:p-6 rtl:mr-4" />;
+      }
+    `;
+
+    const output = transform(input, undefined, true);
+
+    // Should have Platform import
+    expect(output).toContain("Platform");
+
+    // Should have I18nManager import
+    expect(output).toContain("I18nManager");
+
+    // Should have all styles
+    expect(output).toContain("_p_4");
+    expect(output).toContain("_ios_p_6");
+    expect(output).toContain("_rtl_mr_4");
+
+    // Should have Platform.select
+    expect(output).toContain("Platform.select");
+
+    // Should have RTL conditional
+    expect(output).toMatch(/_twIsRTL\s*&&/);
+  });
+
+  it("should not add I18nManager import if already present", () => {
+    const input = `
+      import { View, I18nManager } from 'react-native';
+      export function Component() {
+        return <View className="rtl:mr-4" />;
+      }
+    `;
+
+    const output = transform(input, undefined, true);
+
+    // Should have only one I18nManager import (merged, not duplicated)
+    const i18nMatches = output.match(/I18nManager/g);
+    // Should have I18nManager in: import, variable declaration, and style usage
+    expect(i18nMatches).toBeTruthy();
+    // Should not have duplicate imports
+    expect(output).not.toMatch(/import\s*\{[^}]*I18nManager[^}]*I18nManager[^}]*\}/);
+  });
+
+  it("should work with directional logical properties", () => {
+    const input = `
+      import { View } from 'react-native';
+      export function Component() {
+        return <View className="rtl:ms-4 ltr:me-4" />;
+      }
+    `;
+
+    const output = transform(input, undefined, true);
+
+    // Should have logical property styles
+    expect(output).toContain("_rtl_ms_4");
+    expect(output).toContain("_ltr_me_4");
+
+    // Should contain marginStart and marginEnd in the StyleSheet
+    expect(output).toContain("marginStart");
+    expect(output).toContain("marginEnd");
+  });
+
+  it("should combine directional modifiers with color scheme modifiers", () => {
+    const input = `
+      import { View } from 'react-native';
+      export function Component() {
+        return <View className="bg-white dark:bg-gray-900 rtl:pr-4" />;
+      }
+    `;
+
+    const output = transform(input, undefined, true);
+
+    // Should have useColorScheme
+    expect(output).toContain("useColorScheme");
+
+    // Should have I18nManager
+    expect(output).toContain("I18nManager");
+
+    // Should have all styles
+    expect(output).toContain("_bg_white");
+    expect(output).toContain("_dark_bg_gray_900");
+    expect(output).toContain("_rtl_pr_4");
+
+    // Should have both conditionals
+    expect(output).toMatch(/_twColorScheme\s*===\s*["']dark["']/);
+    expect(output).toMatch(/_twIsRTL\s*&&/);
+  });
+
+  it("should handle aliased I18nManager import", () => {
+    const input = `
+      import { View, I18nManager as RTL } from 'react-native';
+      export function Component() {
+        // Use RTL somewhere so TypeScript doesn't strip the unused import
+        const isRtl = RTL.isRTL;
+        return <View className="rtl:mr-4" />;
+      }
+    `;
+
+    const output = transform(input, undefined, true);
+
+    // Should use the aliased identifier RTL.isRTL instead of I18nManager.isRTL
+    expect(output).toContain("RTL.isRTL");
+    // Should preserve the aliased import
+    expect(output).toContain("I18nManager as RTL");
+    // Should not add a separate I18nManager import without alias
+    expect(output).not.toMatch(/I18nManager,|,\s*I18nManager\s*[,}]/);
+  });
+
+  it("should preserve 'use client' directive when injecting I18nManager variable", () => {
+    const input = `
+      'use client';
+      import { View } from 'react-native';
+      export function Component() {
+        return <View className="rtl:mr-4" />;
+      }
+    `;
+
+    const output = transform(input, undefined, true);
+
+    // 'use client' should be the first statement
+    const lines = output.split("\n").filter((l: string) => l.trim());
+    const useClientIndex = lines.findIndex(
+      (l: string) => l.includes("'use client'") || l.includes('"use client"'),
+    );
+    expect(useClientIndex).toBe(0);
+
+    // I18nManager variable should come after imports, not before 'use client'
+    expect(output).toContain("_twIsRTL");
+    expect(output).toContain("I18nManager.isRTL");
+  });
+
+  it("should preserve 'use strict' directive when injecting I18nManager variable", () => {
+    const input = `
+      'use strict';
+      import { View } from 'react-native';
+      export function Component() {
+        return <View className="rtl:mr-4" />;
+      }
+    `;
+
+    const output = transform(input, undefined, true);
+
+    // 'use strict' should be preserved at the top
+    const lines = output.split("\n").filter((l: string) => l.trim());
+    const useStrictIndex = lines.findIndex(
+      (l: string) => l.includes("'use strict'") || l.includes('"use strict"'),
+    );
+    expect(useStrictIndex).toBe(0);
+
+    // I18nManager variable should work correctly
+    expect(output).toContain("_twIsRTL");
+    expect(output).toContain("I18nManager.isRTL");
+  });
+
+  it("should expand text-start to directional modifiers", () => {
+    const input = `
+      import { Text } from 'react-native';
+      export function Component() {
+        return <Text className="text-start" />;
+      }
+    `;
+
+    const output = transform(input, undefined, true);
+
+    // Should have I18nManager import (text-start expands to ltr:/rtl: modifiers)
+    expect(output).toContain("I18nManager");
+
+    // Should have both ltr and rtl styles
+    expect(output).toContain("_ltr_text_left");
+    expect(output).toContain("_rtl_text_right");
+
+    // Should have conditionals for both
+    expect(output).toMatch(/_twIsRTL\s*&&/);
+    expect(output).toMatch(/!\s*_twIsRTL\s*&&/);
+  });
+
+  it("should expand text-end to directional modifiers", () => {
+    const input = `
+      import { Text } from 'react-native';
+      export function Component() {
+        return <Text className="text-end" />;
+      }
+    `;
+
+    const output = transform(input, undefined, true);
+
+    // Should have I18nManager import
+    expect(output).toContain("I18nManager");
+
+    // text-end expands to ltr:text-right rtl:text-left
+    expect(output).toContain("_ltr_text_right");
+    expect(output).toContain("_rtl_text_left");
   });
 });
