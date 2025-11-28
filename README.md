@@ -209,11 +209,13 @@ export function PlatformCard() {
 
 Contributions are welcome! Please read our [Contributing Guide](https://mgcrea.github.io/react-native-tailwind/advanced/contributing/) for details.
 
+## Credits
+
+- [Tailwind CSS](https://tailwindcss.com/) - The utility-first CSS framework that revolutionized the way we style applications. If you enjoy this library, consider supporting them by purchasing [Tailwind Plus](https://tailwindcss.com/plus).
+
 ## Authors
 
 - [Olivier Louvignes](https://github.com/mgcrea) - [@mgcrea](https://twitter.com/mgcrea)
-
-## License
 
 ```text
 MIT License
