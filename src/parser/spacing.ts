@@ -70,8 +70,13 @@ function parseArbitrarySpacing(value: string): number | null {
 /**
  * Parse spacing classes (margin, padding, gap)
  * Examples: m-4, mx-2, mt-8, p-4, px-2, pt-8, gap-4, m-[16px], pl-[4.5px], -m-4, -mt-[10px], ms-4, pe-2
+ * @param cls - The class name to parse
+ * @param customSpacing - Optional custom spacing values from tailwind.config
  */
-export function parseSpacing(cls: string): StyleObject | null {
+export function parseSpacing(cls: string, customSpacing?: Record<string, number>): StyleObject | null {
+  // Merge custom spacing with defaults (custom takes precedence)
+  const spacingMap = customSpacing ? { ...SPACING_SCALE, ...customSpacing } : SPACING_SCALE;
+
   // Margin: m-4, mx-2, mt-8, ms-4, me-2, m-[16px], -m-4, -mt-2, etc.
   // Supports negative values for margins (but not padding or gap)
   // s = start (RTL-aware), e = end (RTL-aware)
@@ -80,15 +85,15 @@ export function parseSpacing(cls: string): StyleObject | null {
     const [, negativePrefix, dir, valueStr] = marginMatch;
     const isNegative = negativePrefix === "-";
 
-    // Try arbitrary value first
+    // Try arbitrary value first (highest priority)
     const arbitraryValue = parseArbitrarySpacing(valueStr);
     if (arbitraryValue !== null) {
       const finalValue = isNegative ? -arbitraryValue : arbitraryValue;
       return getMarginStyle(dir, finalValue);
     }
 
-    // Try preset scale
-    const scaleValue = SPACING_SCALE[valueStr];
+    // Try spacing scale (includes custom spacing)
+    const scaleValue = spacingMap[valueStr];
     if (scaleValue !== undefined) {
       const finalValue = isNegative ? -scaleValue : scaleValue;
       return getMarginStyle(dir, finalValue);
@@ -101,14 +106,14 @@ export function parseSpacing(cls: string): StyleObject | null {
   if (paddingMatch) {
     const [, dir, valueStr] = paddingMatch;
 
-    // Try arbitrary value first
+    // Try arbitrary value first (highest priority)
     const arbitraryValue = parseArbitrarySpacing(valueStr);
     if (arbitraryValue !== null) {
       return getPaddingStyle(dir, arbitraryValue);
     }
 
-    // Try preset scale
-    const scaleValue = SPACING_SCALE[valueStr];
+    // Try spacing scale (includes custom spacing)
+    const scaleValue = spacingMap[valueStr];
     if (scaleValue !== undefined) {
       return getPaddingStyle(dir, scaleValue);
     }
@@ -119,14 +124,14 @@ export function parseSpacing(cls: string): StyleObject | null {
   if (gapMatch) {
     const valueStr = gapMatch[1];
 
-    // Try arbitrary value first
+    // Try arbitrary value first (highest priority)
     const arbitraryValue = parseArbitrarySpacing(valueStr);
     if (arbitraryValue !== null) {
       return { gap: arbitraryValue };
     }
 
-    // Try preset scale
-    const scaleValue = SPACING_SCALE[valueStr];
+    // Try spacing scale (includes custom spacing)
+    const scaleValue = spacingMap[valueStr];
     if (scaleValue !== undefined) {
       return { gap: scaleValue };
     }

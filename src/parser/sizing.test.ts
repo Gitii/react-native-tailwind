@@ -254,3 +254,59 @@ describe("parseSizing - comprehensive coverage", () => {
     expect(parseSizing("h-full")).toEqual({ height: "100%" });
   });
 });
+
+describe("parseSizing - custom spacing", () => {
+  const customSpacing = {
+    xs: 4,
+    sm: 8,
+    md: 16,
+    lg: 32,
+    xl: 64,
+    "4": 20, // Override default (16)
+  };
+
+  it("should support custom spacing values for width", () => {
+    expect(parseSizing("w-xs", customSpacing)).toEqual({ width: 4 });
+    expect(parseSizing("w-sm", customSpacing)).toEqual({ width: 8 });
+    expect(parseSizing("w-lg", customSpacing)).toEqual({ width: 32 });
+    expect(parseSizing("w-xl", customSpacing)).toEqual({ width: 64 });
+  });
+
+  it("should support custom spacing values for height", () => {
+    expect(parseSizing("h-xs", customSpacing)).toEqual({ height: 4 });
+    expect(parseSizing("h-md", customSpacing)).toEqual({ height: 16 });
+    expect(parseSizing("h-xl", customSpacing)).toEqual({ height: 64 });
+  });
+
+  it("should support custom spacing values for min/max dimensions", () => {
+    expect(parseSizing("min-w-sm", customSpacing)).toEqual({ minWidth: 8 });
+    expect(parseSizing("min-h-lg", customSpacing)).toEqual({ minHeight: 32 });
+    expect(parseSizing("max-w-xl", customSpacing)).toEqual({ maxWidth: 64 });
+    expect(parseSizing("max-h-md", customSpacing)).toEqual({ maxHeight: 16 });
+  });
+
+  it("should allow custom spacing to override preset values", () => {
+    expect(parseSizing("w-4", customSpacing)).toEqual({ width: 20 }); // Custom 20, not default 16
+    expect(parseSizing("h-4", customSpacing)).toEqual({ height: 20 }); // Custom 20, not default 16
+  });
+
+  it("should prefer arbitrary values over custom spacing", () => {
+    expect(parseSizing("w-[24px]", customSpacing)).toEqual({ width: 24 }); // Arbitrary wins
+    expect(parseSizing("h-[50]", customSpacing)).toEqual({ height: 50 }); // Arbitrary wins
+  });
+
+  it("should fall back to preset scale for unknown custom keys", () => {
+    expect(parseSizing("w-8", customSpacing)).toEqual({ width: 32 }); // Not overridden, uses preset
+    expect(parseSizing("h-12", customSpacing)).toEqual({ height: 48 }); // Not overridden, uses preset
+  });
+
+  it("should preserve percentage values with custom spacing", () => {
+    expect(parseSizing("w-full", customSpacing)).toEqual({ width: "100%" });
+    expect(parseSizing("h-1/2", customSpacing)).toEqual({ height: "50%" });
+  });
+
+  it("should work without custom spacing (backward compatible)", () => {
+    expect(parseSizing("w-4")).toEqual({ width: 16 }); // Default behavior
+    expect(parseSizing("h-8")).toEqual({ height: 32 }); // Default behavior
+  });
+});

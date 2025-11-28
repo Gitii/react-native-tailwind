@@ -164,8 +164,12 @@ function parseArbitraryPerspective(value: string): number | null {
 /**
  * Parse transform classes
  * Each transform class returns a transform array with a single transform object
+ * @param cls - The class name to parse
+ * @param customSpacing - Optional custom spacing values from tailwind.config (for translate utilities)
  */
-export function parseTransform(cls: string): StyleObject | null {
+export function parseTransform(cls: string, customSpacing?: Record<string, number>): StyleObject | null {
+  // Merge custom spacing with defaults for translate utilities
+  const spacingMap = customSpacing ? { ...SPACING_SCALE, ...customSpacing } : SPACING_SCALE;
   // Transform origin warning (not supported in React Native)
   if (cls.startsWith("origin-")) {
     /* v8 ignore next 5 */
@@ -320,7 +324,7 @@ export function parseTransform(cls: string): StyleObject | null {
       return { transform: [{ translateX: value }] };
     }
 
-    const translateValue = SPACING_SCALE[translateKey];
+    const translateValue = spacingMap[translateKey];
     if (translateValue !== undefined) {
       const value = isNegative ? -translateValue : translateValue;
       return { transform: [{ translateX: value }] };
@@ -346,7 +350,7 @@ export function parseTransform(cls: string): StyleObject | null {
       return { transform: [{ translateY: value }] };
     }
 
-    const translateValue = SPACING_SCALE[translateKey];
+    const translateValue = spacingMap[translateKey];
     if (translateValue !== undefined) {
       const value = isNegative ? -translateValue : translateValue;
       return { transform: [{ translateY: value }] };

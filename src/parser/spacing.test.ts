@@ -415,3 +415,60 @@ describe("parseSpacing - logical padding (RTL-aware)", () => {
     expect(parseSpacing("pe-[24]")).toEqual({ paddingEnd: 24 });
   });
 });
+
+describe("parseSpacing - custom spacing", () => {
+  const customSpacing = {
+    xs: 4,
+    sm: 8,
+    md: 16,
+    lg: 32,
+    xl: 64,
+    "4": 20, // Override default (16)
+  };
+
+  it("should support custom spacing values for margin", () => {
+    expect(parseSpacing("m-xs", customSpacing)).toEqual({ margin: 4 });
+    expect(parseSpacing("m-sm", customSpacing)).toEqual({ margin: 8 });
+    expect(parseSpacing("m-lg", customSpacing)).toEqual({ margin: 32 });
+    expect(parseSpacing("mx-xl", customSpacing)).toEqual({ marginHorizontal: 64 });
+    expect(parseSpacing("mt-md", customSpacing)).toEqual({ marginTop: 16 });
+  });
+
+  it("should support custom spacing values for padding", () => {
+    expect(parseSpacing("p-xs", customSpacing)).toEqual({ padding: 4 });
+    expect(parseSpacing("p-sm", customSpacing)).toEqual({ padding: 8 });
+    expect(parseSpacing("px-lg", customSpacing)).toEqual({ paddingHorizontal: 32 });
+    expect(parseSpacing("pt-xl", customSpacing)).toEqual({ paddingTop: 64 });
+  });
+
+  it("should support custom spacing values for gap", () => {
+    expect(parseSpacing("gap-xs", customSpacing)).toEqual({ gap: 4 });
+    expect(parseSpacing("gap-md", customSpacing)).toEqual({ gap: 16 });
+    expect(parseSpacing("gap-xl", customSpacing)).toEqual({ gap: 64 });
+  });
+
+  it("should allow custom spacing to override preset values", () => {
+    expect(parseSpacing("m-4", customSpacing)).toEqual({ margin: 20 }); // Custom 20, not default 16
+  });
+
+  it("should prefer arbitrary values over custom spacing", () => {
+    expect(parseSpacing("m-[24px]", customSpacing)).toEqual({ margin: 24 }); // Arbitrary wins
+    expect(parseSpacing("p-[50]", customSpacing)).toEqual({ padding: 50 }); // Arbitrary wins
+  });
+
+  it("should support negative margins with custom spacing", () => {
+    expect(parseSpacing("-m-xs", customSpacing)).toEqual({ margin: -4 });
+    expect(parseSpacing("-m-lg", customSpacing)).toEqual({ margin: -32 });
+    expect(parseSpacing("-mx-xl", customSpacing)).toEqual({ marginHorizontal: -64 });
+  });
+
+  it("should fall back to preset scale for unknown custom keys", () => {
+    expect(parseSpacing("m-8", customSpacing)).toEqual({ margin: 32 }); // Not overridden, uses preset
+    expect(parseSpacing("p-12", customSpacing)).toEqual({ padding: 48 }); // Not overridden, uses preset
+  });
+
+  it("should work without custom spacing (backward compatible)", () => {
+    expect(parseSpacing("m-4")).toEqual({ margin: 16 }); // Default behavior
+    expect(parseSpacing("p-8")).toEqual({ padding: 32 }); // Default behavior
+  });
+});

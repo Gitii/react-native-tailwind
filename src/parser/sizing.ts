@@ -95,8 +95,13 @@ function parseArbitrarySize(value: string): number | string | null {
 
 /**
  * Parse sizing classes
+ * @param cls - The class name to parse
+ * @param customSpacing - Optional custom spacing values from tailwind.config (shared with spacing utilities)
  */
-export function parseSizing(cls: string): StyleObject | null {
+export function parseSizing(cls: string, customSpacing?: Record<string, number>): StyleObject | null {
+  // Merge custom spacing with defaults (custom takes precedence)
+  const sizeMap = customSpacing ? { ...SIZE_SCALE, ...customSpacing } : SIZE_SCALE;
+
   // Width
   if (cls.startsWith("w-")) {
     const sizeKey = cls.substring(2);
@@ -106,7 +111,7 @@ export function parseSizing(cls: string): StyleObject | null {
       return { width: `${RUNTIME_DIMENSIONS_MARKER}width}}` } as StyleObject;
     }
 
-    // Arbitrary values: w-[123px], w-[50%]
+    // Arbitrary values: w-[123px], w-[50%] (highest priority)
     const arbitrarySize = parseArbitrarySize(sizeKey);
     if (arbitrarySize !== null) {
       return { width: arbitrarySize };
@@ -118,8 +123,8 @@ export function parseSizing(cls: string): StyleObject | null {
       return { width: percentage };
     }
 
-    // Numeric widths: w-4, w-8, etc.
-    const numericSize = SIZE_SCALE[sizeKey];
+    // Numeric widths: w-4, w-8, etc. (includes custom spacing)
+    const numericSize = sizeMap[sizeKey];
     if (numericSize !== undefined) {
       return { width: numericSize };
     }
@@ -139,7 +144,7 @@ export function parseSizing(cls: string): StyleObject | null {
       return { height: `${RUNTIME_DIMENSIONS_MARKER}height}}` } as StyleObject;
     }
 
-    // Arbitrary values: h-[123px], h-[50%]
+    // Arbitrary values: h-[123px], h-[50%] (highest priority)
     const arbitrarySize = parseArbitrarySize(sizeKey);
     if (arbitrarySize !== null) {
       return { height: arbitrarySize };
@@ -151,8 +156,8 @@ export function parseSizing(cls: string): StyleObject | null {
       return { height: percentage };
     }
 
-    // Numeric heights: h-4, h-8, etc.
-    const numericSize = SIZE_SCALE[sizeKey];
+    // Numeric heights: h-4, h-8, etc. (includes custom spacing)
+    const numericSize = sizeMap[sizeKey];
     if (numericSize !== undefined) {
       return { height: numericSize };
     }
@@ -167,7 +172,7 @@ export function parseSizing(cls: string): StyleObject | null {
   if (cls.startsWith("min-w-")) {
     const sizeKey = cls.substring(6);
 
-    // Arbitrary values: min-w-[123px], min-w-[50%]
+    // Arbitrary values: min-w-[123px], min-w-[50%] (highest priority)
     const arbitrarySize = parseArbitrarySize(sizeKey);
     if (arbitrarySize !== null) {
       return { minWidth: arbitrarySize };
@@ -178,7 +183,7 @@ export function parseSizing(cls: string): StyleObject | null {
       return { minWidth: percentage };
     }
 
-    const numericSize = SIZE_SCALE[sizeKey];
+    const numericSize = sizeMap[sizeKey];
     if (numericSize !== undefined) {
       return { minWidth: numericSize };
     }
@@ -188,7 +193,7 @@ export function parseSizing(cls: string): StyleObject | null {
   if (cls.startsWith("min-h-")) {
     const sizeKey = cls.substring(6);
 
-    // Arbitrary values: min-h-[123px], min-h-[50%]
+    // Arbitrary values: min-h-[123px], min-h-[50%] (highest priority)
     const arbitrarySize = parseArbitrarySize(sizeKey);
     if (arbitrarySize !== null) {
       return { minHeight: arbitrarySize };
@@ -199,7 +204,7 @@ export function parseSizing(cls: string): StyleObject | null {
       return { minHeight: percentage };
     }
 
-    const numericSize = SIZE_SCALE[sizeKey];
+    const numericSize = sizeMap[sizeKey];
     if (numericSize !== undefined) {
       return { minHeight: numericSize };
     }
@@ -209,7 +214,7 @@ export function parseSizing(cls: string): StyleObject | null {
   if (cls.startsWith("max-w-")) {
     const sizeKey = cls.substring(6);
 
-    // Arbitrary values: max-w-[123px], max-w-[50%]
+    // Arbitrary values: max-w-[123px], max-w-[50%] (highest priority)
     const arbitrarySize = parseArbitrarySize(sizeKey);
     if (arbitrarySize !== null) {
       return { maxWidth: arbitrarySize };
@@ -220,7 +225,7 @@ export function parseSizing(cls: string): StyleObject | null {
       return { maxWidth: percentage };
     }
 
-    const numericSize = SIZE_SCALE[sizeKey];
+    const numericSize = sizeMap[sizeKey];
     if (numericSize !== undefined) {
       return { maxWidth: numericSize };
     }
@@ -230,7 +235,7 @@ export function parseSizing(cls: string): StyleObject | null {
   if (cls.startsWith("max-h-")) {
     const sizeKey = cls.substring(6);
 
-    // Arbitrary values: max-h-[123px], max-h-[50%]
+    // Arbitrary values: max-h-[123px], max-h-[50%] (highest priority)
     const arbitrarySize = parseArbitrarySize(sizeKey);
     if (arbitrarySize !== null) {
       return { maxHeight: arbitrarySize };
@@ -241,7 +246,7 @@ export function parseSizing(cls: string): StyleObject | null {
       return { maxHeight: percentage };
     }
 
-    const numericSize = SIZE_SCALE[sizeKey];
+    const numericSize = sizeMap[sizeKey];
     if (numericSize !== undefined) {
       return { maxHeight: numericSize };
     }

@@ -316,3 +316,60 @@ describe("parseTransform - case sensitivity", () => {
     expect(parseTransform("ROTATE-45")).toBeNull();
   });
 });
+
+describe("parseTransform - custom spacing", () => {
+  const customSpacing = {
+    xs: 4,
+    sm: 8,
+    md: 16,
+    lg: 32,
+    xl: 64,
+    "4": 20, // Override default (16)
+  };
+
+  it("should support custom spacing values for translateX", () => {
+    expect(parseTransform("translate-x-xs", customSpacing)).toEqual({ transform: [{ translateX: 4 }] });
+    expect(parseTransform("translate-x-sm", customSpacing)).toEqual({ transform: [{ translateX: 8 }] });
+    expect(parseTransform("translate-x-lg", customSpacing)).toEqual({ transform: [{ translateX: 32 }] });
+    expect(parseTransform("translate-x-xl", customSpacing)).toEqual({ transform: [{ translateX: 64 }] });
+  });
+
+  it("should support custom spacing values for translateY", () => {
+    expect(parseTransform("translate-y-xs", customSpacing)).toEqual({ transform: [{ translateY: 4 }] });
+    expect(parseTransform("translate-y-md", customSpacing)).toEqual({ transform: [{ translateY: 16 }] });
+    expect(parseTransform("translate-y-xl", customSpacing)).toEqual({ transform: [{ translateY: 64 }] });
+  });
+
+  it("should support negative custom spacing for translate", () => {
+    expect(parseTransform("-translate-x-sm", customSpacing)).toEqual({ transform: [{ translateX: -8 }] });
+    expect(parseTransform("-translate-y-lg", customSpacing)).toEqual({ transform: [{ translateY: -32 }] });
+  });
+
+  it("should allow custom spacing to override preset values", () => {
+    expect(parseTransform("translate-x-4", customSpacing)).toEqual({ transform: [{ translateX: 20 }] }); // Custom 20, not default 16
+    expect(parseTransform("translate-y-4", customSpacing)).toEqual({ transform: [{ translateY: 20 }] }); // Custom 20, not default 16
+  });
+
+  it("should prefer arbitrary values over custom spacing", () => {
+    expect(parseTransform("translate-x-[24px]", customSpacing)).toEqual({ transform: [{ translateX: 24 }] }); // Arbitrary wins
+    expect(parseTransform("translate-y-[50]", customSpacing)).toEqual({ transform: [{ translateY: 50 }] }); // Arbitrary wins
+  });
+
+  it("should fall back to preset scale for unknown custom keys", () => {
+    expect(parseTransform("translate-x-8", customSpacing)).toEqual({ transform: [{ translateX: 32 }] }); // Not overridden, uses preset
+    expect(parseTransform("translate-y-12", customSpacing)).toEqual({ transform: [{ translateY: 48 }] }); // Not overridden, uses preset
+  });
+
+  it("should work without custom spacing (backward compatible)", () => {
+    expect(parseTransform("translate-x-4")).toEqual({ transform: [{ translateX: 16 }] }); // Default behavior
+    expect(parseTransform("translate-y-8")).toEqual({ transform: [{ translateY: 32 }] }); // Default behavior
+  });
+
+  it("should not affect non-translate transforms", () => {
+    // Scale, rotate, skew, perspective should not use custom spacing
+    expect(parseTransform("scale-110", customSpacing)).toEqual({ transform: [{ scale: 1.1 }] });
+    expect(parseTransform("rotate-45", customSpacing)).toEqual({ transform: [{ rotate: "45deg" }] });
+    expect(parseTransform("skew-x-6", customSpacing)).toEqual({ transform: [{ skewX: "6deg" }] });
+    expect(parseTransform("perspective-500", customSpacing)).toEqual({ transform: [{ perspective: 500 }] });
+  });
+});
