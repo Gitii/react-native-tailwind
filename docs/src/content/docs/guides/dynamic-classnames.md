@@ -9,18 +9,19 @@ You can use dynamic expressions in `className` for conditional styling. The Babe
 
 ```tsx
 import { useState } from "react";
-import { View, Text, Pressable } from "react-native";
+import { View, Text, TouchableOpacity } from "react-native";
 
-export function ToggleButton() {
+export function StatusBadge() {
   const [isActive, setIsActive] = useState(false);
 
   return (
-    <Pressable
-      onPress={() => setIsActive(!isActive)}
-      className={isActive ? "bg-green-500 p-4" : "bg-red-500 p-4"}
-    >
-      <Text className="text-white">{isActive ? "Active" : "Inactive"}</Text>
-    </Pressable>
+    <TouchableOpacity onPress={() => setIsActive(!isActive)}>
+      <View className={isActive ? "bg-green-500 p-4 rounded-lg" : "bg-red-500 p-4 rounded-lg"}>
+        <Text className="text-white font-semibold">
+          {isActive ? "Active" : "Inactive"}
+        </Text>
+      </View>
+    </TouchableOpacity>
   );
 }
 ```
@@ -28,12 +29,13 @@ export function ToggleButton() {
 **Transforms to:**
 
 ```tsx
-<Pressable
-  onPress={() => setIsActive(!isActive)}
-  style={isActive ? _twStyles._bg_green_500_p_4 : _twStyles._bg_red_500_p_4}
->
-  <Text style={_twStyles._text_white}>{isActive ? "Active" : "Inactive"}</Text>
-</Pressable>
+<TouchableOpacity onPress={() => setIsActive(!isActive)}>
+  <View style={isActive ? _twStyles._bg_green_500_p_4_rounded_lg : _twStyles._bg_red_500_p_4_rounded_lg}>
+    <Text style={_twStyles._font_semibold_text_white}>
+      {isActive ? "Active" : "Inactive"}
+    </Text>
+  </View>
+</TouchableOpacity>
 ```
 
 ## Template Literals (Static + Dynamic)
@@ -41,26 +43,24 @@ export function ToggleButton() {
 Combine static classes with dynamic conditionals:
 
 ```tsx
-<Pressable
-  className={`border-2 rounded-lg ${isActive ? "bg-blue-500" : "bg-gray-300"} p-4`}
->
-  <Text className="text-white">Click Me</Text>
-</Pressable>
+<View className={`border-2 rounded-lg ${isSelected ? "bg-blue-500" : "bg-gray-300"} p-4`}>
+  <Text className="text-white font-medium">Card Content</Text>
+</View>
 ```
 
 **Transforms to:**
 
 ```tsx
-<Pressable
+<View
   style={[
     _twStyles._border_2,
     _twStyles._rounded_lg,
-    isActive ? _twStyles._bg_blue_500 : _twStyles._bg_gray_300,
+    isSelected ? _twStyles._bg_blue_500 : _twStyles._bg_gray_300,
     _twStyles._p_4,
   ]}
 >
-  <Text style={_twStyles._text_white}>Click Me</Text>
-</Pressable>
+  <Text style={_twStyles._font_medium_text_white}>Card Content</Text>
+</View>
 ```
 
 ## Logical Expression
@@ -125,7 +125,7 @@ Here's a complete example showing multiple conditional patterns:
 
 ```tsx
 import { useState } from "react";
-import { View, Text, Pressable } from "react-native";
+import { View, Text, TouchableOpacity } from "react-native";
 
 export function StatusCard({ status }) {
   const [isExpanded, setIsExpanded] = useState(false);
@@ -140,9 +140,9 @@ export function StatusCard({ status }) {
         ${isExpanded ? "border-2" : "border"}
       `}
     >
-      <Pressable onPress={() => setIsExpanded(!isExpanded)}>
+      <TouchableOpacity onPress={() => setIsExpanded(!isExpanded)}>
         <Text className="font-semibold">{status.toUpperCase()}</Text>
-      </Pressable>
+      </TouchableOpacity>
       {isExpanded && (
         <Text className="mt-2 text-sm text-gray-600">
           Additional details here
