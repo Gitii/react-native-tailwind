@@ -221,6 +221,128 @@ export function injectColorSchemeHook(
 }
 
 /**
+ * Add I18nManager import to the file or merge with existing react-native import
+ */
+export function addI18nManagerImport(path: NodePath<BabelTypes.Program>, t: typeof BabelTypes): void {
+  // Check if there's already a value import from react-native
+  const body = path.node.body;
+  let existingValueImport: BabelTypes.ImportDeclaration | null = null;
+
+  for (const statement of body) {
+    if (t.isImportDeclaration(statement) && statement.source.value === "react-native") {
+      // Skip type-only imports (they get erased at runtime)
+      if (statement.importKind === "type") {
+        continue;
+      }
+      // Skip namespace imports (import * as RN) - can't add named specifiers to them
+      const hasNamespaceImport = statement.specifiers.some((spec) => t.isImportNamespaceSpecifier(spec));
+      if (hasNamespaceImport) {
+        continue;
+      }
+      existingValueImport = statement;
+      break; // Found a value import, we can stop
+    }
+  }
+
+  if (existingValueImport) {
+    // Check if I18nManager is already imported
+    const hasI18nManager = existingValueImport.specifiers.some(
+      (spec) =>
+        t.isImportSpecifier(spec) &&
+        spec.imported.type === "Identifier" &&
+        spec.imported.name === "I18nManager",
+    );
+
+    if (!hasI18nManager) {
+      // Add I18nManager to existing value import
+      existingValueImport.specifiers.push(
+        t.importSpecifier(t.identifier("I18nManager"), t.identifier("I18nManager")),
+      );
+    }
+  } else {
+    // No value import exists - create a new one
+    // (Don't merge with type-only or namespace imports)
+    const importDeclaration = t.importDeclaration(
+      [t.importSpecifier(t.identifier("I18nManager"), t.identifier("I18nManager"))],
+      t.stringLiteral("react-native"),
+    );
+    path.unshiftContainer("body", importDeclaration);
+  }
+}
+
+/**
+ * Inject I18nManager.isRTL variable at the top of the file (after imports and directives)
+ *
+ * Unlike hooks (useColorScheme, useWindowDimensions), I18nManager.isRTL is not a hook
+ * and can be accessed at module level. This is injected once per file.
+ *
+ * @param path - Program path
+ * @param variableName - Name for the RTL variable (e.g., '_twIsRTL')
+ * @param localIdentifier - Local identifier if I18nManager is already imported with an alias
+ * @param t - Babel types
+ */
+export function injectI18nManagerVariable(
+  path: NodePath<BabelTypes.Program>,
+  variableName: string,
+  localIdentifier: string | undefined,
+  t: typeof BabelTypes,
+): void {
+  const body = path.node.body;
+
+  // Check if variable is already declared
+  for (const statement of body) {
+    if (
+      t.isVariableDeclaration(statement) &&
+      statement.declarations.length > 0 &&
+      t.isVariableDeclarator(statement.declarations[0])
+    ) {
+      const declarator = statement.declarations[0];
+      if (t.isIdentifier(declarator.id) && declarator.id.name === variableName) {
+        return; // Already injected
+      }
+    }
+  }
+
+  // Use the local identifier if I18nManager was already imported with an alias,
+  // otherwise use 'I18nManager'
+  // e.g., import { I18nManager as RTL } → use RTL.isRTL
+  const identifierToUse = localIdentifier ?? "I18nManager";
+
+  // Create: const _twIsRTL = I18nManager.isRTL; (or aliased name if already imported)
+  const i18nVariable = t.variableDeclaration("const", [
+    t.variableDeclarator(
+      t.identifier(variableName),
+      t.memberExpression(t.identifier(identifierToUse), t.identifier("isRTL")),
+    ),
+  ]);
+
+  // Find the index to insert after all imports and directives ('use client', 'use strict', etc.)
+  let insertIndex = 0;
+
+  for (let i = 0; i < body.length; i++) {
+    const statement = body[i];
+
+    // Skip directives ('use client', 'use strict', etc.)
+    if (t.isExpressionStatement(statement) && t.isStringLiteral(statement.expression)) {
+      insertIndex = i + 1;
+      continue;
+    }
+
+    // Skip imports
+    if (t.isImportDeclaration(statement)) {
+      insertIndex = i + 1;
+      continue;
+    }
+
+    // Stop at the first non-directive, non-import statement
+    break;
+  }
+
+  // Insert after imports and directives
+  body.splice(insertIndex, 0, i18nVariable);
+}
+
+/**
  * Add useWindowDimensions import to the file or merge with existing react-native import
  */
 export function addWindowDimensionsImport(path: NodePath<BabelTypes.Program>, t: typeof BabelTypes): void {
@@ -377,20 +499,29 @@ export function injectStylesAtTop(
     ),
   ]);
 
-  // Find the index to insert after all imports
+  // Find the index to insert after all imports and directives ('use client', 'use strict', etc.)
   const body = path.node.body;
   let insertIndex = 0;
 
-  // Find the last import statement
   for (let i = 0; i < body.length; i++) {
-    if (t.isImportDeclaration(body[i])) {
+    const statement = body[i];
+
+    // Skip directives ('use client', 'use strict', etc.)
+    if (t.isExpressionStatement(statement) && t.isStringLiteral(statement.expression)) {
       insertIndex = i + 1;
-    } else {
-      // Stop at the first non-import statement
-      break;
+      continue;
     }
+
+    // Skip imports
+    if (t.isImportDeclaration(statement)) {
+      insertIndex = i + 1;
+      continue;
+    }
+
+    // Stop at the first non-directive, non-import statement
+    break;
   }
 
-  // Insert StyleSheet.create after imports
+  // Insert StyleSheet.create after imports and directives
   body.splice(insertIndex, 0, styleSheet);
 }

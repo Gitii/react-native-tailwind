@@ -103,6 +103,10 @@ export type PluginState = PluginPass & {
   needsWindowDimensionsImport: boolean;
   windowDimensionsVariableName: string;
   windowDimensionsLocalIdentifier?: string; // Local identifier if hook is already imported with an alias
+  hasI18nManagerImport: boolean;
+  needsI18nManagerImport: boolean;
+  i18nManagerVariableName: string; // Variable name for the RTL state (e.g., '_twIsRTL')
+  i18nManagerLocalIdentifier?: string; // Local identifier if I18nManager is already imported with an alias
   customTheme: CustomTheme;
   schemeModifierConfig: SchemeModifierConfig;
   supportedAttributes: Set<string>;
@@ -163,6 +167,10 @@ export function createInitialState(
     needsWindowDimensionsImport: false,
     windowDimensionsVariableName: "_twDimensions",
     windowDimensionsLocalIdentifier: undefined,
+    hasI18nManagerImport: false,
+    needsI18nManagerImport: false,
+    i18nManagerVariableName: "_twIsRTL",
+    i18nManagerLocalIdentifier: undefined,
     customTheme,
     schemeModifierConfig,
     supportedAttributes: exactMatches,

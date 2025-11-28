@@ -17,7 +17,7 @@ export function importDeclarationVisitor(
 ): void {
   const node = path.node;
 
-  // Track react-native StyleSheet and Platform imports
+  // Track react-native StyleSheet, Platform, and I18nManager imports
   if (node.source.value === "react-native") {
     const specifiers = node.specifiers;
 
@@ -34,6 +34,21 @@ export function importDeclarationVisitor(
       }
       return false;
     });
+
+    // Check for I18nManager import (only value imports, not type-only)
+    if (node.importKind !== "type") {
+      for (const spec of specifiers) {
+        if (t.isImportSpecifier(spec) && t.isIdentifier(spec.imported)) {
+          if (spec.imported.name === "I18nManager") {
+            state.hasI18nManagerImport = true;
+            // Track the local identifier (handles aliased imports)
+            // e.g., import { I18nManager as RTL } → local name is 'RTL'
+            state.i18nManagerLocalIdentifier = spec.local.name;
+            break;
+          }
+        }
+      }
+    }
 
     // Check for useWindowDimensions import (only value imports, not type-only)
     if (node.importKind !== "type") {
