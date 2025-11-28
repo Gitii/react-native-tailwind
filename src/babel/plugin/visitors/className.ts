@@ -8,6 +8,7 @@ import type { ParsedModifier, StateModifierType } from "../../../parser/index.js
 import {
   expandSchemeModifier,
   isColorSchemeModifier,
+  isDirectionalModifier,
   isPlatformModifier,
   isSchemeModifier,
   isStateModifier,
@@ -19,6 +20,7 @@ import { generateStyleKey } from "../../../utils/styleKey.js";
 import { getTargetStyleProp, isAttributeSupported } from "../../utils/attributeMatchers.js";
 import { processColorSchemeModifiers } from "../../utils/colorSchemeModifierProcessing.js";
 import { getComponentModifierSupport, getStatePropertyForModifier } from "../../utils/componentSupport.js";
+import { processDirectionalModifiers } from "../../utils/directionalModifierProcessing.js";
 import { processDynamicExpression } from "../../utils/dynamicProcessing.js";
 import { createStyleFunction, processStaticClassNameWithModifiers } from "../../utils/modifierProcessing.js";
 import { processPlatformModifiers } from "../../utils/platformModifierProcessing.js";
@@ -107,6 +109,7 @@ export function jsxAttributeVisitor(
     const placeholderModifiers = modifierClasses.filter((m) => m.modifier === "placeholder");
     const platformModifiers = modifierClasses.filter((m) => isPlatformModifier(m.modifier));
     const colorSchemeModifiers = modifierClasses.filter((m) => isColorSchemeModifier(m.modifier));
+    const directionalModifiers = modifierClasses.filter((m) => isDirectionalModifier(m.modifier));
     const stateModifiers = modifierClasses.filter(
       (m) => isStateModifier(m.modifier) && m.modifier !== "placeholder",
     );
@@ -138,6 +141,7 @@ export function jsxAttributeVisitor(
     // Handle combination of modifiers
     const hasPlatformModifiers = platformModifiers.length > 0;
     const hasColorSchemeModifiers = colorSchemeModifiers.length > 0;
+    const hasDirectionalModifiers = directionalModifiers.length > 0;
     const hasStateModifiers = stateModifiers.length > 0;
     const hasBaseClasses = baseClasses.length > 0;
 
@@ -160,14 +164,14 @@ export function jsxAttributeVisitor(
     }
 
     // If we have multiple modifier types, combine them in an array expression
-    // For state modifiers, wrap in arrow function; for color scheme, they're just conditionals
-    if (hasStateModifiers && (hasPlatformModifiers || hasColorSchemeModifiers)) {
+    // For state modifiers, wrap in arrow function; for color scheme and directional, they're just conditionals
+    if (hasStateModifiers && (hasPlatformModifiers || hasColorSchemeModifiers || hasDirectionalModifiers)) {
       // Get the JSX opening element for component support checking
       const jsxOpeningElement = path.parent;
       const componentSupport = getComponentModifierSupport(jsxOpeningElement, t);
 
       if (componentSupport) {
-        // Build style array: [baseStyle, Platform.select(...), colorSchemeConditionals, stateConditionals]
+        // Build style array: [baseStyle, Platform.select(...), colorSchemeConditionals, directionalConditionals, stateConditionals]
         const styleArrayElements: BabelTypes.Expression[] = [];
 
         // Add base classes
@@ -179,7 +183,7 @@ export function jsxAttributeVisitor(
           if (hasRuntimeDimensions(baseStyleObject)) {
             throw path.buildCodeFrameError(
               `w-screen and h-screen cannot be combined with modifiers. ` +
-                `Found: "${baseClassName}" with state, platform, or color scheme modifiers. ` +
+                `Found: "${baseClassName}" with state, platform, color scheme, or directional modifiers. ` +
                 `Use w-screen/h-screen without modifiers instead.`,
             );
           }
@@ -213,6 +217,18 @@ export function jsxAttributeVisitor(
             t,
           );
           styleArrayElements.push(...colorSchemeConditionals);
+        }
+
+        // Add directional modifiers as conditionals
+        if (hasDirectionalModifiers) {
+          const directionalConditionals = processDirectionalModifiers(
+            directionalModifiers,
+            state,
+            parseClassName,
+            generateStyleKey,
+            t,
+          );
+          styleArrayElements.push(...directionalConditionals);
         }
 
         // Add state modifiers as conditionals
@@ -267,9 +283,9 @@ export function jsxAttributeVisitor(
       }
     }
 
-    // Handle platform and/or color scheme modifiers (no state modifiers)
-    if ((hasPlatformModifiers || hasColorSchemeModifiers) && !hasStateModifiers) {
-      // Build style array/expression: [baseStyle, Platform.select(...), colorSchemeConditionals]
+    // Handle platform, color scheme, and/or directional modifiers (no state modifiers)
+    if ((hasPlatformModifiers || hasColorSchemeModifiers || hasDirectionalModifiers) && !hasStateModifiers) {
+      // Build style array/expression: [baseStyle, Platform.select(...), colorSchemeConditionals, directionalConditionals]
       const styleExpressions: BabelTypes.Expression[] = [];
 
       // Add base classes
@@ -281,7 +297,7 @@ export function jsxAttributeVisitor(
         if (hasRuntimeDimensions(baseStyleObject)) {
           throw path.buildCodeFrameError(
             `w-screen and h-screen cannot be combined with modifiers. ` +
-              `Found: "${baseClassName}" with platform or color scheme modifiers. ` +
+              `Found: "${baseClassName}" with platform, color scheme, or directional modifiers. ` +
               `Use w-screen/h-screen without modifiers instead.`,
           );
         }
@@ -315,6 +331,18 @@ export function jsxAttributeVisitor(
           t,
         );
         styleExpressions.push(...colorSchemeConditionals);
+      }
+
+      // Add directional modifiers as conditionals
+      if (hasDirectionalModifiers) {
+        const directionalConditionals = processDirectionalModifiers(
+          directionalModifiers,
+          state,
+          parseClassName,
+          generateStyleKey,
+          t,
+        );
+        styleExpressions.push(...directionalConditionals);
       }
 
       // Generate style attribute

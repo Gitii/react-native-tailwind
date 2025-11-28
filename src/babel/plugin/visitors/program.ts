@@ -6,10 +6,12 @@ import type { NodePath } from "@babel/core";
 import type * as BabelTypes from "@babel/types";
 import {
   addColorSchemeImport,
+  addI18nManagerImport,
   addPlatformImport,
   addStyleSheetImport,
   addWindowDimensionsImport,
   injectColorSchemeHook,
+  injectI18nManagerVariable,
   injectStylesAtTop,
   injectWindowDimensionsHook,
 } from "../../utils/styleInjection.js";
@@ -39,8 +41,13 @@ export function programExit(
     removeTwImports(path, t);
   }
 
-  // If no classNames were found and no hooks needed, skip processing
-  if (!state.hasClassNames && !state.needsWindowDimensionsImport && !state.needsColorSchemeImport) {
+  // If no classNames were found and no hooks/imports needed, skip processing
+  if (
+    !state.hasClassNames &&
+    !state.needsWindowDimensionsImport &&
+    !state.needsColorSchemeImport &&
+    !state.needsI18nManagerImport
+  ) {
     return;
   }
 
@@ -52,6 +59,16 @@ export function programExit(
   // Add Platform import if platform modifiers were used and not already present
   if (state.needsPlatformImport && !state.hasPlatformImport) {
     addPlatformImport(path, t);
+  }
+
+  // Add I18nManager import if directional modifiers were used and not already present
+  if (state.needsI18nManagerImport && !state.hasI18nManagerImport) {
+    addI18nManagerImport(path, t);
+  }
+
+  // Inject I18nManager.isRTL variable at module level (not a hook, so no component scope needed)
+  if (state.needsI18nManagerImport) {
+    injectI18nManagerVariable(path, state.i18nManagerVariableName, state.i18nManagerLocalIdentifier, t);
   }
 
   // Add color scheme hook import if color scheme modifiers were used and not already present
