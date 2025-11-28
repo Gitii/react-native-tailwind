@@ -237,8 +237,13 @@ export const INSET_SCALE: Record<string, number> = {
 
 /**
  * Parse layout classes
+ * @param cls - The class name to parse
+ * @param customSpacing - Optional custom spacing values from tailwind.config (for inset utilities)
  */
-export function parseLayout(cls: string): StyleObject | null {
+export function parseLayout(cls: string, customSpacing?: Record<string, number>): StyleObject | null {
+  // Merge custom spacing with defaults for inset utilities
+  const insetMap = customSpacing ? { ...INSET_SCALE, ...customSpacing } : INSET_SCALE;
+
   // Z-index: z-0, z-10, z-20, z-[999], etc.
   if (cls.startsWith("z-")) {
     const zKey = cls.substring(2);
@@ -270,7 +275,7 @@ export function parseLayout(cls: string): StyleObject | null {
       return { top: arbitraryTop };
     }
 
-    const topValue = INSET_SCALE[topKey];
+    const topValue = insetMap[topKey];
     if (topValue !== undefined) {
       return { top: topValue };
     }
@@ -291,7 +296,7 @@ export function parseLayout(cls: string): StyleObject | null {
       return { right: arbitraryRight };
     }
 
-    const rightValue = INSET_SCALE[rightKey];
+    const rightValue = insetMap[rightKey];
     if (rightValue !== undefined) {
       return { right: rightValue };
     }
@@ -312,7 +317,7 @@ export function parseLayout(cls: string): StyleObject | null {
       return { bottom: arbitraryBottom };
     }
 
-    const bottomValue = INSET_SCALE[bottomKey];
+    const bottomValue = insetMap[bottomKey];
     if (bottomValue !== undefined) {
       return { bottom: bottomValue };
     }
@@ -333,7 +338,7 @@ export function parseLayout(cls: string): StyleObject | null {
       return { left: arbitraryLeft };
     }
 
-    const leftValue = INSET_SCALE[leftKey];
+    const leftValue = insetMap[leftKey];
     if (leftValue !== undefined) {
       return { left: leftValue };
     }
@@ -364,7 +369,7 @@ export function parseLayout(cls: string): StyleObject | null {
       return { start: arbitraryStart };
     }
 
-    const startValue = INSET_SCALE[startKey];
+    const startValue = insetMap[startKey];
     if (startValue !== undefined) {
       return { start: isNegative ? -startValue : startValue };
     }
@@ -395,7 +400,7 @@ export function parseLayout(cls: string): StyleObject | null {
       return { end: arbitraryEnd };
     }
 
-    const endValue = INSET_SCALE[endKey];
+    const endValue = insetMap[endKey];
     if (endValue !== undefined) {
       return { end: isNegative ? -endValue : endValue };
     }
@@ -411,7 +416,7 @@ export function parseLayout(cls: string): StyleObject | null {
       return { left: arbitraryInset, right: arbitraryInset };
     }
 
-    const insetValue = INSET_SCALE[insetKey];
+    const insetValue = insetMap[insetKey];
     if (insetValue !== undefined) {
       return { left: insetValue, right: insetValue };
     }
@@ -427,7 +432,7 @@ export function parseLayout(cls: string): StyleObject | null {
       return { top: arbitraryInset, bottom: arbitraryInset };
     }
 
-    const insetValue = INSET_SCALE[insetKey];
+    const insetValue = insetMap[insetKey];
     if (insetValue !== undefined) {
       return { top: insetValue, bottom: insetValue };
     }
@@ -443,7 +448,7 @@ export function parseLayout(cls: string): StyleObject | null {
       return { start: arbitraryInset };
     }
 
-    const insetValue = INSET_SCALE[insetKey];
+    const insetValue = insetMap[insetKey];
     if (insetValue !== undefined) {
       return { start: insetValue };
     }
@@ -459,7 +464,7 @@ export function parseLayout(cls: string): StyleObject | null {
       return { end: arbitraryInset };
     }
 
-    const insetValue = INSET_SCALE[insetKey];
+    const insetValue = insetMap[insetKey];
     if (insetValue !== undefined) {
       return { end: insetValue };
     }
@@ -475,7 +480,7 @@ export function parseLayout(cls: string): StyleObject | null {
       return { top: arbitraryInset, right: arbitraryInset, bottom: arbitraryInset, left: arbitraryInset };
     }
 
-    const insetValue = INSET_SCALE[insetKey];
+    const insetValue = insetMap[insetKey];
     if (insetValue !== undefined) {
       return { top: insetValue, right: insetValue, bottom: insetValue, left: insetValue };
     }

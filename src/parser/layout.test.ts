@@ -719,3 +719,97 @@ describe("parseLayout - logical inset (RTL-aware)", () => {
     expect(parseLayout("inset-e-[20%]")).toEqual({ end: "20%" });
   });
 });
+
+describe("parseLayout - custom spacing", () => {
+  const customSpacing = {
+    xs: 4,
+    sm: 8,
+    md: 16,
+    lg: 32,
+    xl: 64,
+    "4": 20, // Override default (16)
+  };
+
+  it("should support custom spacing values for top/right/bottom/left", () => {
+    expect(parseLayout("top-xs", customSpacing)).toEqual({ top: 4 });
+    expect(parseLayout("top-sm", customSpacing)).toEqual({ top: 8 });
+    expect(parseLayout("top-md", customSpacing)).toEqual({ top: 16 });
+    expect(parseLayout("top-lg", customSpacing)).toEqual({ top: 32 });
+    expect(parseLayout("top-xl", customSpacing)).toEqual({ top: 64 });
+
+    expect(parseLayout("right-xs", customSpacing)).toEqual({ right: 4 });
+    expect(parseLayout("bottom-sm", customSpacing)).toEqual({ bottom: 8 });
+    expect(parseLayout("left-md", customSpacing)).toEqual({ left: 16 });
+  });
+
+  it("should override default spacing values", () => {
+    // Without custom spacing, top-4 is 16
+    expect(parseLayout("top-4")).toEqual({ top: 16 });
+
+    // With custom spacing, top-4 is 20 (overridden)
+    expect(parseLayout("top-4", customSpacing)).toEqual({ top: 20 });
+  });
+
+  it("should merge custom spacing with defaults", () => {
+    // Custom spacing should merge with defaults
+    // top-0 should still work (from defaults)
+    expect(parseLayout("top-0", customSpacing)).toEqual({ top: 0 });
+
+    // top-8 should still work (from defaults, not overridden)
+    expect(parseLayout("top-8", customSpacing)).toEqual({ top: 32 });
+
+    // top-xs should work (from custom)
+    expect(parseLayout("top-xs", customSpacing)).toEqual({ top: 4 });
+  });
+
+  it("should support custom spacing for start/end (RTL-aware)", () => {
+    expect(parseLayout("start-xs", customSpacing)).toEqual({ start: 4 });
+    expect(parseLayout("end-lg", customSpacing)).toEqual({ end: 32 });
+  });
+
+  it("should support custom spacing for inset utilities", () => {
+    expect(parseLayout("inset-xs", customSpacing)).toEqual({
+      top: 4,
+      right: 4,
+      bottom: 4,
+      left: 4,
+    });
+
+    expect(parseLayout("inset-x-sm", customSpacing)).toEqual({
+      left: 8,
+      right: 8,
+    });
+
+    expect(parseLayout("inset-y-md", customSpacing)).toEqual({
+      top: 16,
+      bottom: 16,
+    });
+  });
+
+  it("should support custom spacing for inset-s/inset-e", () => {
+    expect(parseLayout("inset-s-lg", customSpacing)).toEqual({ start: 32 });
+    expect(parseLayout("inset-e-xl", customSpacing)).toEqual({ end: 64 });
+  });
+
+  it("should support negative values with custom spacing for start/end", () => {
+    // Note: -top-*, -left-*, -right-*, -bottom-* negative prefixes are not supported
+    // Use arbitrary values like top-[-10px] for negative positioning
+    expect(parseLayout("-start-sm", customSpacing)).toEqual({ start: -8 });
+    expect(parseLayout("-end-md", customSpacing)).toEqual({ end: -16 });
+  });
+
+  it("should still support arbitrary values with custom spacing", () => {
+    expect(parseLayout("top-[100px]", customSpacing)).toEqual({ top: 100 });
+    expect(parseLayout("inset-[50%]", customSpacing)).toEqual({
+      top: "50%",
+      right: "50%",
+      bottom: "50%",
+      left: "50%",
+    });
+  });
+
+  it("should handle non-layout classes as null", () => {
+    expect(parseLayout("text-xl", customSpacing)).toBeNull();
+    expect(parseLayout("bg-blue-500", customSpacing)).toBeNull();
+  });
+});

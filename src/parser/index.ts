@@ -21,6 +21,7 @@ export type CustomTheme = {
   colors?: Record<string, string>;
   fontFamily?: Record<string, string>;
   fontSize?: Record<string, number>;
+  spacing?: Record<string, number>;
 };
 
 /**
@@ -50,17 +51,17 @@ export function parseClassName(className: string, customTheme?: CustomTheme): St
 export function parseClass(cls: string, customTheme?: CustomTheme): StyleObject {
   // Try each parser in order
   // Note: parseBorder must come before parseColor to avoid border-[3px] being parsed as a color
-  // parseBorder, parseColor and parseTypography get custom theme
+  // Parsers receive relevant custom theme properties
   const parsers: Array<(cls: string) => StyleObject | null> = [
-    parseSpacing,
+    (cls: string) => parseSpacing(cls, customTheme?.spacing),
     (cls: string) => parseBorder(cls, customTheme?.colors),
     (cls: string) => parseColor(cls, customTheme?.colors),
-    parseLayout,
+    (cls: string) => parseLayout(cls, customTheme?.spacing),
     (cls: string) => parseTypography(cls, customTheme?.fontFamily, customTheme?.fontSize),
-    parseSizing,
+    (cls: string) => parseSizing(cls, customTheme?.spacing),
     parseShadow,
     parseAspectRatio,
-    parseTransform,
+    (cls: string) => parseTransform(cls, customTheme?.spacing),
   ];
 
   for (const parser of parsers) {
