@@ -166,11 +166,11 @@ Your app responds to system theme changes instantly — zero boilerplate, zero c
 | **Dynamic classNames**                      |          ✅           |          ✅           |            ✅             |
 | **Custom colors**                           |          ✅           |          ✅           |            ✅             |
 | **Arbitrary values** (`p-[17px]`)           |          ✅           |          ✅           |            ✅             |
+| **RTL support**                             |          ✅           |          ✅           |            ✅             |
 | **Responsive breakpoints**                  |          ❌           |          ✅           |            ✅             |
-| **RTL support**                             |          ❌           |          ✅           |            ✅             |
 
 :::note[Feature Parity]
-React Native Tailwind covers the most commonly used Tailwind features. Responsive breakpoints and RTL are on the roadmap!
+React Native Tailwind covers the most commonly used Tailwind features. Responsive breakpoints are on the roadmap!
 :::
 
 ## 🎯 Summary
