@@ -1,6 +1,11 @@
 import * as fs from "fs";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
-import { extractCustomTheme, findTailwindConfig, loadTailwindConfig } from "./config-loader";
+import {
+  extractCustomTheme,
+  findTailwindConfig,
+  loadTailwindConfig,
+  warnUnsupportedThemeKeys,
+} from "./config-loader";
 
 // Mock fs
 vi.mock("fs");
@@ -122,33 +127,78 @@ describe("config-loader", () => {
       const result = extractCustomTheme("/project/src/file.ts");
       expect(result).toEqual({ colors: {}, fontFamily: {}, fontSize: {} });
     });
+  });
 
-    it("should return empty theme when config has no theme", () => {
-      const configPath = "/project/tailwind.config.js";
-
-      vi.spyOn(fs, "existsSync").mockImplementation((filepath) => filepath === configPath);
-      vi.spyOn(require, "resolve").mockReturnValue(configPath);
-
-      // loadTailwindConfig will be called, but we've already tested it
-      // For integration, we'd need to mock the entire flow
-      const result = extractCustomTheme("/project/src/file.ts");
-
-      // Without actual config loading, this returns empty
-      expect(result).toEqual({ colors: {}, fontFamily: {}, fontSize: {} });
-    });
-
-    it("should extract colors and fontFamily from theme.extend", () => {
-      // This would require complex mocking of the entire require flow
-      // Testing the logic: theme.extend is preferred
-      const colors = { brand: { light: "#fff", dark: "#000" } };
-      const fontFamily = { sans: ['"SF Pro"'], custom: ['"Custom Font"'] };
-      const theme = {
-        extend: { colors, fontFamily },
+  describe("warnUnsupportedThemeKeys", () => {
+    it("should warn about unsupported theme keys", () => {
+      const configPath = "/project/unsupported/tailwind.config.js";
+      const mockConfig = {
+        theme: {
+          extend: {
+            colors: { brand: "#123456" },
+            spacing: { "72": "18rem" }, // Unsupported
+            borderRadius: { xl: "1rem" }, // Unsupported
+          },
+          screens: { tablet: "640px" }, // Unsupported
+        },
       };
 
-      // If we had the config, we'd flatten the colors and convert fontFamily
-      expect(theme.extend.colors).toEqual(colors);
-      expect(theme.extend.fontFamily).toEqual(fontFamily);
+      const consoleSpy = vi.spyOn(console, "warn").mockImplementation(vi.fn());
+
+      warnUnsupportedThemeKeys(mockConfig, configPath);
+
+      expect(consoleSpy).toHaveBeenCalledWith(
+        expect.stringContaining("Unsupported theme configuration detected"),
+      );
+      expect(consoleSpy).toHaveBeenCalledWith(expect.stringContaining("theme.extend.spacing"));
+      expect(consoleSpy).toHaveBeenCalledWith(expect.stringContaining("theme.extend.borderRadius"));
+      expect(consoleSpy).toHaveBeenCalledWith(expect.stringContaining("theme.screens"));
+      expect(consoleSpy).toHaveBeenCalledWith(
+        expect.stringContaining("https://github.com/mgcrea/react-native-tailwind/issues/new"),
+      );
+
+      consoleSpy.mockRestore();
+    });
+
+    it("should not warn for supported theme keys only", () => {
+      const configPath = "/project/supported/tailwind.config.js";
+      const mockConfig = {
+        theme: {
+          extend: {
+            colors: { brand: "#123456" },
+            fontFamily: { custom: "CustomFont" },
+            fontSize: { huge: "48px" },
+          },
+        },
+      };
+
+      const consoleSpy = vi.spyOn(console, "warn").mockImplementation(vi.fn());
+
+      warnUnsupportedThemeKeys(mockConfig, configPath);
+
+      expect(consoleSpy).not.toHaveBeenCalled();
+
+      consoleSpy.mockRestore();
+    });
+
+    it("should only warn once per config path", () => {
+      const configPath = "/project/once/tailwind.config.js";
+      const mockConfig = {
+        theme: {
+          extend: {
+            spacing: { "72": "18rem" },
+          },
+        },
+      };
+
+      const consoleSpy = vi.spyOn(console, "warn").mockImplementation(vi.fn());
+
+      warnUnsupportedThemeKeys(mockConfig, configPath);
+      warnUnsupportedThemeKeys(mockConfig, configPath);
+
+      expect(consoleSpy).toHaveBeenCalledTimes(1);
+
+      consoleSpy.mockRestore();
     });
   });
 });

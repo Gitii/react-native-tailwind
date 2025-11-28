@@ -15,12 +15,65 @@ export type TailwindConfig = {
       colors?: Record<string, string | Record<string, string>>;
       fontFamily?: Record<string, string | string[]>;
       fontSize?: Record<string, string | number>;
+      [key: string]: unknown;
     };
     colors?: Record<string, string | Record<string, string>>;
     fontFamily?: Record<string, string | string[]>;
     fontSize?: Record<string, string | number>;
+    [key: string]: unknown;
   };
 };
+
+/**
+ * Theme keys currently supported by react-native-tailwind
+ */
+const SUPPORTED_THEME_KEYS = new Set(["colors", "fontFamily", "fontSize", "extend"]);
+
+/**
+ * Cache for warned config paths to avoid duplicate warnings
+ */
+const warnedConfigPaths = new Set<string>();
+
+/**
+ * Check for unsupported theme extensions and warn the user
+ * @internal Exported for testing
+ */
+export function warnUnsupportedThemeKeys(config: TailwindConfig, configPath: string): void {
+  if (process.env.NODE_ENV === "production" || warnedConfigPaths.has(configPath)) {
+    return;
+  }
+
+  const unsupportedKeys: string[] = [];
+
+  // Check theme.extend keys
+  if (config.theme?.extend && typeof config.theme.extend === "object") {
+    for (const key of Object.keys(config.theme.extend)) {
+      if (!SUPPORTED_THEME_KEYS.has(key)) {
+        unsupportedKeys.push(`theme.extend.${key}`);
+      }
+    }
+  }
+
+  // Check direct theme keys (excluding 'extend')
+  if (config.theme && typeof config.theme === "object") {
+    for (const key of Object.keys(config.theme)) {
+      if (key !== "extend" && !SUPPORTED_THEME_KEYS.has(key)) {
+        unsupportedKeys.push(`theme.${key}`);
+      }
+    }
+  }
+
+  if (unsupportedKeys.length > 0) {
+    warnedConfigPaths.add(configPath);
+    console.warn(
+      `[react-native-tailwind] Unsupported theme configuration detected:\n` +
+        `  ${unsupportedKeys.join(", ")}\n\n` +
+        `  Currently supported: colors, fontFamily, fontSize\n\n` +
+        `  These extensions will be ignored. If you need support for these features,\n` +
+        `  please open an issue: https://github.com/mgcrea/react-native-tailwind/issues/new`,
+    );
+  }
+}
 
 // Cache configs per path to avoid repeated file I/O
 const configCache = new Map<string, TailwindConfig | null>();
@@ -110,6 +163,9 @@ export function extractCustomTheme(filename: string): CustomTheme {
   if (!config?.theme) {
     return { colors: {}, fontFamily: {}, fontSize: {} };
   }
+
+  // Warn about unsupported theme keys
+  warnUnsupportedThemeKeys(config, configPath);
 
   // Extract colors
   /* v8 ignore next 5 */
