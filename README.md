@@ -51,6 +51,8 @@ Compile-time Tailwind CSS for React Native with zero runtime overhead. Transform
 - **📐 Arbitrary Values** - Use custom sizes and borders: `w-[123px]`, `rounded-[20px]`
 - **📜 Special Style Props** - Support for `contentContainerClassName`, `columnWrapperClassName`, and more
 
+📊 **[How It Compares](https://mgcrea.github.io/react-native-tailwind/getting-started/how-it-compares/)** - See how this library stacks up against other React Native styling solutions.
+
 ## Demo
 
 ![demo](./.github/assets/demo.gif)
