@@ -69,13 +69,21 @@ function parseArbitrarySpacing(value: string): number | null {
 
 /**
  * Parse spacing classes (margin, padding, gap)
- * Examples: m-4, mx-2, mt-8, p-4, px-2, pt-8, gap-4, m-[16px], pl-[4.5px], -m-4, -mt-[10px], ms-4, pe-2
+ * Examples: m-4, mx-2, mt-8, p-4, px-2, pt-8, gap-4, m-[16px], pl-[4.5px], -m-4, -mt-[10px], ms-4, pe-2, mx-auto
  * @param cls - The class name to parse
  * @param customSpacing - Optional custom spacing values from tailwind.config
  */
 export function parseSpacing(cls: string, customSpacing?: Record<string, number>): StyleObject | null {
   // Merge custom spacing with defaults (custom takes precedence)
   const spacingMap = customSpacing ? { ...SPACING_SCALE, ...customSpacing } : SPACING_SCALE;
+
+  // Auto margins: m-auto, mx-auto, my-auto, mt-auto, mr-auto, mb-auto, ml-auto, ms-auto, me-auto
+  // Note: Only margins support auto values (not padding or gap)
+  const autoMarginMatch = cls.match(/^m([xytrblse]?)-auto$/);
+  if (autoMarginMatch) {
+    const dir = autoMarginMatch[1];
+    return getMarginStyle(dir, "auto");
+  }
 
   // Margin: m-4, mx-2, mt-8, ms-4, me-2, m-[16px], -m-4, -mt-2, etc.
   // Supports negative values for margins (but not padding or gap)
@@ -143,7 +151,7 @@ export function parseSpacing(cls: string, customSpacing?: Record<string, number>
 /**
  * Get margin style object based on direction
  */
-function getMarginStyle(dir: string, value: number): StyleObject {
+function getMarginStyle(dir: string, value: number | "auto"): StyleObject {
   switch (dir) {
     case "":
       return { margin: value };

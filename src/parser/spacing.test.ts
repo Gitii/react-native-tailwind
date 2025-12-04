@@ -416,6 +416,43 @@ describe("parseSpacing - logical padding (RTL-aware)", () => {
   });
 });
 
+describe("parseSpacing - auto margin", () => {
+  it("should parse m-auto", () => {
+    expect(parseSpacing("m-auto")).toEqual({ margin: "auto" });
+  });
+
+  it("should parse mx-auto", () => {
+    expect(parseSpacing("mx-auto")).toEqual({ marginHorizontal: "auto" });
+  });
+
+  it("should parse my-auto", () => {
+    expect(parseSpacing("my-auto")).toEqual({ marginVertical: "auto" });
+  });
+
+  it("should parse directional auto margins", () => {
+    expect(parseSpacing("mt-auto")).toEqual({ marginTop: "auto" });
+    expect(parseSpacing("mr-auto")).toEqual({ marginRight: "auto" });
+    expect(parseSpacing("mb-auto")).toEqual({ marginBottom: "auto" });
+    expect(parseSpacing("ml-auto")).toEqual({ marginLeft: "auto" });
+  });
+
+  it("should parse logical auto margins (RTL-aware)", () => {
+    expect(parseSpacing("ms-auto")).toEqual({ marginStart: "auto" });
+    expect(parseSpacing("me-auto")).toEqual({ marginEnd: "auto" });
+  });
+
+  it("should not parse padding auto (not valid in Tailwind)", () => {
+    expect(parseSpacing("p-auto")).toBeNull();
+    expect(parseSpacing("px-auto")).toBeNull();
+    expect(parseSpacing("py-auto")).toBeNull();
+    expect(parseSpacing("pt-auto")).toBeNull();
+  });
+
+  it("should not parse gap auto (not valid in Tailwind)", () => {
+    expect(parseSpacing("gap-auto")).toBeNull();
+  });
+});
+
 describe("parseSpacing - custom spacing", () => {
   const customSpacing = {
     xs: 4,
