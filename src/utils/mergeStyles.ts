@@ -1,17 +1,56 @@
 /**
  * Smart merge utility for StyleObject values
- * Handles array properties (like transform) by concatenating instead of overwriting
+ * Handles transform arrays with "last wins" semantics for same transform types
  */
 
-import type { StyleObject } from "../types/core";
+import type { StyleObject, TransformStyle } from "../types/core";
 
 /**
- * Properties that should be merged as arrays (concatenated) rather than overwritten
+ * Get the transform type key from a transform object
+ * e.g., { rotate: '45deg' } -> 'rotate', { scale: 1.1 } -> 'scale'
  */
-const ARRAY_MERGE_PROPERTIES = new Set<string>(["transform"]);
+function getTransformType(transform: TransformStyle): string {
+  return Object.keys(transform)[0];
+}
 
 /**
- * Merge two StyleObject instances, handling array properties specially
+ * Merge transform arrays with "last wins" semantics for duplicate transform types.
+ * Different transform types are combined, but if the same type appears twice,
+ * the later one replaces the earlier one (matching Tailwind CSS behavior).
+ *
+ * @example
+ * // Different types are combined
+ * mergeTransforms([{ rotate: '45deg' }], [{ scale: 1.1 }])
+ * // => [{ rotate: '45deg' }, { scale: 1.1 }]
+ *
+ * @example
+ * // Same type: last wins
+ * mergeTransforms([{ rotate: '45deg' }], [{ rotate: '90deg' }])
+ * // => [{ rotate: '90deg' }]
+ */
+function mergeTransforms(target: TransformStyle[], source: TransformStyle[]): TransformStyle[] {
+  // Build result by processing target first, then source
+  // For each source transform, replace any existing transform of the same type
+  const result: TransformStyle[] = [...target];
+
+  for (const sourceTransform of source) {
+    const sourceType = getTransformType(sourceTransform);
+    const existingIndex = result.findIndex((t) => getTransformType(t) === sourceType);
+
+    if (existingIndex !== -1) {
+      // Replace existing transform of same type (last wins)
+      result[existingIndex] = sourceTransform;
+    } else {
+      // Add new transform type
+      result.push(sourceTransform);
+    }
+  }
+
+  return result;
+}
+
+/**
+ * Merge two StyleObject instances, handling transform arrays specially
  *
  * @param target - The target object to merge into (mutated)
  * @param source - The source object to merge from
@@ -23,30 +62,38 @@ const ARRAY_MERGE_PROPERTIES = new Set<string>(["transform"]);
  * // => { margin: 4, padding: 8 }
  *
  * @example
- * // Array properties (transform) are concatenated
+ * // Different transform types are combined
  * mergeStyles(
  *   { transform: [{ rotate: '45deg' }] },
  *   { transform: [{ scale: 1.1 }] }
  * )
  * // => { transform: [{ rotate: '45deg' }, { scale: 1.1 }] }
+ *
+ * @example
+ * // Same transform type: last wins (Tailwind parity)
+ * mergeStyles(
+ *   { transform: [{ rotate: '45deg' }] },
+ *   { transform: [{ rotate: '90deg' }] }
+ * )
+ * // => { transform: [{ rotate: '90deg' }] }
  */
 export function mergeStyles(target: StyleObject, source: StyleObject): StyleObject {
   for (const key in source) {
     if (Object.prototype.hasOwnProperty.call(source, key)) {
       const sourceValue = source[key];
 
-      // Handle array merge properties (like transform)
-      if (ARRAY_MERGE_PROPERTIES.has(key) && Array.isArray(sourceValue)) {
+      // Handle transform arrays specially
+      if (key === "transform" && Array.isArray(sourceValue)) {
         const targetValue = target[key];
         if (Array.isArray(targetValue)) {
-          // Concatenate arrays
-          (target as Record<string, unknown>)[key] = [...targetValue, ...sourceValue];
+          // Merge transforms with "last wins" for same types
+          target.transform = mergeTransforms(targetValue, sourceValue);
         } else {
           // No existing array, just assign
           target[key] = sourceValue;
         }
       } else {
-        // Standard Object.assign behavior for non-array properties
+        // Standard Object.assign behavior for non-transform properties
         target[key] = sourceValue;
       }
     }

@@ -24,8 +24,8 @@ describe("mergeStyles", () => {
     });
   });
 
-  describe("transform array merging", () => {
-    it("should concatenate transform arrays", () => {
+  describe("transform array merging - different types combined", () => {
+    it("should combine different transform types", () => {
       const target = { transform: [{ rotate: "45deg" }] };
       const source = { transform: [{ scale: 1.1 }] };
       expect(mergeStyles(target, source)).toEqual({
@@ -55,6 +55,48 @@ describe("mergeStyles", () => {
       const source = { transform: [{ scale: 1.1 }] };
       expect(mergeStyles(target, source)).toEqual({
         transform: [{ scale: 1.1 }],
+      });
+    });
+  });
+
+  describe("transform array merging - same type last wins (Tailwind parity)", () => {
+    it("should replace same transform type with last value", () => {
+      const target = { transform: [{ rotate: "45deg" }] };
+      const source = { transform: [{ rotate: "90deg" }] };
+      expect(mergeStyles(target, source)).toEqual({
+        transform: [{ rotate: "90deg" }],
+      });
+    });
+
+    it("should replace same scale type with last value", () => {
+      const target = { transform: [{ scale: 0.5 }] };
+      const source = { transform: [{ scale: 1.1 }] };
+      expect(mergeStyles(target, source)).toEqual({
+        transform: [{ scale: 1.1 }],
+      });
+    });
+
+    it("should preserve order when replacing - rotate stays in position", () => {
+      const target = { transform: [{ rotate: "45deg" }, { scale: 1.1 }] };
+      const source = { transform: [{ rotate: "90deg" }] };
+      expect(mergeStyles(target, source)).toEqual({
+        transform: [{ rotate: "90deg" }, { scale: 1.1 }],
+      });
+    });
+
+    it("should handle mixed: replace same types, add new types", () => {
+      const target = { transform: [{ rotate: "45deg" }, { scale: 0.5 }] };
+      const source = { transform: [{ scale: 1.1 }, { translateX: 10 }] };
+      expect(mergeStyles(target, source)).toEqual({
+        transform: [{ rotate: "45deg" }, { scale: 1.1 }, { translateX: 10 }],
+      });
+    });
+
+    it("should handle scaleX and scaleY as different types", () => {
+      const target = { transform: [{ scaleX: 0.5 }] };
+      const source = { transform: [{ scaleY: 1.5 }] };
+      expect(mergeStyles(target, source)).toEqual({
+        transform: [{ scaleX: 0.5 }, { scaleY: 1.5 }],
       });
     });
   });

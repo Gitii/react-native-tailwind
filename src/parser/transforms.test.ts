@@ -455,4 +455,26 @@ describe("parseClassName - multiple transforms", () => {
       transform: [{ rotate: "37deg" }, { scale: 0.2 }, { translateX: 50 }],
     });
   });
+
+  // "Last wins" behavior for same transform type (Tailwind parity)
+  it("should use last value for duplicate rotate (Tailwind parity)", () => {
+    const result = parseClassName("rotate-45 rotate-90");
+    expect(result).toEqual({
+      transform: [{ rotate: "90deg" }],
+    });
+  });
+
+  it("should use last value for duplicate scale (Tailwind parity)", () => {
+    const result = parseClassName("scale-50 scale-110");
+    expect(result).toEqual({
+      transform: [{ scale: 1.1 }],
+    });
+  });
+
+  it("should preserve different types while replacing duplicates", () => {
+    const result = parseClassName("rotate-45 scale-110 rotate-90");
+    expect(result).toEqual({
+      transform: [{ rotate: "90deg" }, { scale: 1.1 }],
+    });
+  });
 });
