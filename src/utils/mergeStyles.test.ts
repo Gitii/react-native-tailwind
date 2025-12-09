@@ -1,0 +1,83 @@
+import { describe, expect, it } from "vitest";
+import { mergeStyles } from "./mergeStyles";
+
+describe("mergeStyles", () => {
+  describe("standard properties", () => {
+    it("should merge non-array properties like Object.assign", () => {
+      const target = { margin: 4 };
+      const source = { padding: 8 };
+      expect(mergeStyles(target, source)).toEqual({ margin: 4, padding: 8 });
+    });
+
+    it("should overwrite non-array properties", () => {
+      const target = { margin: 4 };
+      const source = { margin: 8 };
+      expect(mergeStyles(target, source)).toEqual({ margin: 8 });
+    });
+
+    it("should handle shadowOffset as standard property (object, not array)", () => {
+      const target = { shadowOffset: { width: 0, height: 1 } };
+      const source = { shadowOffset: { width: 0, height: 2 } };
+      expect(mergeStyles(target, source)).toEqual({
+        shadowOffset: { width: 0, height: 2 },
+      });
+    });
+  });
+
+  describe("transform array merging", () => {
+    it("should concatenate transform arrays", () => {
+      const target = { transform: [{ rotate: "45deg" }] };
+      const source = { transform: [{ scale: 1.1 }] };
+      expect(mergeStyles(target, source)).toEqual({
+        transform: [{ rotate: "45deg" }, { scale: 1.1 }],
+      });
+    });
+
+    it("should handle multiple transforms in source", () => {
+      const target = { transform: [{ rotate: "45deg" }] };
+      const source = { transform: [{ scale: 1.1 }, { translateX: 10 }] };
+      expect(mergeStyles(target, source)).toEqual({
+        transform: [{ rotate: "45deg" }, { scale: 1.1 }, { translateX: 10 }],
+      });
+    });
+
+    it("should assign transform when target has no transform", () => {
+      const target = { margin: 4 };
+      const source = { transform: [{ scale: 1.1 }] };
+      expect(mergeStyles(target, source)).toEqual({
+        margin: 4,
+        transform: [{ scale: 1.1 }],
+      });
+    });
+
+    it("should handle empty target transform array", () => {
+      const target = { transform: [] as Array<{ scale?: number }> };
+      const source = { transform: [{ scale: 1.1 }] };
+      expect(mergeStyles(target, source)).toEqual({
+        transform: [{ scale: 1.1 }],
+      });
+    });
+  });
+
+  describe("mixed properties", () => {
+    it("should handle mix of standard and transform properties", () => {
+      const target = { margin: 4, transform: [{ rotate: "45deg" }] };
+      const source = { padding: 8, transform: [{ scale: 1.1 }] };
+      expect(mergeStyles(target, source)).toEqual({
+        margin: 4,
+        padding: 8,
+        transform: [{ rotate: "45deg" }, { scale: 1.1 }],
+      });
+    });
+  });
+
+  describe("mutation behavior", () => {
+    it("should mutate and return target object", () => {
+      const target = { margin: 4 };
+      const source = { padding: 8 };
+      const result = mergeStyles(target, source);
+      expect(result).toBe(target);
+      expect(target).toEqual({ margin: 4, padding: 8 });
+    });
+  });
+});

@@ -4,6 +4,7 @@
  */
 
 import type { StyleObject } from "../types";
+import { mergeStyles } from "../utils/mergeStyles";
 import { parseAspectRatio } from "./aspectRatio";
 import { parseBorder } from "./borders";
 import { parseColor } from "./colors";
@@ -36,7 +37,7 @@ export function parseClassName(className: string, customTheme?: CustomTheme): St
 
   for (const cls of classes) {
     const parsedStyle = parseClass(cls, customTheme);
-    Object.assign(style, parsedStyle);
+    mergeStyles(style, parsedStyle);
   }
 
   return style;

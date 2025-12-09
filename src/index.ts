@@ -9,6 +9,7 @@ export { tw, twStyle } from "./stubs/tw";
 // Main parser functions
 export { parseClass, parseClassName } from "./parser";
 export { flattenColors } from "./utils/flattenColors";
+export { mergeStyles } from "./utils/mergeStyles";
 export { generateStyleKey } from "./utils/styleKey";
 
 // Re-export types

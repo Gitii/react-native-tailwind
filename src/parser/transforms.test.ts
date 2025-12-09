@@ -1,4 +1,5 @@
 import { describe, expect, it } from "vitest";
+import { parseClassName } from "./index";
 import { PERSPECTIVE_SCALE, ROTATE_MAP, SCALE_MAP, SKEW_MAP, parseTransform } from "./transforms";
 
 describe("SCALE_MAP", () => {
@@ -371,5 +372,87 @@ describe("parseTransform - custom spacing", () => {
     expect(parseTransform("rotate-45", customSpacing)).toEqual({ transform: [{ rotate: "45deg" }] });
     expect(parseTransform("skew-x-6", customSpacing)).toEqual({ transform: [{ skewX: "6deg" }] });
     expect(parseTransform("perspective-500", customSpacing)).toEqual({ transform: [{ perspective: 500 }] });
+  });
+});
+
+describe("parseClassName - multiple transforms", () => {
+  it("should combine rotate and scale transforms", () => {
+    const result = parseClassName("rotate-45 scale-110");
+    expect(result).toEqual({
+      transform: [{ rotate: "45deg" }, { scale: 1.1 }],
+    });
+  });
+
+  it("should combine scale and rotate with arbitrary values", () => {
+    const result = parseClassName("rotate-45 scale-[0.2]");
+    expect(result).toEqual({
+      transform: [{ rotate: "45deg" }, { scale: 0.2 }],
+    });
+  });
+
+  it("should combine multiple different transforms", () => {
+    const result = parseClassName("rotate-45 scale-110 translate-x-4");
+    expect(result).toEqual({
+      transform: [{ rotate: "45deg" }, { scale: 1.1 }, { translateX: 16 }],
+    });
+  });
+
+  it("should preserve order of transforms", () => {
+    // Order matters in React Native transforms!
+    const result1 = parseClassName("rotate-45 scale-110");
+    const result2 = parseClassName("scale-110 rotate-45");
+
+    expect(result1.transform).toEqual([{ rotate: "45deg" }, { scale: 1.1 }]);
+    expect(result2.transform).toEqual([{ scale: 1.1 }, { rotate: "45deg" }]);
+  });
+
+  it("should combine transforms with other properties", () => {
+    const result = parseClassName("m-4 rotate-45 scale-110 p-2");
+    expect(result).toEqual({
+      margin: 16,
+      padding: 8,
+      transform: [{ rotate: "45deg" }, { scale: 1.1 }],
+    });
+  });
+
+  it("should handle all transform types together", () => {
+    const result = parseClassName("perspective-500 rotate-45 scale-110 translate-x-4 skew-x-6");
+    expect(result).toEqual({
+      transform: [
+        { perspective: 500 },
+        { rotate: "45deg" },
+        { scale: 1.1 },
+        { translateX: 16 },
+        { skewX: "6deg" },
+      ],
+    });
+  });
+
+  it("should handle negative transforms", () => {
+    const result = parseClassName("-rotate-45 -translate-x-4");
+    expect(result).toEqual({
+      transform: [{ rotate: "-45deg" }, { translateX: -16 }],
+    });
+  });
+
+  it("should handle scale-x and scale-y together", () => {
+    const result = parseClassName("scale-x-50 scale-y-150");
+    expect(result).toEqual({
+      transform: [{ scaleX: 0.5 }, { scaleY: 1.5 }],
+    });
+  });
+
+  it("should handle single transform (backward compatibility)", () => {
+    const result = parseClassName("rotate-45");
+    expect(result).toEqual({
+      transform: [{ rotate: "45deg" }],
+    });
+  });
+
+  it("should handle arbitrary values combined", () => {
+    const result = parseClassName("rotate-[37deg] scale-[0.2] translate-x-[50px]");
+    expect(result).toEqual({
+      transform: [{ rotate: "37deg" }, { scale: 0.2 }, { translateX: 50 }],
+    });
   });
 });
