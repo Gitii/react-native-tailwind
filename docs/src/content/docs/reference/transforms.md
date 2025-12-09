@@ -149,10 +149,10 @@ Uses spacing scale (same as `m-*`, `p-*`):
 
 ## Multiple Transforms
 
-Multiple transform classes on the same element are fully supported and will be combined into a single transform array:
+Multiple transform classes on the same element are fully supported. Different transform types are combined into a single transform array:
 
 ```tsx
-// ✅ Both transforms are applied
+// ✅ Different transform types are combined
 <View className="scale-110 rotate-45 w-16 h-16 bg-blue-500" />
 // Compiles to: { transform: [{ scale: 1.1 }, { rotate: '45deg' }], ... }
 
@@ -161,20 +161,21 @@ Multiple transform classes on the same element are fully supported and will be c
 // Compiles to: { transform: [{ perspective: 500 }, { rotate: '45deg' }, { scale: 1.1 }, { translateX: 16 }] }
 ```
 
-:::note[Order Matters]
-Transform order is preserved from the className string. In React Native (and CSS), different orders produce different visual results:
+### Same Transform Type: Last Wins
+
+When the same transform type appears multiple times, the last value wins (matching Tailwind CSS behavior):
 
 ```tsx
-// Rotate first, then scale
-<View className="rotate-45 scale-110" />
-// { transform: [{ rotate: '45deg' }, { scale: 1.1 }] }
+// Same type: last wins
+<View className="rotate-45 rotate-90" />
+// { transform: [{ rotate: '90deg' }] }
 
-// Scale first, then rotate
-<View className="scale-110 rotate-45" />
-// { transform: [{ scale: 1.1 }, { rotate: '45deg' }] }
+// Mixed: different types combined, same types replaced
+<View className="rotate-45 scale-110 rotate-90" />
+// { transform: [{ rotate: '90deg' }, { scale: 1.1 }] }
 ```
 
-:::
+This is useful for responsive overrides or conditional styling where you want to override a base transform.
 
 ## What's Not Supported
 
