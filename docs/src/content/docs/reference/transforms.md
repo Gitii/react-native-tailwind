@@ -147,24 +147,33 @@ Uses spacing scale (same as `m-*`, `p-*`):
 <View className="skew-x-6 w-16 h-16 bg-cyan-500" />
 ```
 
-## Multiple Transforms Limitation
+## Multiple Transforms
 
-:::caution
-Due to the current architecture, multiple transform classes on the same element will overwrite each other. For example:
+Multiple transform classes on the same element are fully supported and will be combined into a single transform array:
 
 ```tsx
-// ❌ Only rotate-45 will apply (overwrites scale-110)
+// ✅ Both transforms are applied
 <View className="scale-110 rotate-45 w-16 h-16 bg-blue-500" />
+// Compiles to: { transform: [{ scale: 1.1 }, { rotate: '45deg' }], ... }
 
-// ✅ Workaround: Use nested Views for multiple transforms
-<View className="scale-110">
-  <View className="rotate-45">
-    <View className="w-16 h-16 bg-blue-500" />
-  </View>
-</View>
+// ✅ Combine many transforms
+<View className="perspective-500 rotate-45 scale-110 translate-x-4" />
+// Compiles to: { transform: [{ perspective: 500 }, { rotate: '45deg' }, { scale: 1.1 }, { translateX: 16 }] }
 ```
 
-This limitation exists because the current parser uses `Object.assign()` which overwrites the `transform` property.
+:::note[Order Matters]
+Transform order is preserved from the className string. In React Native (and CSS), different orders produce different visual results:
+
+```tsx
+// Rotate first, then scale
+<View className="rotate-45 scale-110" />
+// { transform: [{ rotate: '45deg' }, { scale: 1.1 }] }
+
+// Scale first, then rotate
+<View className="scale-110 rotate-45" />
+// { transform: [{ scale: 1.1 }, { rotate: '45deg' }] }
+```
+
 :::
 
 ## What's Not Supported
