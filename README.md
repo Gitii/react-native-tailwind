@@ -53,6 +53,11 @@ Compile-time Tailwind CSS for React Native with zero runtime overhead. Transform
 
 📊 **[How It Compares](https://mgcrea.github.io/react-native-tailwind/getting-started/how-it-compares/)** - See how this library stacks up against other React Native styling solutions.
 
+### Related projects
+
+- For iOS native components, check out [@mgcrea/react-native-swiftui](https://github.com/mgcrea/react-native-swiftui).
+- For Android native components, check out [@mgcrea/react-native-jetpack-compose](https://github.com/mgcrea/react-native-jetpack-compose).
+
 ## Demo
 
 ![demo](./.github/assets/demo.gif)
