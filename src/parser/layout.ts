@@ -260,87 +260,127 @@ export function parseLayout(cls: string, customSpacing?: Record<string, number>)
     }
   }
 
-  // Top positioning: top-0, top-4, top-[10px], top-[50%], etc.
-  if (cls.startsWith("top-")) {
-    const topKey = cls.substring(4);
+  // Top positioning: top-0, top-4, top-[10px], top-[50%], -top-4, etc.
+  const topMatch = cls.match(/^(-?)top-(.+)$/);
+  if (topMatch) {
+    const [, negPrefix, topKey] = topMatch;
+    const isNegative = negPrefix === "-";
 
     // Auto value - return empty object (no-op, removes the property)
     if (topKey === "auto") {
       return {};
     }
 
-    // Arbitrary values: top-[123px], top-[50%], top-[-10px]
+    // Arbitrary values: top-[123px], top-[50%], -top-[10px]
     const arbitraryTop = parseArbitraryInset(topKey);
     if (arbitraryTop !== null) {
+      if (typeof arbitraryTop === "number") {
+        return { top: isNegative ? -arbitraryTop : arbitraryTop };
+      }
+      // Percentage values with negative prefix
+      if (isNegative && arbitraryTop.endsWith("%")) {
+        const numValue = parseFloat(arbitraryTop);
+        return { top: `${-numValue}%` };
+      }
       return { top: arbitraryTop };
     }
 
     const topValue = insetMap[topKey];
     if (topValue !== undefined) {
-      return { top: topValue };
+      return { top: isNegative ? -topValue : topValue };
     }
   }
 
-  // Right positioning: right-0, right-4, right-[10px], right-[50%], etc.
-  if (cls.startsWith("right-")) {
-    const rightKey = cls.substring(6);
+  // Right positioning: right-0, right-4, right-[10px], right-[50%], -right-4, etc.
+  const rightMatch = cls.match(/^(-?)right-(.+)$/);
+  if (rightMatch) {
+    const [, negPrefix, rightKey] = rightMatch;
+    const isNegative = negPrefix === "-";
 
     // Auto value - return empty object (no-op, removes the property)
     if (rightKey === "auto") {
       return {};
     }
 
-    // Arbitrary values: right-[123px], right-[50%], right-[-10px]
+    // Arbitrary values: right-[123px], right-[50%], -right-[10px]
     const arbitraryRight = parseArbitraryInset(rightKey);
     if (arbitraryRight !== null) {
+      if (typeof arbitraryRight === "number") {
+        return { right: isNegative ? -arbitraryRight : arbitraryRight };
+      }
+      // Percentage values with negative prefix
+      if (isNegative && arbitraryRight.endsWith("%")) {
+        const numValue = parseFloat(arbitraryRight);
+        return { right: `${-numValue}%` };
+      }
       return { right: arbitraryRight };
     }
 
     const rightValue = insetMap[rightKey];
     if (rightValue !== undefined) {
-      return { right: rightValue };
+      return { right: isNegative ? -rightValue : rightValue };
     }
   }
 
-  // Bottom positioning: bottom-0, bottom-4, bottom-[10px], bottom-[50%], etc.
-  if (cls.startsWith("bottom-")) {
-    const bottomKey = cls.substring(7);
+  // Bottom positioning: bottom-0, bottom-4, bottom-[10px], bottom-[50%], -bottom-4, etc.
+  const bottomMatch = cls.match(/^(-?)bottom-(.+)$/);
+  if (bottomMatch) {
+    const [, negPrefix, bottomKey] = bottomMatch;
+    const isNegative = negPrefix === "-";
 
     // Auto value - return empty object (no-op, removes the property)
     if (bottomKey === "auto") {
       return {};
     }
 
-    // Arbitrary values: bottom-[123px], bottom-[50%], bottom-[-10px]
+    // Arbitrary values: bottom-[123px], bottom-[50%], -bottom-[10px]
     const arbitraryBottom = parseArbitraryInset(bottomKey);
     if (arbitraryBottom !== null) {
+      if (typeof arbitraryBottom === "number") {
+        return { bottom: isNegative ? -arbitraryBottom : arbitraryBottom };
+      }
+      // Percentage values with negative prefix
+      if (isNegative && arbitraryBottom.endsWith("%")) {
+        const numValue = parseFloat(arbitraryBottom);
+        return { bottom: `${-numValue}%` };
+      }
       return { bottom: arbitraryBottom };
     }
 
     const bottomValue = insetMap[bottomKey];
     if (bottomValue !== undefined) {
-      return { bottom: bottomValue };
+      return { bottom: isNegative ? -bottomValue : bottomValue };
     }
   }
 
-  // Left positioning: left-0, left-4, left-[10px], left-[50%], etc.
-  if (cls.startsWith("left-")) {
-    const leftKey = cls.substring(5);
+  // Left positioning: left-0, left-4, left-[10px], left-[50%], -left-4, etc.
+  const leftMatch = cls.match(/^(-?)left-(.+)$/);
+  if (leftMatch) {
+    const [, negPrefix, leftKey] = leftMatch;
+    const isNegative = negPrefix === "-";
 
     // Auto value - return empty object (no-op, removes the property)
     if (leftKey === "auto") {
       return {};
     }
 
-    // Arbitrary values: left-[123px], left-[50%], left-[-10px]
+    // Arbitrary values: left-[123px], left-[50%], -left-[10px]
     const arbitraryLeft = parseArbitraryInset(leftKey);
     if (arbitraryLeft !== null) {
+      if (typeof arbitraryLeft === "number") {
+        return { left: isNegative ? -arbitraryLeft : arbitraryLeft };
+      }
+      // Percentage values with negative prefix
+      if (isNegative && arbitraryLeft.endsWith("%")) {
+        const numValue = parseFloat(arbitraryLeft);
+        return { left: `${-numValue}%` };
+      }
       return { left: arbitraryLeft };
     }
 
     const leftValue = insetMap[leftKey];
     if (leftValue !== undefined) {
-      return { left: leftValue };
+      return { left: isNegative ? -leftValue : leftValue };
     }
   }
 

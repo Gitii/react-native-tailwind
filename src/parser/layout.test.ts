@@ -521,6 +521,39 @@ describe("parseLayout - positioning utilities", () => {
     expect(parseLayout("left-[12.5%]")).toEqual({ left: "12.5%" });
     expect(parseLayout("left-[-20px]")).toEqual({ left: -20 });
   });
+
+  it("should parse negative positioning prefixes", () => {
+    // Standard spacing scale
+    expect(parseLayout("-top-1")).toEqual({ top: -4 });
+    expect(parseLayout("-top-4")).toEqual({ top: -16 });
+    expect(parseLayout("-right-1")).toEqual({ right: -4 });
+    expect(parseLayout("-right-2")).toEqual({ right: -8 });
+    expect(parseLayout("-bottom-4")).toEqual({ bottom: -16 });
+    expect(parseLayout("-bottom-8")).toEqual({ bottom: -32 });
+    expect(parseLayout("-left-2")).toEqual({ left: -8 });
+    expect(parseLayout("-left-4")).toEqual({ left: -16 });
+  });
+
+  it("should parse negative positioning with fractional values", () => {
+    expect(parseLayout("-top-0.5")).toEqual({ top: -2 });
+    expect(parseLayout("-right-1.5")).toEqual({ right: -6 });
+    expect(parseLayout("-bottom-2.5")).toEqual({ bottom: -10 });
+    expect(parseLayout("-left-3.5")).toEqual({ left: -14 });
+  });
+
+  it("should parse negative positioning with arbitrary values", () => {
+    expect(parseLayout("-top-[10px]")).toEqual({ top: -10 });
+    expect(parseLayout("-right-[20px]")).toEqual({ right: -20 });
+    expect(parseLayout("-bottom-[30]")).toEqual({ bottom: -30 });
+    expect(parseLayout("-left-[40px]")).toEqual({ left: -40 });
+  });
+
+  it("should parse negative positioning with arbitrary percentages", () => {
+    expect(parseLayout("-top-[10%]")).toEqual({ top: "-10%" });
+    expect(parseLayout("-right-[25%]")).toEqual({ right: "-25%" });
+    expect(parseLayout("-bottom-[50%]")).toEqual({ bottom: "-50%" });
+    expect(parseLayout("-left-[100%]")).toEqual({ left: "-100%" });
+  });
 });
 
 describe("parseLayout - inset utilities", () => {
@@ -791,9 +824,11 @@ describe("parseLayout - custom spacing", () => {
     expect(parseLayout("inset-e-xl", customSpacing)).toEqual({ end: 64 });
   });
 
-  it("should support negative values with custom spacing for start/end", () => {
-    // Note: -top-*, -left-*, -right-*, -bottom-* negative prefixes are not supported
-    // Use arbitrary values like top-[-10px] for negative positioning
+  it("should support negative values with custom spacing for positioning", () => {
+    expect(parseLayout("-top-sm", customSpacing)).toEqual({ top: -8 });
+    expect(parseLayout("-right-md", customSpacing)).toEqual({ right: -16 });
+    expect(parseLayout("-bottom-lg", customSpacing)).toEqual({ bottom: -32 });
+    expect(parseLayout("-left-xl", customSpacing)).toEqual({ left: -64 });
     expect(parseLayout("-start-sm", customSpacing)).toEqual({ start: -8 });
     expect(parseLayout("-end-md", customSpacing)).toEqual({ end: -16 });
   });
