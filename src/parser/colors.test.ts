@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
-import { COLORS, parseColor } from "./colors";
 import { applyOpacity } from "../utils/colorUtils";
+import { COLORS, parseColor } from "./colors";
 
 describe("COLORS", () => {
   it("should export complete color palette", () => {

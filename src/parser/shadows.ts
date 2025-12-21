@@ -97,4 +97,4 @@ export function parseShadow(cls: string, customColors?: Record<string, string>):
 }
 
 // Export shadow scale and colors for testing/advanced usage
-export { SHADOW_SCALE, COLORS as SHADOW_COLORS };
+export { COLORS as SHADOW_COLORS, SHADOW_SCALE };
