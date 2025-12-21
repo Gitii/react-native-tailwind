@@ -1,5 +1,21 @@
 import { describe, expect, it } from "vitest";
-import { SHADOW_SCALE, parseShadow } from "./shadows";
+import { SHADOW_COLORS, SHADOW_SCALE, parseShadow } from "./shadows";
+
+// Helper to apply opacity to hex color for testing (same as colors.test.ts)
+function applyOpacity(hex: string, opacity: number): string {
+  if (hex === "transparent") return "transparent";
+  const cleanHex = hex.replace(/^#/, "");
+  const fullHex =
+    cleanHex.length === 3
+      ? cleanHex
+          .split("")
+          .map((char) => char + char)
+          .join("")
+      : cleanHex;
+  const alpha = Math.round((opacity / 100) * 255);
+  const alphaHex = alpha.toString(16).padStart(2, "0").toUpperCase();
+  return `#${fullHex.toUpperCase()}${alphaHex}`;
+}
 
 describe("SHADOW_SCALE", () => {
   it("should export complete shadow scale", () => {
@@ -138,7 +154,7 @@ describe("parseShadow - shadow properties (Android)", () => {
 
 describe("parseShadow - invalid classes", () => {
   it("should return null for invalid shadow classes", () => {
-    expect(parseShadow("shadow-invalid")).toBeNull();
+    expect(parseShadow("shadow-invalidcolor")).toBeNull();
     expect(parseShadow("shadows")).toBeNull();
     expect(parseShadow("shadow-")).toBeNull();
     expect(parseShadow("shadow-small")).toBeNull();
@@ -188,5 +204,110 @@ describe("parseShadow - comprehensive coverage", () => {
     expect(parseShadow("SHADOW")).toBeNull();
     expect(parseShadow("Shadow-md")).toBeNull();
     expect(parseShadow("shadow-MD")).toBeNull();
+  });
+});
+
+describe("parseShadow - shadow colors", () => {
+  it("should parse shadow color with preset colors", () => {
+    expect(parseShadow("shadow-red-500")).toEqual({ shadowColor: SHADOW_COLORS["red-500"] });
+    expect(parseShadow("shadow-blue-800")).toEqual({ shadowColor: SHADOW_COLORS["blue-800"] });
+    expect(parseShadow("shadow-green-600")).toEqual({ shadowColor: SHADOW_COLORS["green-600"] });
+  });
+
+  it("should parse shadow color with basic colors", () => {
+    expect(parseShadow("shadow-black")).toEqual({ shadowColor: SHADOW_COLORS.black });
+    expect(parseShadow("shadow-white")).toEqual({ shadowColor: SHADOW_COLORS.white });
+    expect(parseShadow("shadow-transparent")).toEqual({ shadowColor: "transparent" });
+  });
+
+  it("should parse shadow color with opacity modifier", () => {
+    expect(parseShadow("shadow-red-500/50")).toEqual({
+      shadowColor: applyOpacity(SHADOW_COLORS["red-500"], 50),
+    });
+    expect(parseShadow("shadow-blue-800/80")).toEqual({
+      shadowColor: applyOpacity(SHADOW_COLORS["blue-800"], 80),
+    });
+    expect(parseShadow("shadow-black/25")).toEqual({
+      shadowColor: applyOpacity(SHADOW_COLORS.black, 25),
+    });
+    expect(parseShadow("shadow-white/0")).toEqual({
+      shadowColor: applyOpacity(SHADOW_COLORS.white, 0),
+    });
+    expect(parseShadow("shadow-green-500/100")).toEqual({
+      shadowColor: applyOpacity(SHADOW_COLORS["green-500"], 100),
+    });
+  });
+
+  it("should parse shadow color with arbitrary hex values", () => {
+    expect(parseShadow("shadow-[#ff0000]")).toEqual({ shadowColor: "#FF0000" });
+    expect(parseShadow("shadow-[#00ff00]")).toEqual({ shadowColor: "#00FF00" });
+    expect(parseShadow("shadow-[#0000ff]")).toEqual({ shadowColor: "#0000FF" });
+  });
+
+  it("should parse shadow color with 3-digit hex values", () => {
+    expect(parseShadow("shadow-[#f00]")).toEqual({ shadowColor: "#FF0000" });
+    expect(parseShadow("shadow-[#0f0]")).toEqual({ shadowColor: "#00FF00" });
+    expect(parseShadow("shadow-[#00f]")).toEqual({ shadowColor: "#0000FF" });
+  });
+
+  it("should parse shadow color with arbitrary hex and opacity", () => {
+    expect(parseShadow("shadow-[#ff0000]/50")).toEqual({ shadowColor: "#FF000080" });
+    expect(parseShadow("shadow-[#00ff00]/25")).toEqual({ shadowColor: "#00FF0040" });
+    expect(parseShadow("shadow-[#0000ff]/80")).toEqual({ shadowColor: "#0000FFCC" });
+  });
+
+  it("should parse shadow color with 8-digit hex (with alpha)", () => {
+    expect(parseShadow("shadow-[#ff000080]")).toEqual({ shadowColor: "#FF000080" });
+    expect(parseShadow("shadow-[#00ff00cc]")).toEqual({ shadowColor: "#00FF00CC" });
+  });
+
+  it("should handle transparent with opacity modifier", () => {
+    // Transparent should remain transparent even with opacity
+    expect(parseShadow("shadow-transparent/50")).toEqual({ shadowColor: "transparent" });
+  });
+
+  it("should return null for invalid opacity values", () => {
+    expect(parseShadow("shadow-red-500/101")).toBeNull();
+    expect(parseShadow("shadow-red-500/-1")).toBeNull();
+    expect(parseShadow("shadow-red-500/abc")).toBeNull();
+  });
+
+  it("should return null for invalid color names", () => {
+    expect(parseShadow("shadow-notacolor")).toBeNull();
+    expect(parseShadow("shadow-foobar-500")).toBeNull();
+    expect(parseShadow("shadow-red-999")).toBeNull();
+  });
+});
+
+describe("parseShadow - shadow colors with custom colors", () => {
+  const customColors = {
+    brand: "#FF5733",
+    "brand-primary": "#3498DB",
+    "brand-secondary": "#2ECC71",
+  };
+
+  it("should parse shadow with custom colors", () => {
+    expect(parseShadow("shadow-brand", customColors)).toEqual({ shadowColor: "#FF5733" });
+    expect(parseShadow("shadow-brand-primary", customColors)).toEqual({ shadowColor: "#3498DB" });
+    expect(parseShadow("shadow-brand-secondary", customColors)).toEqual({ shadowColor: "#2ECC71" });
+  });
+
+  it("should parse shadow with custom colors and opacity", () => {
+    expect(parseShadow("shadow-brand/50", customColors)).toEqual({ shadowColor: "#FF573380" });
+    expect(parseShadow("shadow-brand-primary/80", customColors)).toEqual({ shadowColor: "#3498DBCC" });
+  });
+
+  it("should still support preset colors with custom colors", () => {
+    expect(parseShadow("shadow-red-500", customColors)).toEqual({ shadowColor: SHADOW_COLORS["red-500"] });
+    expect(parseShadow("shadow-blue-800/50", customColors)).toEqual({
+      shadowColor: applyOpacity(SHADOW_COLORS["blue-800"], 50),
+    });
+  });
+
+  it("should allow custom colors to override presets", () => {
+    const overrideColors = {
+      "red-500": "#CUSTOM1",
+    };
+    expect(parseShadow("shadow-red-500", overrideColors)).toEqual({ shadowColor: "#CUSTOM1" });
   });
 });
