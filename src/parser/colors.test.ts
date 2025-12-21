@@ -1,21 +1,6 @@
 import { describe, expect, it } from "vitest";
 import { COLORS, parseColor } from "./colors";
-
-// Helper to apply opacity to hex color for testing
-function applyOpacity(hex: string, opacity: number): string {
-  if (hex === "transparent") return "transparent";
-  const cleanHex = hex.replace(/^#/, "");
-  const fullHex =
-    cleanHex.length === 3
-      ? cleanHex
-          .split("")
-          .map((char) => char + char)
-          .join("")
-      : cleanHex;
-  const alpha = Math.round((opacity / 100) * 255);
-  const alphaHex = alpha.toString(16).padStart(2, "0").toUpperCase();
-  return `#${fullHex.toUpperCase()}${alphaHex}`;
-}
+import { applyOpacity } from "../utils/colorUtils";
 
 describe("COLORS", () => {
   it("should export complete color palette", () => {

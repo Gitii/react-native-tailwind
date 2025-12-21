@@ -1,21 +1,6 @@
 import { describe, expect, it } from "vitest";
 import { SHADOW_COLORS, SHADOW_SCALE, parseShadow } from "./shadows";
-
-// Helper to apply opacity to hex color for testing (same as colors.test.ts)
-function applyOpacity(hex: string, opacity: number): string {
-  if (hex === "transparent") return "transparent";
-  const cleanHex = hex.replace(/^#/, "");
-  const fullHex =
-    cleanHex.length === 3
-      ? cleanHex
-          .split("")
-          .map((char) => char + char)
-          .join("")
-      : cleanHex;
-  const alpha = Math.round((opacity / 100) * 255);
-  const alphaHex = alpha.toString(16).padStart(2, "0").toUpperCase();
-  return `#${fullHex.toUpperCase()}${alphaHex}`;
-}
+import { applyOpacity } from "../utils/colorUtils";
 
 describe("SHADOW_SCALE", () => {
   it("should export complete shadow scale", () => {
@@ -239,26 +224,27 @@ describe("parseShadow - shadow colors", () => {
   });
 
   it("should parse shadow color with arbitrary hex values", () => {
-    expect(parseShadow("shadow-[#ff0000]")).toEqual({ shadowColor: "#FF0000" });
-    expect(parseShadow("shadow-[#00ff00]")).toEqual({ shadowColor: "#00FF00" });
-    expect(parseShadow("shadow-[#0000ff]")).toEqual({ shadowColor: "#0000FF" });
+    expect(parseShadow("shadow-[#ff0000]")).toEqual({ shadowColor: "#ff0000" });
+    expect(parseShadow("shadow-[#00ff00]")).toEqual({ shadowColor: "#00ff00" });
+    expect(parseShadow("shadow-[#0000ff]")).toEqual({ shadowColor: "#0000ff" });
   });
 
   it("should parse shadow color with 3-digit hex values", () => {
-    expect(parseShadow("shadow-[#f00]")).toEqual({ shadowColor: "#FF0000" });
-    expect(parseShadow("shadow-[#0f0]")).toEqual({ shadowColor: "#00FF00" });
-    expect(parseShadow("shadow-[#00f]")).toEqual({ shadowColor: "#0000FF" });
+    expect(parseShadow("shadow-[#f00]")).toEqual({ shadowColor: "#ff0000" });
+    expect(parseShadow("shadow-[#0f0]")).toEqual({ shadowColor: "#00ff00" });
+    expect(parseShadow("shadow-[#00f]")).toEqual({ shadowColor: "#0000ff" });
   });
 
   it("should parse shadow color with arbitrary hex and opacity", () => {
+    // When opacity is applied, the color is uppercased for consistency
     expect(parseShadow("shadow-[#ff0000]/50")).toEqual({ shadowColor: "#FF000080" });
     expect(parseShadow("shadow-[#00ff00]/25")).toEqual({ shadowColor: "#00FF0040" });
     expect(parseShadow("shadow-[#0000ff]/80")).toEqual({ shadowColor: "#0000FFCC" });
   });
 
   it("should parse shadow color with 8-digit hex (with alpha)", () => {
-    expect(parseShadow("shadow-[#ff000080]")).toEqual({ shadowColor: "#FF000080" });
-    expect(parseShadow("shadow-[#00ff00cc]")).toEqual({ shadowColor: "#00FF00CC" });
+    expect(parseShadow("shadow-[#ff000080]")).toEqual({ shadowColor: "#ff000080" });
+    expect(parseShadow("shadow-[#00ff00cc]")).toEqual({ shadowColor: "#00ff00cc" });
   });
 
   it("should handle transparent with opacity modifier", () => {
