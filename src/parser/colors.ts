@@ -12,7 +12,10 @@ export { COLORS };
  * Parse color classes (background, text, border)
  * Supports opacity modifier: bg-blue-500/50, text-black/80, border-red-500/30
  */
-export function parseColor(cls: string, customColors?: Record<string, string>): StyleObject | null {
+export function parseColor(
+  cls: string,
+  customColors?: Record<string, string>
+): StyleObject | null {
   // Helper to get color with custom override (custom colors take precedence)
   const getColor = (key: string): string | undefined => {
     return customColors?.[key] ?? COLORS[key];
@@ -32,7 +35,7 @@ export function parseColor(cls: string, customColors?: Record<string, string>): 
         /* v8 ignore next 5 */
         if (process.env.NODE_ENV !== "production") {
           console.warn(
-            `[react-native-tailwind] Invalid opacity value: ${opacity}. Opacity must be between 0 and 100.`,
+            `[react-native-tailwind] Invalid opacity value: ${opacity}. Opacity must be between 0 and 100.`
           );
         }
         return null;
@@ -65,7 +68,7 @@ export function parseColor(cls: string, customColors?: Record<string, string>): 
       /* v8 ignore next 5 */
       if (process.env.NODE_ENV !== "production") {
         console.warn(
-          `[react-native-tailwind] Unsupported arbitrary color value: ${colorKey}. Only hex colors are supported (e.g., [#ff0000], [#f00], or [#ff0000aa]).`,
+          `[react-native-tailwind] Unsupported arbitrary color value: ${colorKey}. Only hex colors are supported (e.g., [#ff0000], [#f00], or [#ff0000aa]).`
         );
       }
       return null;
@@ -113,6 +116,29 @@ export function parseColor(cls: string, customColors?: Record<string, string>): 
     const color = parseColorWithOpacity(colorKey);
     if (color) {
       return { borderColor: color };
+    }
+  }
+
+  // Outline color: outline-blue-500, outline-blue-500/50, outline-[#ff0000]/80
+  if (
+    cls.startsWith("outline-") &&
+    !cls.match(/^outline-[0-9]/) &&
+    !cls.startsWith("outline-offset-")
+  ) {
+    const colorKey = cls.substring(8); // "outline-".length = 8
+
+    // Skip outline-style values
+    if (["solid", "dashed", "dotted", "none"].includes(colorKey)) {
+      return null;
+    }
+
+    // Skip arbitrary values that don't look like colors (e.g., outline-[3px] is width)
+    if (colorKey.startsWith("[") && !colorKey.startsWith("[#")) {
+      return null;
+    }
+    const color = parseColorWithOpacity(colorKey);
+    if (color) {
+      return { outlineColor: color };
     }
   }
 
