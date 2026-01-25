@@ -167,4 +167,5 @@ Apply colors to individual border sides. See the [Colors reference](/react-nativ
 ## Related
 
 - [Colors](/react-native-tailwind/reference/colors/) - Border color utilities
+- [Outlines](/react-native-tailwind/reference/outlines/) - Outline width, style, and offset utilities
 - [Shadows](/react-native-tailwind/reference/shadows/) - Shadow and elevation

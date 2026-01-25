@@ -25,6 +25,7 @@ export {
   parseBorder,
   parseColor,
   parseLayout,
+  parseOutline,
   parsePlaceholderClass,
   parsePlaceholderClasses,
   parseShadow,
