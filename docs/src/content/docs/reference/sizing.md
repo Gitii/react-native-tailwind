@@ -5,6 +5,80 @@ description: Width and height utilities
 
 Control element dimensions with width and height utilities.
 
+## Size
+
+Sets both width and height to the same value simultaneously.
+
+### Numeric
+
+```tsx
+// Before (Tailwind)
+<View className="size-0" />
+<View className="size-4" />
+<View className="size-8" />
+<View className="size-16" />
+<View className="size-32" />
+<View className="size-64" />
+<View className="size-96" />
+
+// After (React Native style object)
+<View style={{ width: 0, height: 0 }} />
+<View style={{ width: 16, height: 16 }} />
+<View style={{ width: 32, height: 32 }} />
+<View style={{ width: 64, height: 64 }} />
+<View style={{ width: 128, height: 128 }} />
+<View style={{ width: 256, height: 256 }} />
+<View style={{ width: 384, height: 384 }} />
+```
+
+### Fractional
+
+```tsx
+// Before (Tailwind)
+<View className="size-1/2" />
+<View className="size-1/3" />
+<View className="size-2/3" />
+<View className="size-1/4" />
+<View className="size-3/4" />
+<View className="size-1/5" />
+
+// After (React Native style object)
+<View style={{ width: '50%', height: '50%' }} />
+<View style={{ width: '33.333333%', height: '33.333333%' }} />
+<View style={{ width: '66.666667%', height: '66.666667%' }} />
+<View style={{ width: '25%', height: '25%' }} />
+<View style={{ width: '75%', height: '75%' }} />
+<View style={{ width: '20%', height: '20%' }} />
+```
+
+### Special
+
+```tsx
+// Before (Tailwind)
+<View className="size-full" />
+<View className="size-auto" />
+
+// After (React Native style object)
+<View style={{ width: '100%', height: '100%' }} />
+<View style={{ width: 'auto', height: 'auto' }} />
+```
+
+### Arbitrary
+
+```tsx
+// Before (Tailwind)
+<View className="size-[123px]" />
+<View className="size-[200px]" />
+<View className="size-[50%]" />
+<View className="size-[75%]" />
+
+// After (React Native style object)
+<View style={{ width: 123, height: 123 }} />
+<View style={{ width: 200, height: 200 }} />
+<View style={{ width: '50%', height: '50%' }} />
+<View style={{ width: '75%', height: '75%' }} />
+```
+
 ## Width
 
 ### Numeric
@@ -147,18 +221,15 @@ function FullScreenModal() {
 
 ```tsx
 // Input
-<View className="w-screen h-screen bg-white" />
+<View className="w-screen h-screen bg-white" />;
 
 // Generated output
-import { useWindowDimensions } from 'react-native';
+import { useWindowDimensions } from "react-native";
 
 function Component() {
   const _twDimensions = useWindowDimensions();
 
-  return <View style={[
-    styles._bg_white,
-    { width: _twDimensions.width, height: _twDimensions.height }
-  ]} />;
+  return <View style={[styles._bg_white, { width: _twDimensions.width, height: _twDimensions.height }]} />;
 }
 ```
 
@@ -234,7 +305,11 @@ You can combine screen dimensions with **static utility classes only** (no modif
 ### Fixed Size Square
 
 ```tsx
+// Using separate width and height
 <View className="w-16 h-16 bg-gray-200 rounded" />
+
+// Using size shorthand (width + height)
+<View className="size-16 bg-gray-200 rounded" />
 ```
 
 ### Responsive Grid
@@ -265,6 +340,7 @@ You can combine screen dimensions with **static utility classes only** (no modif
 ## Note
 
 Arbitrary sizing supports:
+
 - Pixel values: `[123px]` or `[123]`
 - Percentages: `[50%]`
 

@@ -102,6 +102,34 @@ export function parseSizing(cls: string, customSpacing?: Record<string, number>)
   // Merge custom spacing with defaults (custom takes precedence)
   const sizeMap = customSpacing ? { ...SIZE_SCALE, ...customSpacing } : SIZE_SCALE;
 
+  // Size (both width AND height)
+  if (cls.startsWith("size-")) {
+    const sizeKey = cls.substring(5); // "size-".length = 5
+
+    // Arbitrary values: size-[123px], size-[50%] (highest priority)
+    const arbitrarySize = parseArbitrarySize(sizeKey);
+    if (arbitrarySize !== null) {
+      return { width: arbitrarySize, height: arbitrarySize };
+    }
+
+    // Percentage sizes: size-full, size-1/2, etc.
+    const percentage = SIZE_PERCENTAGES[sizeKey];
+    if (percentage) {
+      return { width: percentage, height: percentage };
+    }
+
+    // Numeric sizes: size-4, size-8, etc. (includes custom spacing)
+    const numericSize = sizeMap[sizeKey];
+    if (numericSize !== undefined) {
+      return { width: numericSize, height: numericSize };
+    }
+
+    // Special values
+    if (sizeKey === "auto") {
+      return { width: "auto", height: "auto" };
+    }
+  }
+
   // Width
   if (cls.startsWith("w-")) {
     const sizeKey = cls.substring(2);
