@@ -117,7 +117,10 @@ Apply colors to individual border sides. See the [Colors reference](/react-nativ
 ### Combining Width and Color
 
 ```tsx
-<View className="border-l-4 border-l-blue-500">// borderLeftWidth: 4 // borderLeftColor: '#3B82F6'</View>
+<View className="border-l-4 border-l-blue-500">
+  // borderLeftWidth: 4
+  // borderLeftColor: '#3B82F6'
+</View>
 ```
 
 ### Example: Accent Border
@@ -164,55 +167,5 @@ Apply colors to individual border sides. See the [Colors reference](/react-nativ
 ## Related
 
 - [Colors](/react-native-tailwind/reference/colors/) - Border color utilities
+- [Outlines](/react-native-tailwind/reference/outlines/) - Outline width, style, and offset utilities
 - [Shadows](/react-native-tailwind/reference/shadows/) - Shadow and elevation
-
-## Outline
-
-Utilities for controlling the outline style of an element.
-
-> **Note**: Outline support requires React Native 0.73+ (New Architecture) and setting the `outline` style property.
-
-### Outline Width
-
-```tsx
-<View className="outline" />        // outlineWidth: 1, outlineStyle: 'solid'
-<View className="outline-0" />      // outlineWidth: 0
-<View className="outline-2" />      // outlineWidth: 2
-<View className="outline-4" />      // outlineWidth: 4
-<View className="outline-[2px]" />  // outlineWidth: 2
-<View className="outline-none" />   // outlineWidth: 0
-```
-
-### Outline Color
-
-```tsx
-<View className="outline-blue-500" />    // outlineColor: '#3B82F6'
-<View className="outline-[#ff0000]" />   // outlineColor: '#ff0000'
-<View className="outline-red-500/50" />  // outlineColor: '#EF4444' (50% opacity)
-```
-
-### Outline Style
-
-```tsx
-<View className="outline-solid" />   // outlineStyle: 'solid'
-<View className="outline-dashed" />  // outlineStyle: 'dashed'
-<View className="outline-dotted" />  // outlineStyle: 'dotted'
-```
-
-### Outline Offset
-
-Utilities for controlling the offset of an element's outline.
-
-```tsx
-<View className="outline-offset-0" />      // outlineOffset: 0
-<View className="outline-offset-1" />      // outlineOffset: 1
-<View className="outline-offset-2" />      // outlineOffset: 2
-<View className="outline-offset-4" />      // outlineOffset: 4
-<View className="outline-offset-[3px]" />  // outlineOffset: 3
-```
-
-### Example
-
-```tsx
-<View className="w-32 h-32 bg-white outline outline-blue-500 outline-offset-2 rounded-lg" />
-```
