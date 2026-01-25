@@ -310,3 +310,85 @@ describe("parseSizing - custom spacing", () => {
     expect(parseSizing("h-8")).toEqual({ height: 32 }); // Default behavior
   });
 });
+
+describe("parseSizing - size (width + height)", () => {
+  it("should parse size with numeric values", () => {
+    expect(parseSizing("size-0")).toEqual({ width: 0, height: 0 });
+    expect(parseSizing("size-4")).toEqual({ width: 16, height: 16 });
+    expect(parseSizing("size-8")).toEqual({ width: 32, height: 32 });
+    expect(parseSizing("size-96")).toEqual({ width: 384, height: 384 });
+  });
+
+  it("should parse size with fractional values", () => {
+    expect(parseSizing("size-0.5")).toEqual({ width: 2, height: 2 });
+    expect(parseSizing("size-1.5")).toEqual({ width: 6, height: 6 });
+    expect(parseSizing("size-2.5")).toEqual({ width: 10, height: 10 });
+  });
+
+  it("should parse size with percentage values", () => {
+    expect(parseSizing("size-full")).toEqual({ width: "100%", height: "100%" });
+    expect(parseSizing("size-1/2")).toEqual({ width: "50%", height: "50%" });
+    expect(parseSizing("size-1/3")).toEqual({ width: "33.333333%", height: "33.333333%" });
+    expect(parseSizing("size-2/3")).toEqual({ width: "66.666667%", height: "66.666667%" });
+    expect(parseSizing("size-1/4")).toEqual({ width: "25%", height: "25%" });
+    expect(parseSizing("size-3/4")).toEqual({ width: "75%", height: "75%" });
+  });
+
+  it("should parse size with special values", () => {
+    expect(parseSizing("size-auto")).toEqual({ width: "auto", height: "auto" });
+  });
+
+  it("should parse size with arbitrary pixel values", () => {
+    expect(parseSizing("size-[123px]")).toEqual({ width: 123, height: 123 });
+    expect(parseSizing("size-[200]")).toEqual({ width: 200, height: 200 });
+    expect(parseSizing("size-[50px]")).toEqual({ width: 50, height: 50 });
+  });
+
+  it("should parse size with arbitrary percentage values", () => {
+    expect(parseSizing("size-[50%]")).toEqual({ width: "50%", height: "50%" });
+    expect(parseSizing("size-[33.333%]")).toEqual({ width: "33.333%", height: "33.333%" });
+    expect(parseSizing("size-[85%]")).toEqual({ width: "85%", height: "85%" });
+  });
+
+  it("should support custom spacing values for size", () => {
+    const customSpacing = { sm: 8, md: 16, lg: 32, xl: 64 };
+    expect(parseSizing("size-sm", customSpacing)).toEqual({ width: 8, height: 8 });
+    expect(parseSizing("size-md", customSpacing)).toEqual({ width: 16, height: 16 });
+    expect(parseSizing("size-lg", customSpacing)).toEqual({ width: 32, height: 32 });
+    expect(parseSizing("size-xl", customSpacing)).toEqual({ width: 64, height: 64 });
+  });
+
+  it("should allow custom spacing to override preset values", () => {
+    const customSpacing = { "4": 20 }; // Override default (16)
+    expect(parseSizing("size-4", customSpacing)).toEqual({ width: 20, height: 20 });
+  });
+
+  it("should prefer arbitrary values over custom spacing", () => {
+    expect(parseSizing("size-[24px]", { "4": 20 })).toEqual({ width: 24, height: 24 });
+    expect(parseSizing("size-[50]", { sm: 8 })).toEqual({ width: 50, height: 50 });
+  });
+
+  it("should handle all fractional percentage variants", () => {
+    expect(parseSizing("size-1/5")).toEqual({ width: "20%", height: "20%" });
+    expect(parseSizing("size-2/5")).toEqual({ width: "40%", height: "40%" });
+    expect(parseSizing("size-3/5")).toEqual({ width: "60%", height: "60%" });
+    expect(parseSizing("size-4/5")).toEqual({ width: "80%", height: "80%" });
+    expect(parseSizing("size-1/6")).toEqual({ width: "16.666667%", height: "16.666667%" });
+    expect(parseSizing("size-5/6")).toEqual({ width: "83.333333%", height: "83.333333%" });
+  });
+
+  it("should handle edge case size values", () => {
+    expect(parseSizing("size-0")).toEqual({ width: 0, height: 0 });
+  });
+
+  it("should return null for invalid size values", () => {
+    expect(parseSizing("size-invalid")).toBeNull();
+    expect(parseSizing("size-999")).toBeNull();
+  });
+
+  it("should return null for arbitrary values with unsupported units", () => {
+    expect(parseSizing("size-[16rem]")).toBeNull();
+    expect(parseSizing("size-[2em]")).toBeNull();
+    expect(parseSizing("size-[50vh]")).toBeNull();
+  });
+});
