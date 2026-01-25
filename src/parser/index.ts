@@ -57,7 +57,7 @@ export function parseClass(cls: string, customTheme?: CustomTheme): StyleObject 
   const parsers: Array<(cls: string) => StyleObject | null> = [
     (cls: string) => parseSpacing(cls, customTheme?.spacing),
     (cls: string) => parseBorder(cls, customTheme?.colors),
-    (cls: string) => parseOutline(cls, customTheme?.colors),
+    parseOutline,
     (cls: string) => parseColor(cls, customTheme?.colors),
     (cls: string) => parseLayout(cls, customTheme?.spacing),
     (cls: string) => parseTypography(cls, customTheme?.fontFamily, customTheme?.fontSize),

@@ -33,9 +33,8 @@ function parseArbitraryOutlineValue(value: string): number | null {
 /**
  * Parse outline classes
  * @param cls - The class name to parse
- * @param customColors - Optional custom colors (passed to parseColor for pattern detection)
  */
-export function parseOutline(cls: string, customColors?: Record<string, string>): StyleObject | null {
+export function parseOutline(cls: string): StyleObject | null {
   // Shorthand: outline (width: 1, style: solid)
   if (cls === "outline") {
     return { outlineWidth: 1, outlineStyle: "solid" };
@@ -97,6 +96,6 @@ export function parseOutline(cls: string, customColors?: Record<string, string>)
     return null;
   }
 
-  // If it's outline-{color}, we return null here so parseColor (called later in index.ts)
+  // If it's outline-{color}, return null so parseColor (called later in index.ts) handles it
   return null;
 }
