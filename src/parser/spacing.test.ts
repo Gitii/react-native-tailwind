@@ -231,6 +231,30 @@ describe("parseSpacing - edge cases", () => {
     expect(parseSpacing("gap-0")).toEqual({ gap: 0 });
   });
 
+  it("should parse px (1 pixel) across all spacing utilities", () => {
+    expect(parseSpacing("m-px")).toEqual({ margin: 1 });
+    expect(parseSpacing("mx-px")).toEqual({ marginHorizontal: 1 });
+    expect(parseSpacing("my-px")).toEqual({ marginVertical: 1 });
+    expect(parseSpacing("mt-px")).toEqual({ marginTop: 1 });
+    expect(parseSpacing("mr-px")).toEqual({ marginRight: 1 });
+    expect(parseSpacing("mb-px")).toEqual({ marginBottom: 1 });
+    expect(parseSpacing("ml-px")).toEqual({ marginLeft: 1 });
+    expect(parseSpacing("ms-px")).toEqual({ marginStart: 1 });
+    expect(parseSpacing("me-px")).toEqual({ marginEnd: 1 });
+    expect(parseSpacing("p-px")).toEqual({ padding: 1 });
+    expect(parseSpacing("px-px")).toEqual({ paddingHorizontal: 1 });
+    expect(parseSpacing("py-px")).toEqual({ paddingVertical: 1 });
+    expect(parseSpacing("pt-px")).toEqual({ paddingTop: 1 });
+    expect(parseSpacing("pr-px")).toEqual({ paddingRight: 1 });
+    expect(parseSpacing("pb-px")).toEqual({ paddingBottom: 1 });
+    expect(parseSpacing("pl-px")).toEqual({ paddingLeft: 1 });
+    expect(parseSpacing("ps-px")).toEqual({ paddingStart: 1 });
+    expect(parseSpacing("pe-px")).toEqual({ paddingEnd: 1 });
+    expect(parseSpacing("gap-px")).toEqual({ gap: 1 });
+    expect(parseSpacing("-m-px")).toEqual({ margin: -1 });
+    expect(parseSpacing("-mt-px")).toEqual({ marginTop: -1 });
+  });
+
   it("should not match partial class names", () => {
     expect(parseSpacing("sm-4")).toBeNull();
     expect(parseSpacing("margin-4")).toBeNull();

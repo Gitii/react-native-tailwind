@@ -6,6 +6,7 @@ import type { StyleObject } from "../types";
 
 // Tailwind spacing scale (in pixels, converted to React Native units)
 export const SPACING_SCALE: Record<string, number> = {
+  px: 1,
   0: 0,
   0.5: 2,
   1: 4,

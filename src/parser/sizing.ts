@@ -7,6 +7,7 @@ import type { StyleObject } from "../types";
 
 // Size scale (in pixels/percentages)
 export const SIZE_SCALE: Record<string, number> = {
+  px: 1,
   0: 0,
   0.5: 2,
   1: 4,

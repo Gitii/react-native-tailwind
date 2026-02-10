@@ -253,6 +253,16 @@ describe("parseSizing - comprehensive coverage", () => {
     expect(parseSizing("w-full")).toEqual({ width: "100%" });
     expect(parseSizing("h-full")).toEqual({ height: "100%" });
   });
+
+  it("should parse px (1 pixel) across all sizing utilities", () => {
+    expect(parseSizing("w-px")).toEqual({ width: 1 });
+    expect(parseSizing("h-px")).toEqual({ height: 1 });
+    expect(parseSizing("size-px")).toEqual({ width: 1, height: 1 });
+    expect(parseSizing("min-w-px")).toEqual({ minWidth: 1 });
+    expect(parseSizing("min-h-px")).toEqual({ minHeight: 1 });
+    expect(parseSizing("max-w-px")).toEqual({ maxWidth: 1 });
+    expect(parseSizing("max-h-px")).toEqual({ maxHeight: 1 });
+  });
 });
 
 describe("parseSizing - custom spacing", () => {

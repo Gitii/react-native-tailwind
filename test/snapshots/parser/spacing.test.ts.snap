@@ -36,5 +36,6 @@ exports[`SPACING_SCALE > should export complete spacing scale 1`] = `
   "80": 320,
   "9": 36,
   "96": 384,
+  "px": 1,
 }
 `;
