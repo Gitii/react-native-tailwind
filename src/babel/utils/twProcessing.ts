@@ -17,6 +17,7 @@ import type { StyleObject } from "../../types/core.js";
 import { processColorSchemeModifiers } from "./colorSchemeModifierProcessing.js";
 import { processDirectionalModifiers } from "./directionalModifierProcessing.js";
 import { processPlatformModifiers } from "./platformModifierProcessing.js";
+import { injectColorSchemeHook } from "./styleInjection.js";
 import { hasRuntimeDimensions } from "./windowDimensionsProcessing.js";
 
 /**
@@ -31,6 +32,7 @@ export interface TwProcessingState {
   // Color scheme support (for dark:/light: modifiers)
   needsColorSchemeImport: boolean;
   colorSchemeVariableName: string;
+  colorSchemeHookName: string;
   functionComponentsNeedingColorScheme: Set<NodePath<BabelTypes.Function>>;
   colorSchemeLocalIdentifier?: string;
   // Platform support (for ios:/android:/web: modifiers)
@@ -137,6 +139,15 @@ export function processTwCall(
     } else {
       // Track this component as needing the color scheme hook
       state.functionComponentsNeedingColorScheme.add(componentScope);
+      // Inject hook immediately for React Compiler compatibility
+      state.needsColorSchemeImport = true;
+      injectColorSchemeHook(
+        componentScope,
+        state.colorSchemeVariableName,
+        state.colorSchemeHookName,
+        state.colorSchemeLocalIdentifier,
+        t,
+      );
     }
   }
 

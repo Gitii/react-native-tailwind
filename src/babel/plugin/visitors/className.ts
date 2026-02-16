@@ -24,6 +24,7 @@ import { processDirectionalModifiers } from "../../utils/directionalModifierProc
 import { processDynamicExpression } from "../../utils/dynamicProcessing.js";
 import { createStyleFunction, processStaticClassNameWithModifiers } from "../../utils/modifierProcessing.js";
 import { processPlatformModifiers } from "../../utils/platformModifierProcessing.js";
+import { injectColorSchemeHook, injectWindowDimensionsHook } from "../../utils/styleInjection.js";
 import {
   addOrMergePlaceholderTextColorProp,
   findStyleAttribute,
@@ -151,6 +152,16 @@ export function jsxAttributeVisitor(
       componentScope = findComponentScope(path, t);
       if (componentScope) {
         state.functionComponentsNeedingColorScheme.add(componentScope);
+        // Inject hook immediately for React Compiler compatibility
+        // (React Compiler processes functions before Program.exit where hooks were previously injected)
+        state.needsColorSchemeImport = true;
+        injectColorSchemeHook(
+          componentScope,
+          state.colorSchemeVariableName,
+          state.colorSchemeHookName,
+          state.colorSchemeLocalIdentifier,
+          t,
+        );
       } else {
         // Warn if color scheme modifiers used in invalid context (class component, nested function)
         if (process.env.NODE_ENV !== "production") {
@@ -485,6 +496,14 @@ export function jsxAttributeVisitor(
         state.hasClassNames = true; // Mark that we have classNames to process
         state.functionComponentsNeedingWindowDimensions.add(componentScope);
         state.needsWindowDimensionsImport = true;
+        // Inject hook immediately for React Compiler compatibility
+        injectWindowDimensionsHook(
+          componentScope,
+          state.windowDimensionsVariableName,
+          "useWindowDimensions",
+          state.windowDimensionsLocalIdentifier,
+          t,
+        );
 
         // Build style array: [staticStyles, { width: _twDimensions.width }]
         const styleExpressions: BabelTypes.Expression[] = [];

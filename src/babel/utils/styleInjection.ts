@@ -214,8 +214,18 @@ export function injectColorSchemeHook(
     ),
   ]);
 
-  // Insert at the beginning of function body
-  body.body.unshift(hookCall);
+  // Insert at the beginning of function body using the path API
+  // so Babel's scope system properly tracks the new binding.
+  // This is critical for React Compiler compatibility - without proper
+  // scope registration, React Compiler won't recognize the hook return
+  // value as reactive and will incorrectly memoize expressions using it.
+  const bodyPath = functionPath.get("body");
+  if (Array.isArray(bodyPath) || !bodyPath.isBlockStatement()) {
+    // Fallback for unexpected path shapes
+    body.body.unshift(hookCall);
+  } else {
+    (bodyPath as NodePath<BabelTypes.BlockStatement>).unshiftContainer("body", hookCall);
+  }
 
   return true;
 }
@@ -451,8 +461,15 @@ export function injectWindowDimensionsHook(
     ),
   ]);
 
-  // Insert at the beginning of function body
-  body.body.unshift(hookCall);
+  // Insert at the beginning of function body using the path API
+  // so Babel's scope system properly tracks the new binding.
+  // (Same approach as injectColorSchemeHook for React Compiler compatibility)
+  const bodyPath = functionPath.get("body");
+  if (Array.isArray(bodyPath) || !bodyPath.isBlockStatement()) {
+    body.body.unshift(hookCall);
+  } else {
+    (bodyPath as NodePath<BabelTypes.BlockStatement>).unshiftContainer("body", hookCall);
+  }
 
   return true;
 }

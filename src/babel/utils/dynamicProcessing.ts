@@ -7,6 +7,7 @@ import type * as BabelTypes from "@babel/types";
 import type { CustomTheme, ParsedModifier } from "../../parser/index.js";
 import type { SchemeModifierConfig } from "../../types/config.js";
 import type { StyleObject } from "../../types/core.js";
+import { injectColorSchemeHook } from "./styleInjection.js";
 
 /**
  * Plugin state interface (subset needed for dynamic processing)
@@ -20,6 +21,8 @@ export interface DynamicProcessingState {
   needsPlatformImport: boolean;
   needsColorSchemeImport: boolean;
   colorSchemeVariableName: string;
+  colorSchemeHookName: string;
+  colorSchemeLocalIdentifier?: string;
   functionComponentsNeedingColorScheme: Set<NodePath<BabelTypes.Function>>;
 }
 
@@ -449,6 +452,14 @@ function processStringOrExpressionHelper(
       if (componentScope) {
         state.needsColorSchemeImport = true;
         state.functionComponentsNeedingColorScheme.add(componentScope);
+        // Inject hook immediately for React Compiler compatibility
+        injectColorSchemeHook(
+          componentScope,
+          state.colorSchemeVariableName,
+          state.colorSchemeHookName,
+          state.colorSchemeLocalIdentifier,
+          t,
+        );
         const colorSchemeExpressions = processColorSchemeModifiers(
           colorSchemeModifiers,
           state,
