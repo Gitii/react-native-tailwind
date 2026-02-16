@@ -40,8 +40,7 @@ function walkNode(
   // Check JSXAttribute with color scheme class names
   if (t.isJSXAttribute(node) && t.isJSXIdentifier(node.name)) {
     const attrName = node.name.name;
-    const isSupported =
-      supportedAttributes.has(attrName) || attributePatterns.some((p) => p.test(attrName));
+    const isSupported = supportedAttributes.has(attrName) || attributePatterns.some((p) => p.test(attrName));
     if (isSupported && valueContainsColorScheme(node.value, t)) {
       return true;
     }
@@ -88,10 +87,8 @@ function walkNode(
       }
     } else if (isASTNode(child)) {
       // Skip nested functions
-      if (t.isFunction(child as BabelTypes.Node)) continue;
-      if (
-        walkNode(child as BabelTypes.Node, supportedAttributes, attributePatterns, twImportNames, t)
-      ) {
+      if (t.isFunction(child)) continue;
+      if (walkNode(child, supportedAttributes, attributePatterns, twImportNames, t)) {
         return true;
       }
     }
@@ -103,10 +100,7 @@ function walkNode(
 /**
  * Check if a JSXAttribute value contains color scheme modifier strings
  */
-function valueContainsColorScheme(
-  value: BabelTypes.JSXAttribute["value"],
-  t: typeof BabelTypes,
-): boolean {
+function valueContainsColorScheme(value: BabelTypes.JSXAttribute["value"], t: typeof BabelTypes): boolean {
   if (!value) return false;
 
   // String literal: className="... dark:..."
@@ -148,21 +142,19 @@ function expressionContainsColorScheme(
 
   if (t.isConditionalExpression(node)) {
     return (
-      expressionContainsColorScheme(node.consequent, t) ||
-      expressionContainsColorScheme(node.alternate, t)
+      expressionContainsColorScheme(node.consequent, t) || expressionContainsColorScheme(node.alternate, t)
     );
   }
 
   if (t.isLogicalExpression(node)) {
-    return (
-      expressionContainsColorScheme(node.left, t) ||
-      expressionContainsColorScheme(node.right, t)
-    );
+    return expressionContainsColorScheme(node.left, t) || expressionContainsColorScheme(node.right, t);
   }
 
   return false;
 }
 
 function isASTNode(value: unknown): value is BabelTypes.Node {
-  return value !== null && typeof value === "object" && typeof (value as Record<string, unknown>).type === "string";
+  return (
+    value !== null && typeof value === "object" && typeof (value as Record<string, unknown>).type === "string"
+  );
 }

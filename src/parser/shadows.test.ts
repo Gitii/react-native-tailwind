@@ -97,10 +97,8 @@ describe("parseShadow - shadow properties (iOS)", () => {
     const shadowOffset = result?.shadowOffset;
     expect(shadowOffset).toHaveProperty("width");
     expect(shadowOffset).toHaveProperty("height");
-    if (typeof shadowOffset === "object" && shadowOffset !== null) {
-      expect(typeof shadowOffset.width).toBe("number");
-      expect(typeof shadowOffset.height).toBe("number");
-    }
+    expect(typeof (shadowOffset as { width: number; height: number }).width).toBe("number");
+    expect(typeof (shadowOffset as { width: number; height: number }).height).toBe("number");
   });
 
   it("should include both iOS shadow and Android elevation properties", () => {

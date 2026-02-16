@@ -224,7 +224,7 @@ export function injectColorSchemeHook(
     // Fallback for unexpected path shapes
     body.body.unshift(hookCall);
   } else {
-    (bodyPath as NodePath<BabelTypes.BlockStatement>).unshiftContainer("body", hookCall);
+    bodyPath.unshiftContainer("body", hookCall);
   }
 
   return true;
@@ -468,7 +468,7 @@ export function injectWindowDimensionsHook(
   if (Array.isArray(bodyPath) || !bodyPath.isBlockStatement()) {
     body.body.unshift(hookCall);
   } else {
-    (bodyPath as NodePath<BabelTypes.BlockStatement>).unshiftContainer("body", hookCall);
+    bodyPath.unshiftContainer("body", hookCall);
   }
 
   return true;

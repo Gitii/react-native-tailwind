@@ -1157,9 +1157,7 @@ describe("className visitor - custom color scheme hook", () => {
     // (TypeScript preset keeps type imports for type checking)
     const colorSchemeMatches = output.match(/useColorScheme/g);
     expect(colorSchemeMatches).toBeTruthy();
-    if (colorSchemeMatches) {
-      expect(colorSchemeMatches.length).toBeGreaterThanOrEqual(2); // At least in import and hook call
-    }
+    expect(colorSchemeMatches?.length).toBeGreaterThanOrEqual(2); // At least in import and hook call
   });
 
   it("should handle both type-only and aliased imports together", () => {

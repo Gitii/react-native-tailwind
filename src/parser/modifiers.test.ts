@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import type { ModifierType, ParsedModifier } from "./modifiers";
+import type { ParsedModifier } from "./modifiers";
 import {
   expandSchemeModifier,
   hasModifier,
@@ -367,21 +367,21 @@ describe("splitModifierClasses - nested modifiers", () => {
 describe("type safety", () => {
   it("should properly type modifier types", () => {
     const result = parseModifier("active:bg-blue-500");
-    if (result) {
-      const modifier: ModifierType = result.modifier;
-      expect(["active", "hover", "focus", "disabled"]).toContain(modifier);
-    }
+    expect(result).toEqual(
+      expect.objectContaining({
+        modifier: expect.stringMatching(/^(active|hover|focus|disabled)$/),
+      }),
+    );
   });
 
   it("should properly type ParsedModifier", () => {
     const result = parseModifier("hover:text-red-500");
-    if (result) {
-      const parsed: ParsedModifier = result;
-      expect(parsed).toHaveProperty("modifier");
-      expect(parsed).toHaveProperty("baseClass");
-      expect(typeof parsed.modifier).toBe("string");
-      expect(typeof parsed.baseClass).toBe("string");
-    }
+    expect(result).toEqual(
+      expect.objectContaining({
+        modifier: expect.any(String),
+        baseClass: expect.any(String),
+      }),
+    );
   });
 });
 

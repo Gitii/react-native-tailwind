@@ -3,7 +3,7 @@
  * Transforms className props to style props at compile time
  */
 
-import type { NodePath, PluginObj } from "@babel/core";
+import type { PluginObj } from "@babel/core";
 import * as BabelTypes from "@babel/types";
 import { isComponentScope } from "./plugin/componentScope.js";
 import type { PluginOptions, PluginState } from "./plugin/state.js";
@@ -89,8 +89,7 @@ export default function reactNativeTailwindBabelPlugin(
           path.traverse({
             Function: {
               enter(funcPath) {
-                const typedPath = funcPath as NodePath<BabelTypes.Function>;
-                if (!isComponentScope(typedPath, t)) return;
+                if (!isComponentScope(funcPath, t)) return;
 
                 const body = funcPath.node.body;
                 if (
@@ -103,7 +102,7 @@ export default function reactNativeTailwindBabelPlugin(
                   )
                 ) {
                   injectColorSchemeHook(
-                    typedPath,
+                    funcPath,
                     state.colorSchemeVariableName,
                     state.colorSchemeHookName,
                     state.colorSchemeLocalIdentifier,
