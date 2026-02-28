@@ -702,3 +702,170 @@ describe("configProvider E2E - real-world scenarios", () => {
     expect(output).toMatchSnapshot();
   });
 });
+
+// ─── Class-to-prop mapping with configProvider ─────────────────────────────────
+
+describe("configProvider E2E - class-to-prop mapping", () => {
+  const ICON_MAPPING_OPTIONS = {
+    componentClassToPropMapping: [
+      {
+        importFrom: "lucide-react-native",
+        components: ["Icon"],
+        mapping: { color: "text-*", size: "size-*" },
+      },
+    ],
+  };
+
+  it("transforms mapped color prop to config ref (non-modifier path)", () => {
+    const input = `
+      import { Icon } from 'lucide-react-native';
+      export default function App() {
+        return <Icon className="text-red-500" />;
+      }
+    `;
+
+    const output = transformWithConfig(input, "./my-provider", ICON_MAPPING_OPTIONS);
+
+    // className should be removed and replaced with color prop using config ref
+    expect(output).not.toContain("className");
+    expect(output).toContain("color");
+    expect(output).toContain('__twConfig.theme.colors["red-500"]');
+
+    // Should inject __twConfig import
+    expect(output).toContain("import { __twConfig }");
+
+    // No StyleSheet.create — only mapped props
+    expect(output).not.toContain("StyleSheet.create");
+
+    expect(output).toMatchSnapshot();
+  });
+
+  it("transforms mapped size prop to literal (no config ref available for spacing)", () => {
+    const input = `
+      import { Icon } from 'lucide-react-native';
+      export default function App() {
+        return <Icon className="size-6" />;
+      }
+    `;
+
+    const output = transformWithConfig(input, "./my-provider", ICON_MAPPING_OPTIONS);
+
+    // className should be removed and replaced with size prop
+    expect(output).not.toContain("className");
+    expect(output).toContain("size");
+
+    // size-6 resolves to literal 24 because resolveConfigRefs does not
+    // produce config ref paths for spacing classes — config refs are used
+    // only when deterministic and available (per spec)
+    expect(output).not.toContain("StyleSheet.create");
+
+    expect(output).toMatchSnapshot();
+  });
+
+  it("transforms dark/light modifier mapped props with config refs", () => {
+    const input = `
+      import { Icon } from 'lucide-react-native';
+      export default function App() {
+        return <Icon className="dark:text-red-500 light:text-blue-500" />;
+      }
+    `;
+
+    const output = transformWithConfig(input, "./my-provider", ICON_MAPPING_OPTIONS);
+
+    // Modifier-based mapped props use config refs when configProvider is enabled
+    expect(output).toContain('__twConfig.theme.colors["red-500"]');
+    expect(output).toContain('__twConfig.theme.colors["blue-500"]');
+
+    // Should have ternary conditional: dark check with light as fallback
+    // dark:X light:Y → _twColorScheme === "dark" ? X : Y
+    expect(output).toMatch(/_twColorScheme\s*===\s*['"]dark['"]/);
+    expect(output).toMatch(
+      /\?\s*__twConfig\.theme\.colors\["red-500"\]\s*:\s*__twConfig\.theme\.colors\["blue-500"\]/,
+    );
+
+    // Should inject __twConfig import
+    expect(output).toContain("import { __twConfig }");
+
+    // Should inject useColorScheme hook
+    expect(output).toContain("useColorScheme");
+    expect(output).toContain("useColorScheme()");
+
+    expect(output).toMatchSnapshot();
+  });
+
+  it("injects __twConfig import for modifier mapped props even without StyleSheet.create", () => {
+    const input = `
+      import { Icon } from 'lucide-react-native';
+      export default function App() {
+        return <Icon className="dark:text-red-500" />;
+      }
+    `;
+
+    const output = transformWithConfig(input, "./my-provider", ICON_MAPPING_OPTIONS);
+
+    // Config ref import should be present
+    expect(output).toContain("import { __twConfig }");
+    expect(output).toContain(".generated.tailwind.config");
+
+    // Config ref for the mapped color prop
+    expect(output).toContain('__twConfig.theme.colors["red-500"]');
+
+    // No StyleSheet.create — only mapped props, no regular className styles
+    expect(output).not.toContain("StyleSheet.create");
+
+    expect(output).toMatchSnapshot();
+  });
+
+  it("transforms mixed regular className and modifier mapped props with configProvider", () => {
+    const input = `
+      import { View } from 'react-native';
+      import { Icon } from 'lucide-react-native';
+      export default function App() {
+        return (
+          <View className="bg-blue-500 p-4">
+            <Icon className="dark:text-red-500 light:text-blue-500" />
+          </View>
+        );
+      }
+    `;
+
+    const output = transformWithConfig(input, "./my-provider", ICON_MAPPING_OPTIONS);
+
+    // Regular className → StyleSheet.create with config refs
+    expect(output).toContain('__twConfig.theme.colors["blue-500"]');
+    expect(output).toContain('__twConfig.theme.spacing["4"]');
+    expect(output).toContain("StyleSheet.create");
+
+    // Mapped props → config refs in conditional
+    expect(output).toContain('__twConfig.theme.colors["red-500"]');
+
+    // Single __twConfig import for entire file
+    const importMatches = output.match(/import\s*\{\s*__twConfig\s*\}/g) ?? [];
+    expect(importMatches.length).toBe(1);
+
+    expect(output).toMatchSnapshot();
+  });
+
+  it("transforms platform modifier mapped props with config refs", () => {
+    const input = `
+      import { Icon } from 'lucide-react-native';
+      export default function App() {
+        return <Icon className="ios:text-red-500 android:text-blue-500" />;
+      }
+    `;
+
+    const output = transformWithConfig(input, "./my-provider", ICON_MAPPING_OPTIONS);
+
+    // Platform-modified mapped props use config refs
+    expect(output).toContain('__twConfig.theme.colors["red-500"]');
+    expect(output).toContain('__twConfig.theme.colors["blue-500"]');
+
+    // Should have Platform.select structure
+    expect(output).toContain("Platform.select");
+
+    // Should inject __twConfig import
+    expect(output).toContain("import { __twConfig }");
+
+    expect(output).toMatchSnapshot();
+  });
+});

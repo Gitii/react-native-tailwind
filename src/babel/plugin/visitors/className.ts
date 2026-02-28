@@ -18,14 +18,19 @@ import {
 } from "../../../parser/index.js";
 import { generateStyleKey } from "../../../utils/styleKey.js";
 import { getTargetStyleProp, isAttributeSupported } from "../../utils/attributeMatchers.js";
+import {
+  processClassToPropMappings,
+  processModifiedClassToPropMappings,
+} from "../../utils/classToPropMapping.js";
 import { processColorSchemeModifiers } from "../../utils/colorSchemeModifierProcessing.js";
+import { getClassToPropRule } from "../../utils/componentMatcher.js";
 import { getComponentModifierSupport, getStatePropertyForModifier } from "../../utils/componentSupport.js";
 import { resolveConfigRefs } from "../../utils/configRefResolver.js";
 import { processDirectionalModifiers } from "../../utils/directionalModifierProcessing.js";
 import { processDynamicExpression } from "../../utils/dynamicProcessing.js";
 import { createStyleFunction, processStaticClassNameWithModifiers } from "../../utils/modifierProcessing.js";
 import { processPlatformModifiers } from "../../utils/platformModifierProcessing.js";
-import { injectColorSchemeHook, injectWindowDimensionsHook } from "../../utils/styleInjection.js";
+import { buildConfigRefExpression, injectColorSchemeHook, injectWindowDimensionsHook } from "../../utils/styleInjection.js";
 import {
   addOrMergePlaceholderTextColorProp,
   findStyleAttribute,
@@ -77,6 +82,92 @@ export function jsxAttributeVisitor(
   // Only process configured className-like attributes
   if (!isAttributeSupported(attributeName, state.supportedAttributes, state.attributePatterns)) {
     return;
+  }
+
+  if (t.isJSXOpeningElement(path.parent)) {
+    const jsxOpeningElement = path.parent;
+    const rule = getClassToPropRule(jsxOpeningElement, state.classToPropImportMap, state.classToPropRules, t);
+
+    if (rule) {
+      const classNameAttributeValue = node.value;
+      let classNameValue: string | null = null;
+
+      if (t.isStringLiteral(classNameAttributeValue)) {
+        classNameValue = classNameAttributeValue.value;
+      } else if (
+        t.isJSXExpressionContainer(classNameAttributeValue) &&
+        t.isStringLiteral(classNameAttributeValue.expression)
+      ) {
+        classNameValue = classNameAttributeValue.expression.value;
+      } else {
+        if (process.env.NODE_ENV !== "production") {
+          console.warn(
+            `[react-native-tailwind] Dynamic ${attributeName} is not supported for mapped components at ${state.file.opts.filename ?? "unknown"}.`,
+          );
+        }
+      }
+
+      if (classNameValue !== null) {
+        const existingProps = new Set(
+          jsxOpeningElement.attributes
+            .filter((attr): attr is BabelTypes.JSXAttribute => t.isJSXAttribute(attr))
+            .map((attr) => (t.isJSXIdentifier(attr.name) ? attr.name.name : null))
+            .filter((propName): propName is string => propName !== null),
+        );
+
+        const { modifierClasses } = splitModifierClasses(classNameValue);
+        const mappedExpressions =
+          modifierClasses.length > 0
+            ? processModifiedClassToPropMappings(classNameValue, rule.mapping, state, t, path)
+            : (() => {
+                const result = processClassToPropMappings(
+                  classNameValue,
+                  rule.mapping,
+                  state.customTheme,
+                  state.fullResolvedTheme,
+                );
+                const expressions = new Map<string, BabelTypes.Expression>();
+                for (const [propName, mappedProp] of result.mappedProps) {
+                  if (state.configProviderEnabled && mappedProp.configRef) {
+                    state.needsConfigImport = true;
+                    expressions.set(
+                      propName,
+                      buildConfigRefExpression(mappedProp.configRef, "__twConfig", t),
+                    );
+                  } else {
+                    expressions.set(
+                      propName,
+                      typeof mappedProp.value === "number"
+                        ? t.numericLiteral(mappedProp.value)
+                        : t.stringLiteral(mappedProp.value),
+                    );
+                  }
+                }
+                return expressions;
+              })();
+
+        const newAttributes: BabelTypes.JSXAttribute[] = [];
+        for (const [propName, valueExpression] of mappedExpressions) {
+          if (existingProps.has(propName)) {
+            if (process.env.NODE_ENV !== "production") {
+              console.warn(
+                `[react-native-tailwind] Explicit prop "${propName}" takes precedence over mapped value from className.`,
+              );
+            }
+            continue;
+          }
+
+          newAttributes.push(
+            t.jsxAttribute(t.jsxIdentifier(propName), t.jsxExpressionContainer(valueExpression)),
+          );
+        }
+
+        jsxOpeningElement.attributes.push(...newAttributes);
+        path.remove();
+        state.hasClassNames = true;
+        return;
+      }
+    }
   }
 
   const value = node.value;

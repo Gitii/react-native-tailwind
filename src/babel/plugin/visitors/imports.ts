@@ -5,6 +5,7 @@
 import type { NodePath } from "@babel/core";
 import type * as BabelTypes from "@babel/types";
 import type { PluginState } from "../state.js";
+import { buildImportMap } from "../../utils/componentMatcher.js";
 
 /**
  * ImportDeclaration visitor
@@ -113,4 +114,17 @@ export function importDeclarationVisitor(
       }
     });
   }
+  // Track component imports for class-to-prop mapping (if feature is enabled)
+  if (state.classToPropRules.length > 0) {
+    const localToSource = buildImportMap(node, state.classToPropRules, t);
+    if (localToSource) {
+      for (const [localName, importSource] of localToSource) {
+        if (!state.classToPropImportMap.has(importSource)) {
+          state.classToPropImportMap.set(importSource, new Set());
+        }
+        state.classToPropImportMap.get(importSource)!.add(localName);
+      }
+    }
+  }
 }
+

@@ -47,7 +47,8 @@ export function programExit(
     !state.hasClassNames &&
     !state.needsWindowDimensionsImport &&
     !state.needsColorSchemeImport &&
-    !state.needsI18nManagerImport
+    !state.needsI18nManagerImport &&
+    !state.needsConfigImport
   ) {
     return;
   }
@@ -122,7 +123,7 @@ export function programExit(
   }
 
   // Inject __twConfig import if configProvider is enabled and refs were used
-  if (state.configProviderEnabled && state.configRefRegistry.size > 0) {
+  if (state.configProviderEnabled && (state.configRefRegistry.size > 0 || state.needsConfigImport)) {
     if (state.generatedConfigPath) {
       addConfigImport(path, state.generatedConfigPath, state.file.opts.filename ?? "", t);
     }

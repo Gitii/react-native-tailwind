@@ -22,6 +22,42 @@ const DEFAULT_FONT_FAMILY: Record<string, string> = {
 };
 
 /**
+ * Component class-to-prop mapping rule
+ *
+ * Defines how to transform className tokens into component props for third-party/custom components.
+ *
+ * @example
+ * {
+ *   importFrom: '@myui/icons',
+ *   components: ['Icon'],
+ *   mapping: {
+ *     color: 'text-*',      // Match text-red-500, text-blue-200, etc.
+ *     size: 'size-*'        // Match size-4, size-6, etc.
+ *   }
+ * }
+ */
+export type ComponentClassToPropRule = {
+  /**
+   * Module path to import the component from
+   */
+  importFrom: string;
+
+  /**
+   * Component names to apply mapping to, or ['*'] to match all components from this import
+   */
+  components: string[];
+
+  /**
+   * Mapping of target prop name to class pattern (with * wildcard for prefix matching)
+   *
+   * @example
+   * { color: 'text-*', size: 'size-*' }
+   */
+  mapping: Record<string, string>;
+};
+
+
+/**
  * Plugin options
  */
 export type PluginOptions = {
@@ -121,6 +157,25 @@ export type PluginOptions = {
      */
     importName?: string;
   };
+
+  /**
+   * Configuration for mapping className tokens to component props
+   *
+   * Allows transforming className attributes into component props for third-party/custom components
+   * that don't use React Native's style prop.
+   *
+   * @example
+   * [
+   *   {
+   *     importFrom: '@myui/icons',
+   *     components: ['Icon'],
+   *     mapping: { color: 'text-*', size: 'size-*' }
+   *   }
+   * ]
+   *
+   * @default undefined (feature disabled)
+   */
+  componentClassToPropMapping?: ComponentClassToPropRule[];
 };
 
 /**
@@ -167,6 +222,10 @@ export type PluginState = PluginPass & {
   configProviderImportName: string;
   configRefRegistry: Map<string, Map<string, string[]>>;
   generatedConfigPath: string;
+  // Class-to-prop mapping configuration
+  classToPropRules: ComponentClassToPropRule[];
+  classToPropImportMap: Map<string, Set<string>>; // importFrom -> Set of local component names
+  needsConfigImport: boolean; // Whether __twConfig import is needed for config refs
 };
 
 // Default identifier for the generated StyleSheet constant
@@ -209,6 +268,61 @@ export function createInitialState(
     fontFamily: { ...DEFAULT_FONT_FAMILY, ...customTheme.fontFamily },
   };
 
+  // Validate and normalize class-to-prop mapping rules
+  const classToPropRules: ComponentClassToPropRule[] = [];
+  const classToPropImportMap = new Map<string, Set<string>>();
+  let needsConfigImport = false;
+
+  if (options?.componentClassToPropMapping) {
+    for (const rule of options.componentClassToPropMapping) {
+      // Validate mapping object is not empty
+      if (Object.keys(rule.mapping).length === 0) {
+        console.warn(
+          `[react-native-tailwind] Class-to-prop mapping rule for '${rule.importFrom}' has empty mapping object. Rule will be ignored.`
+        );
+        continue;
+      }
+
+      // Validate each pattern contains * wildcard
+      let hasInvalidPattern = false;
+      for (const [prop, pattern] of Object.entries(rule.mapping)) {
+        if (!pattern.includes('*')) {
+          console.warn(
+            `[react-native-tailwind] Class-to-prop mapping pattern '${pattern}' for prop '${prop}' in rule from '${rule.importFrom}' does not contain '*' wildcard. Pattern will be ignored.`
+          );
+          hasInvalidPattern = true;
+        }
+      }
+
+      if (hasInvalidPattern) {
+        // Still add the rule but with invalid patterns filtered out
+        const validMapping = Object.fromEntries(
+          Object.entries(rule.mapping).filter(([, pattern]) => pattern.includes('*'))
+        );
+        if (Object.keys(validMapping).length === 0) {
+          continue; // Skip rule if no valid patterns remain
+        }
+        classToPropRules.push({ ...rule, mapping: validMapping });
+      } else {
+        classToPropRules.push(rule);
+      }
+
+      // Track import source -> component names mapping
+      if (!classToPropImportMap.has(rule.importFrom)) {
+        classToPropImportMap.set(rule.importFrom, new Set());
+      }
+      const componentSet = classToPropImportMap.get(rule.importFrom)!;
+      for (const component of rule.components) {
+        componentSet.add(component);
+      }
+
+      // Check if any rule uses configProvider (would need __twConfig import)
+      if (configProviderImportFrom) {
+        needsConfigImport = true;
+      }
+    }
+  }
+
   return {
     styleRegistry: new Map(),
     hasClassNames: false,
@@ -245,5 +359,8 @@ export function createInitialState(
     configProviderImportName,
     configRefRegistry: new Map(),
     generatedConfigPath: "",
+    classToPropRules,
+    classToPropImportMap,
+    needsConfigImport,
   };
 }

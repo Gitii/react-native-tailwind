@@ -1785,3 +1785,644 @@ describe("className visitor - configProvider config refs", () => {
     expect(output).not.toContain("__twConfig");
   });
 });
+
+describe("className visitor - class-to-prop mapping modifiers", () => {
+  const mappingOptions = {
+    componentClassToPropMapping: [
+      {
+        importFrom: "lucide-react-native",
+        components: ["Icon"],
+        mapping: { color: "text-*", size: "size-*" },
+      },
+    ],
+  };
+
+  it("should transform dark:/light: modifiers to conditional expression on mapped prop", () => {
+    const input = `
+      import { Icon } from 'lucide-react-native';
+      export function Component() {
+        return <Icon className="dark:text-red-500 light:text-blue-500" />;
+      }
+    `;
+
+    const output = transform(input, mappingOptions, true);
+
+    // Should inject useColorScheme hook
+    expect(output).toContain("useColorScheme");
+    expect(output).toContain("_twColorScheme");
+    expect(output).toContain("useColorScheme()");
+
+    // Should have color prop with conditional expression
+    expect(output).toContain("color:");
+    expect(output).toMatch(/_twColorScheme\s*===\s*['"]dark['"]/);
+
+    // Should NOT have className in output
+    expect(output).not.toContain("className");
+
+    // Should NOT have style prop (mapped to color prop instead)
+    expect(output).not.toContain("style:");
+  });
+
+  it("should expand scheme: modifier to dark:/light: with custom color suffixes", () => {
+    vi.mocked(extractCustomTheme).mockReturnValue({
+      colors: {
+        "brand-dark": "#1a1a2e",
+        "brand-light": "#e0e0ff",
+      },
+      fontFamily: {},
+      fontSize: {},
+      spacing: {},
+    });
+
+    try {
+      const input = `
+        import { Icon } from 'lucide-react-native';
+        export function Component() {
+          return <Icon className="scheme:text-brand" />;
+        }
+      `;
+
+      const output = transform(input, mappingOptions, true);
+
+      // Should inject useColorScheme for scheme: expansion
+      expect(output).toContain("useColorScheme");
+      expect(output).toContain("_twColorScheme");
+
+      // Should have conditional with dark/light branches
+      expect(output).toMatch(/_twColorScheme\s*===\s*['"]dark['"]/);
+
+      // Should have the expanded color values from custom theme
+      expect(output).toContain("#1a1a2e"); // brand-dark
+      expect(output).toContain("#e0e0ff"); // brand-light
+
+      // Should have color prop, not style
+      expect(output).toContain("color:");
+      expect(output).not.toContain("className");
+    } finally {
+      vi.mocked(extractCustomTheme).mockRestore();
+    }
+  });
+
+  it("should transform ios:/android: modifiers to Platform.select on mapped prop", () => {
+    const input = `
+      import { Icon } from 'lucide-react-native';
+      export function Component() {
+        return <Icon className="ios:text-red-500 android:text-blue-500" />;
+      }
+    `;
+
+    const output = transform(input, mappingOptions, true);
+
+    // Should import Platform
+    expect(output).toContain("Platform");
+    expect(output).toMatch(/import.*Platform.*from\s+['"]react-native['"]/);
+
+    // Should have Platform.select as prop value
+    expect(output).toContain("Platform.select");
+    expect(output).toContain("color:");
+
+    // Should have ios and android keys in Platform.select
+    expect(output).toMatch(/ios:/);
+    expect(output).toMatch(/android:/);
+
+    // Should NOT have className or style
+    expect(output).not.toContain("className");
+    expect(output).not.toContain("style:");
+  });
+
+  it("should transform rtl:/ltr: modifiers to I18nManager conditional on mapped prop", () => {
+    const input = `
+      import { Icon } from 'lucide-react-native';
+      export function Component() {
+        return <Icon className="rtl:text-red-500 ltr:text-blue-500" />;
+      }
+    `;
+
+    const output = transform(input, mappingOptions, true);
+
+    // Should import I18nManager
+    expect(output).toContain("I18nManager");
+
+    // Should have color prop with I18nManager conditional
+    expect(output).toContain("color:");
+    expect(output).toContain("_twIsRTL");
+    expect(output).toContain("I18nManager.isRTL");
+
+    // Should NOT have className or style
+    expect(output).not.toContain("className");
+    expect(output).not.toContain("style:");
+  });
+
+  it("should transform web: modifier to Platform.select with web key on mapped prop", () => {
+    const input = `
+      import { Icon } from 'lucide-react-native';
+      export function Component() {
+        return <Icon className="web:text-green-500" />;
+      }
+    `;
+
+    const output = transform(input, mappingOptions, true);
+
+    // Should have Platform.select with web key
+    expect(output).toContain("Platform.select");
+    expect(output).toContain("web:");
+    expect(output).toContain("color:");
+
+    // Should NOT have className
+    expect(output).not.toContain("className");
+  });
+
+  it("should combine base class with dark: modifier, using base as default", () => {
+    const input = `
+      import { Icon } from 'lucide-react-native';
+      export function Component() {
+        return <Icon className="text-gray-500 dark:text-white" />;
+      }
+    `;
+
+    const output = transform(input, mappingOptions, true);
+
+    // Should inject useColorScheme
+    expect(output).toContain("useColorScheme");
+    expect(output).toContain("_twColorScheme");
+
+    // Should have color prop with conditional
+    expect(output).toContain("color:");
+    expect(output).toMatch(/_twColorScheme\s*===\s*['"]dark['"]/);
+
+    // Base gray-500 value should be present as fallback (light branch)
+    // The conditional is: _twColorScheme === "dark" ? darkValue : baseValue
+    expect(output).toMatch(/#[0-9a-fA-F]{6}/); // Should have hex color values
+
+    // Should NOT have className or style
+    expect(output).not.toContain("className");
+    expect(output).not.toContain("style:");
+  });
+
+  it("should combine base class with platform modifiers, base as default", () => {
+    const input = `
+      import { Icon } from 'lucide-react-native';
+      export function Component() {
+        return <Icon className="text-gray-500 ios:text-red-500 android:text-blue-500" />;
+      }
+    `;
+
+    const output = transform(input, mappingOptions, true);
+
+    // Should have Platform.select with default fallback
+    expect(output).toContain("Platform.select");
+    expect(output).toContain("color:");
+
+    // Should have platform keys + default in Platform.select
+    expect(output).toMatch(/ios:/);
+    expect(output).toMatch(/android:/);
+    expect(output).toMatch(/default:/);
+
+    // Should NOT have className
+    expect(output).not.toContain("className");
+  });
+
+  it("should warn and skip state modifiers (active:, hover:, etc.) on mapped props", () => {
+    const consoleSpy = vi.spyOn(console, "warn").mockImplementation(() => {});
+
+    const input = `
+      import { Icon } from 'lucide-react-native';
+      export function Component() {
+        return <Icon className="active:text-red-500" />;
+      }
+    `;
+
+    const output = transform(input, mappingOptions, true);
+
+    // Should warn about unsupported state modifier
+    expect(consoleSpy).toHaveBeenCalledWith(expect.stringContaining("active:"));
+    expect(consoleSpy).toHaveBeenCalledWith(
+      expect.stringContaining("not supported for class-to-prop mapping"),
+    );
+
+    // Should NOT have active: style applied
+    expect(output).not.toContain("pressed");
+    expect(output).not.toContain("_state");
+
+    // Should NOT have className
+    expect(output).not.toContain("className");
+
+    consoleSpy.mockRestore();
+  });
+
+  it("should warn and skip hover: modifier on mapped props", () => {
+    const consoleSpy = vi.spyOn(console, "warn").mockImplementation(() => {});
+
+    const input = `
+      import { Icon } from 'lucide-react-native';
+      export function Component() {
+        return <Icon className="text-gray-500 hover:text-blue-500" />;
+      }
+    `;
+
+    const output = transform(input, mappingOptions, true);
+
+    // Should warn about hover: modifier
+    expect(consoleSpy).toHaveBeenCalledWith(expect.stringContaining("hover:"));
+
+    // Base class should still be mapped
+    expect(output).toContain("color:");
+
+    // Should NOT have hover state handling
+    expect(output).not.toContain("hovered");
+
+    consoleSpy.mockRestore();
+  });
+
+  it("should inject useColorScheme import when dark:/light: modifiers are used on mapped props", () => {
+    const input = `
+      import { Icon } from 'lucide-react-native';
+      export function Component() {
+        return <Icon className="dark:text-white" />;
+      }
+    `;
+
+    const output = transform(input, mappingOptions, true);
+
+    // Should have useColorScheme import from react-native
+    expect(output).toMatch(/import.*useColorScheme.*from\s+['"]react-native['"]/);
+
+    // Should inject hook call in component
+    expect(output).toContain("_twColorScheme = useColorScheme()");
+  });
+
+  it("should inject Platform import when ios:/android:/web: modifiers are used on mapped props", () => {
+    const input = `
+      import { Icon } from 'lucide-react-native';
+      export function Component() {
+        return <Icon className="ios:text-red-500" />;
+      }
+    `;
+
+    const output = transform(input, mappingOptions, true);
+
+    // Should have Platform import from react-native
+    expect(output).toContain("Platform");
+    expect(output).toMatch(/import.*Platform.*from\s+['"]react-native['"]/);
+
+    // Should have Platform.select in the prop value
+    expect(output).toContain("Platform.select");
+  });
+
+  it("should inject I18nManager import when rtl:/ltr: modifiers are used on mapped props", () => {
+    const input = `
+      import { Icon } from 'lucide-react-native';
+      export function Component() {
+        return <Icon className="rtl:text-red-500" />;
+      }
+    `;
+
+    const output = transform(input, mappingOptions, true);
+
+    // Should import I18nManager from react-native
+    expect(output).toContain("I18nManager");
+
+    // Should declare _twIsRTL variable
+    expect(output).toContain("_twIsRTL");
+    expect(output).toContain("I18nManager.isRTL");
+  });
+
+  it("should handle combined color scheme + platform modifiers on mapped prop", () => {
+    const input = `
+      import { Icon } from 'lucide-react-native';
+      export function Component() {
+        return <Icon className="dark:text-white ios:text-red-500" />;
+      }
+    `;
+
+    const output = transform(input, mappingOptions, true);
+
+    // Should have both useColorScheme and Platform
+    expect(output).toContain("useColorScheme");
+    expect(output).toContain("Platform");
+
+    // Should have Platform.select (outermost layer)
+    expect(output).toContain("Platform.select");
+
+    // Should have color scheme conditional (inner layer)
+    expect(output).toMatch(/_twColorScheme\s*===\s*['"]dark['"]/);
+
+    // Should have color prop
+    expect(output).toContain("color:");
+  });
+
+  it("should map multiple props with modifiers simultaneously", () => {
+    const input = `
+      import { Icon } from 'lucide-react-native';
+      export function Component() {
+        return <Icon className="dark:text-white size-6" />;
+      }
+    `;
+
+    const output = transform(input, mappingOptions, true);
+
+    // Should have color prop with conditional
+    expect(output).toContain("color:");
+    expect(output).toContain("_twColorScheme");
+
+    // Should have size prop as numeric literal
+    expect(output).toContain("size:");
+
+    // Should NOT have className or style
+    expect(output).not.toContain("className");
+    expect(output).not.toContain("style:");
+  });
+
+  it("should warn and skip focus: and disabled: modifiers on mapped props", () => {
+    const consoleSpy = vi.spyOn(console, "warn").mockImplementation(() => {});
+
+    const input = `
+      import { Icon } from 'lucide-react-native';
+      export function Component() {
+        return <Icon className="text-gray-500 focus:text-blue-500 disabled:text-gray-300" />;
+      }
+    `;
+
+    const output = transform(input, mappingOptions, true);
+
+    // Should warn about both unsupported state modifiers
+    expect(consoleSpy).toHaveBeenCalledWith(expect.stringContaining("focus:"));
+    expect(consoleSpy).toHaveBeenCalledWith(expect.stringContaining("disabled:"));
+
+    // Base class should still be mapped
+    expect(output).toContain("color:");
+
+    consoleSpy.mockRestore();
+  });
+});
+
+describe("className visitor - class-to-prop mapping", () => {
+  const defaultMappingOptions = {
+    componentClassToPropMapping: [
+      {
+        importFrom: "lucide-react-native",
+        components: ["Icon"],
+        mapping: { color: "text-*", size: "size-*" },
+      },
+    ],
+  };
+
+  it("should map text-* and size-* classes to color and size props", () => {
+    const input = `
+      import { Icon } from 'lucide-react-native';
+      export function Component() {
+        return <Icon className="text-red-500 size-6" />;
+      }
+    `;
+
+    const output = transform(input, defaultMappingOptions, true);
+
+    // Should have color and size props
+    expect(output).toContain('color: "#fb2c36"');
+    expect(output).toContain("size: 24");
+
+    // Should NOT have className attribute
+    expect(output).not.toContain("className");
+  });
+
+  it("should map three props simultaneously (color, size, opacity)", () => {
+    const input = `
+      import { Icon } from 'lucide-react-native';
+      export function Component() {
+        return <Icon className="text-blue-500 size-4 opacity-75" />;
+      }
+    `;
+
+    const output = transform(
+      input,
+      {
+        componentClassToPropMapping: [
+          {
+            importFrom: "lucide-react-native",
+            components: ["Icon"],
+            mapping: { color: "text-*", size: "size-*", opacity: "opacity-*" },
+          },
+        ],
+      },
+      true,
+    );
+
+    expect(output).toContain('color: "#2b7fff"');
+    expect(output).toContain("size: 16");
+    expect(output).toContain("opacity: 0.75");
+    expect(output).not.toContain("className");
+  });
+
+  it("should let explicit JSX prop take precedence over mapped value", () => {
+    const consoleSpy = vi.spyOn(console, "warn").mockImplementation(() => {});
+
+    const input = `
+      import { Icon } from 'lucide-react-native';
+      export function Component() {
+        return <Icon color="blue" className="text-red-500" />;
+      }
+    `;
+
+    const output = transform(input, defaultMappingOptions, true);
+
+    // Explicit prop should win
+    expect(output).toContain('color: "blue"');
+
+    // Should warn about precedence
+    expect(consoleSpy).toHaveBeenCalledWith(expect.stringContaining('Explicit prop "color" takes precedence'));
+
+    // Should NOT have className
+    expect(output).not.toContain("className");
+
+    consoleSpy.mockRestore();
+  });
+
+  it("should handle unmapped classes without generating styles for them", () => {
+    const input = `
+      import { Icon } from 'lucide-react-native';
+      export function Component() {
+        return <Icon className="text-red-500 flex-row" />;
+      }
+    `;
+
+    const output = transform(input, defaultMappingOptions, true);
+
+    // color should be mapped from text-red-500
+    expect(output).toContain('color: "#fb2c36"');
+
+    // flex-row should NOT produce any style property
+    expect(output).not.toContain("flexDirection");
+
+    // Should NOT have className
+    expect(output).not.toContain("className");
+  });
+
+  it("should apply normal style transform when component is not configured for mapping", () => {
+    const input = `
+      import { View } from 'react-native';
+      export function Component() {
+        return <View className="text-red-500" />;
+      }
+    `;
+
+    const output = transform(input, defaultMappingOptions, true);
+
+    // View is NOT in the mapping config, so normal style transform applies
+    expect(output).toContain("StyleSheet.create");
+    expect(output).toContain("style:");
+
+    // Should NOT have className
+    expect(output).not.toContain("className");
+  });
+
+  it("should work with aliased imports (import { Icon as MyIcon })", () => {
+    const input = `
+      import { Icon as MyIcon } from 'lucide-react-native';
+      export function Component() {
+        return <MyIcon className="text-red-500 size-6" />;
+      }
+    `;
+
+    // Aliased imports match via wildcard components: ["*"]
+    // because getClassToPropRule matches against the local name (MyIcon),
+    // not the imported name (Icon)
+    const output = transform(
+      input,
+      {
+        componentClassToPropMapping: [
+          {
+            importFrom: "lucide-react-native",
+            components: ["*"],
+            mapping: { color: "text-*", size: "size-*" },
+          },
+        ],
+      },
+      true,
+    );
+
+    expect(output).toContain('color: "#fb2c36"');
+    expect(output).toContain("size: 24");
+    expect(output).not.toContain("className");
+  });
+
+  it("should work with namespace imports (import * as Icons)", () => {
+    const input = `
+      import * as Icons from 'lucide-react-native';
+      export function Component() {
+        return <Icons.Icon className="text-red-500 size-6" />;
+      }
+    `;
+
+    const output = transform(input, defaultMappingOptions, true);
+
+    expect(output).toContain('color: "#fb2c36"');
+    expect(output).toContain("size: 24");
+    expect(output).not.toContain("className");
+  });
+
+  it("should match all components with wildcard components: ['*']", () => {
+    const input = `
+      import { Home } from 'lucide-react-native';
+      export function Component() {
+        return <Home className="text-blue-500 size-4" />;
+      }
+    `;
+
+    const output = transform(
+      input,
+      {
+        componentClassToPropMapping: [
+          {
+            importFrom: "lucide-react-native",
+            components: ["*"],
+            mapping: { color: "text-*", size: "size-*" },
+          },
+        ],
+      },
+      true,
+    );
+
+    expect(output).toContain('color: "#2b7fff"');
+    expect(output).toContain("size: 16");
+    expect(output).not.toContain("className");
+  });
+
+  it("should warn on dynamic className for mapped component", () => {
+    const consoleSpy = vi.spyOn(console, "warn").mockImplementation(() => {});
+
+    const input = `
+      import { Icon } from 'lucide-react-native';
+      export function Component({ colorClass }) {
+        return <Icon className={colorClass} />;
+      }
+    `;
+
+    const output = transform(input, defaultMappingOptions, true);
+
+    // Should warn about dynamic className on mapped component
+    expect(consoleSpy).toHaveBeenCalledWith(
+      expect.stringContaining("Dynamic className is not supported for mapped components"),
+    );
+
+    consoleSpy.mockRestore();
+  });
+
+  it("should map custom theme colors via text-primary", () => {
+    vi.mocked(extractCustomTheme).mockReturnValue({
+      colors: { primary: "#1bacb5" },
+      fontFamily: {},
+      fontSize: {},
+      spacing: {},
+    });
+
+    try {
+      const input = `
+        import { Icon } from 'lucide-react-native';
+        export function Component() {
+          return <Icon className="text-primary" />;
+        }
+      `;
+
+      const output = transform(input, defaultMappingOptions, true);
+
+      expect(output).toContain('color: "#1bacb5"');
+      expect(output).not.toContain("className");
+    } finally {
+      vi.mocked(extractCustomTheme).mockRestore();
+    }
+  });
+
+  it('should handle className={"..."} expression container format', () => {
+    const input = `
+      import { Icon } from 'lucide-react-native';
+      export function Component() {
+        return <Icon className={"text-red-500 size-6"} />;
+      }
+    `;
+
+    const output = transform(input, defaultMappingOptions, true);
+
+    expect(output).toContain('color: "#fb2c36"');
+    expect(output).toContain("size: 24");
+    expect(output).not.toContain("className");
+  });
+
+  it("should not generate StyleSheet.create when only mapped props are used", () => {
+    const input = `
+      import { Icon } from 'lucide-react-native';
+      export function Component() {
+        return <Icon className="text-red-500 size-6" />;
+      }
+    `;
+
+    const output = transform(input, defaultMappingOptions, true);
+
+    // All classes mapped to props — no StyleSheet.create needed
+    expect(output).not.toContain("StyleSheet.create");
+    expect(output).not.toContain("_twStyles");
+
+    // Should have props instead
+    expect(output).toContain('color: "#fb2c36"');
+    expect(output).toContain("size: 24");
+  });
+});

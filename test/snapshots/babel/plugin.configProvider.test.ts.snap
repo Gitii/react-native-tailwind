@@ -63,6 +63,84 @@ export function Heading() {
 }"
 `;
 
+exports[`configProvider E2E - class-to-prop mapping > injects __twConfig import for modifier mapped props even without StyleSheet.create 1`] = `
+"import { useColorScheme } from "react-native";
+import { Icon } from 'lucide-react-native';
+import { __twConfig } from "../.generated.tailwind.config";
+export default function App() {
+  const _twColorScheme = useColorScheme();
+  return /*#__PURE__*/React.createElement(Icon, {
+    color: _twColorScheme === "dark" ? __twConfig.theme.colors["red-500"] : undefined
+  });
+}"
+`;
+
+exports[`configProvider E2E - class-to-prop mapping > transforms dark/light modifier mapped props with config refs 1`] = `
+"import { useColorScheme } from "react-native";
+import { Icon } from 'lucide-react-native';
+import { __twConfig } from "../.generated.tailwind.config";
+export default function App() {
+  const _twColorScheme = useColorScheme();
+  return /*#__PURE__*/React.createElement(Icon, {
+    color: _twColorScheme === "dark" ? __twConfig.theme.colors["red-500"] : __twConfig.theme.colors["blue-500"]
+  });
+}"
+`;
+
+exports[`configProvider E2E - class-to-prop mapping > transforms mapped color prop to config ref (non-modifier path) 1`] = `
+"import { Icon } from 'lucide-react-native';
+import { __twConfig } from "../.generated.tailwind.config";
+export default function App() {
+  return /*#__PURE__*/React.createElement(Icon, {
+    color: __twConfig.theme.colors["red-500"]
+  });
+}"
+`;
+
+exports[`configProvider E2E - class-to-prop mapping > transforms mapped size prop to literal (no config ref available for spacing) 1`] = `
+"import { Icon } from 'lucide-react-native';
+import { __twConfig } from "../.generated.tailwind.config";
+export default function App() {
+  return /*#__PURE__*/React.createElement(Icon, {
+    size: 24
+  });
+}"
+`;
+
+exports[`configProvider E2E - class-to-prop mapping > transforms mixed regular className and modifier mapped props with configProvider 1`] = `
+"import { View, StyleSheet, useColorScheme } from 'react-native';
+import { Icon } from 'lucide-react-native';
+import { __twConfig } from "../.generated.tailwind.config";
+const _twStyles = StyleSheet.create({
+  _bg_blue_500_p_4: {
+    backgroundColor: __twConfig.theme.colors["blue-500"],
+    padding: __twConfig.theme.spacing["4"]
+  }
+});
+export default function App() {
+  const _twColorScheme = useColorScheme();
+  return /*#__PURE__*/React.createElement(View, {
+    style: _twStyles._bg_blue_500_p_4
+  }, /*#__PURE__*/React.createElement(Icon, {
+    color: _twColorScheme === "dark" ? __twConfig.theme.colors["red-500"] : __twConfig.theme.colors["blue-500"]
+  }));
+}"
+`;
+
+exports[`configProvider E2E - class-to-prop mapping > transforms platform modifier mapped props with config refs 1`] = `
+"import { Platform } from "react-native";
+import { Icon } from 'lucide-react-native';
+import { __twConfig } from "../.generated.tailwind.config";
+export default function App() {
+  return /*#__PURE__*/React.createElement(Icon, {
+    color: Platform.select({
+      ios: __twConfig.theme.colors["red-500"],
+      android: __twConfig.theme.colors["blue-500"]
+    })
+  });
+}"
+`;
+
 exports[`configProvider E2E - dark/light mode modifiers > transforms combined dark: and light: modifiers 1`] = `
 "import { View, StyleSheet, useColorScheme } from 'react-native';
 import { __twConfig } from "../.generated.tailwind.config";
