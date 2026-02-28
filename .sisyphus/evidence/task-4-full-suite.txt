@@ -1,0 +1,111 @@
+
+/home/germinii/projects/react-native-tailwind.feat-init-only-config/src/babel/plugin/visitors/className.test.ts
+  343:6  warning  Disabled test - if you want to skip a test temporarily, use .todo() instead  vitest/no-disabled-tests
+
+✖ 1 problem (0 errors, 1 warning)
+
+
+[1m[46m RUN [49m[22m [36mv4.0.18 [39m[90m/home/germinii/projects/react-native-tailwind.feat-init-only-config[39m
+      [2mCoverage enabled with [22m[33mv8[39m
+
+ [32m✓[39m src/babel/plugin/visitors/className.windowDimensions.test.ts [2m([22m[2m22 tests[22m[2m)[22m[33m 727[2mms[22m[39m
+ [32m✓[39m src/babel/plugin/visitors/tw.test.ts [2m([22m[2m41 tests[22m[2m)[22m[33m 718[2mms[22m[39m
+ [32m✓[39m src/babel/plugin/visitors/program.test.ts [2m([22m[2m21 tests[22m[2m)[22m[33m 848[2mms[22m[39m
+       [33m[2m✓[22m[39m should inject StyleSheet.create when className is used [33m 354[2mms[22m[39m
+ [32m✓[39m src/babel/plugin.configProvider.test.ts [2m([22m[2m29 tests[22m[2m)[22m[33m 875[2mms[22m[39m
+ [32m✓[39m src/babel/plugin/visitors/className.test.ts [2m([22m[2m74 tests[22m[2m | [22m[33m1 skipped[39m[2m)[22m[33m 1323[2mms[22m[39m
+ [32m✓[39m src/babel/utils/styleTransforms.test.ts [2m([22m[2m13 tests[22m[2m)[22m[33m 319[2mms[22m[39m
+ [32m✓[39m src/babel/utils/componentSupport.test.ts [2m([22m[2m36 tests[22m[2m)[22m[32m 204[2mms[22m[39m
+ [32m✓[39m src/babel/utils/styleInjection.configRef.test.ts [2m([22m[2m5 tests[22m[2m)[22m[32m 182[2mms[22m[39m
+ [32m✓[39m src/test/helpers/babelTransform.test.ts [2m([22m[2m6 tests[22m[2m)[22m[33m 303[2mms[22m[39m
+ [32m✓[39m src/babel/plugin/visitors/imports.test.ts [2m([22m[2m4 tests[22m[2m)[22m[33m 341[2mms[22m[39m
+ [32m✓[39m src/parser/colors.test.ts [2m([22m[2m79 tests[22m[2m)[22m[32m 96[2mms[22m[39m
+ [32m✓[39m src/babel/utils/configModuleGenerator.test.ts [2m([22m[2m10 tests[22m[2m)[22m[32m 156[2mms[22m[39m
+ [32m✓[39m src/parser/layout.test.ts [2m([22m[2m128 tests[22m[2m)[22m[32m 130[2mms[22m[39m
+ [32m✓[39m src/utils/modifiers.test.ts [2m([22m[2m38 tests[22m[2m)[22m[32m 29[2mms[22m[39m
+ [32m✓[39m src/babel/config-loader.test.ts [2m([22m[2m15 tests[22m[2m)[22m[32m 62[2mms[22m[39m
+ [32m✓[39m src/parser/spacing.test.ts [2m([22m[2m75 tests[22m[2m)[22m[32m 66[2mms[22m[39m
+ [32m✓[39m src/parser/borders.test.ts [2m([22m[2m52 tests[22m[2m)[22m[32m 45[2mms[22m[39m
+ [32m✓[39m src/parser/modifiers.test.ts [2m([22m[2m74 tests[22m[2m)[22m[32m 66[2mms[22m[39m
+ [32m✓[39m src/parser/sizing.test.ts [2m([22m[2m61 tests[22m[2m)[22m[32m 84[2mms[22m[39m
+ [32m✓[39m src/parser/transforms.test.ts [2m([22m[2m67 tests[22m[2m)[22m[32m 117[2mms[22m[39m
+ [32m✓[39m src/parser/typography.test.ts [2m([22m[2m39 tests[22m[2m)[22m[32m 118[2mms[22m[39m
+ [32m✓[39m src/parser/shadows.test.ts [2m([22m[2m35 tests[22m[2m)[22m[32m 40[2mms[22m[39m
+ [32m✓[39m src/utils/flattenColors.test.ts [2m([22m[2m27 tests[22m[2m)[22m[32m 22[2mms[22m[39m
+ [32m✓[39m src/runtime.test.ts [2m([22m[2m36 tests[22m[2m)[22m[32m 23[2mms[22m[39m
+ [32m✓[39m src/parser/aspectRatio.test.ts [2m([22m[2m28 tests[22m[2m)[22m[32m 74[2mms[22m[39m
+ [32m✓[39m src/utils/colorUtils.test.ts [2m([22m[2m27 tests[22m[2m)[22m[32m 35[2mms[22m[39m
+ [32m✓[39m src/parser/placeholder.test.ts [2m([22m[2m13 tests[22m[2m)[22m[32m 47[2mms[22m[39m
+ [32m✓[39m src/babel/utils/configRefResolver.test.ts [2m([22m[2m12 tests[22m[2m)[22m[32m 28[2mms[22m[39m
+ [32m✓[39m src/utils/styleKey.test.ts [2m([22m[2m23 tests[22m[2m)[22m[32m 28[2mms[22m[39m
+ [32m✓[39m src/babel/utils/attributeMatchers.test.ts [2m([22m[2m27 tests[22m[2m)[22m[32m 42[2mms[22m[39m
+ [32m✓[39m src/utils/mergeStyles.test.ts [2m([22m[2m14 tests[22m[2m)[22m[32m 12[2mms[22m[39m
+ [32m✓[39m src/parser/outline.test.ts [2m([22m[2m9 tests[22m[2m)[22m[32m 20[2mms[22m[39m
+ [32m✓[39m src/stubs/tw.test.ts [2m([22m[2m3 tests[22m[2m)[22m[32m 6[2mms[22m[39m
+
+[2m Test Files [22m [1m[32m33 passed[39m[22m[90m (33)[39m
+[2m      Tests [22m [1m[32m1142 passed[39m[22m[2m | [22m[33m1 skipped[39m[90m (1143)[39m
+[2m   Start at [22m 16:49:15
+[2m   Duration [22m 8.25s[2m (transform 6.29s, setup 1.33s, import 14.10s, tests 7.19s, environment 7ms)[22m
+
+[34m % [39m[2mCoverage report from [22m[33mv8[39m
+-------------------|---------|----------|---------|---------|-------------------
+File               | % Stmts | % Branch | % Funcs | % Lines | Uncovered Line #s 
+-------------------|---------|----------|---------|---------|-------------------
+All files          |   90.67 |    79.67 |   95.76 |   90.84 |                   
+ src               |   98.79 |    81.66 |   88.88 |   98.79 |                   
+  index.ts         |       0 |        0 |       0 |       0 |                   
+  runtime.ts       |   98.79 |    81.66 |   88.88 |   98.79 | 143               
+ src/babel         |   72.05 |    54.01 |     100 |   71.64 |                   
+  config-loader.ts |   57.95 |    30.95 |     100 |   57.95 | ...17-243,248-273 
+  index.ts         |       0 |        0 |       0 |       0 |                   
+  plugin.ts        |   97.91 |    90.56 |     100 |   97.82 | 49                
+ src/babel/plugin  |   96.96 |    85.71 |     100 |   96.87 |                   
+  ...onentScope.ts |      96 |    82.75 |     100 |   95.83 | 26                
+  state.ts         |     100 |      100 |     100 |     100 |                   
+ ...lugin/visitors |   84.04 |     70.2 |   78.57 |    84.1 |                   
+  className.ts     |   82.23 |    63.58 |      70 |   82.25 | ...73,625,673-684 
+  imports.ts       |   95.65 |       84 |     100 |   95.65 | 28,35             
+  program.ts       |     100 |    97.82 |     100 |     100 | 127               
+  tw.ts            |   72.72 |    44.11 |     100 |   72.72 | ...02-107,114-120 
+ src/babel/utils   |   89.59 |    74.69 |   97.24 |   90.03 |                   
+  ...teMatchers.ts |     100 |      100 |     100 |     100 |                   
+  ...Processing.ts |     100 |    76.92 |     100 |     100 | 34-75             
+  ...entSupport.ts |   95.65 |    89.47 |     100 |   95.65 | 37                
+  ...eGenerator.ts |      96 |      100 |     100 |      96 | 110               
+  ...efResolver.ts |   97.45 |    86.45 |     100 |   97.45 | 150,164,210       
+  ...Processing.ts |   86.66 |    46.66 |     100 |   85.71 | 33-35,90          
+  ...Processing.ts |   66.66 |    40.27 |   85.71 |   65.55 | ...75,485,490-552 
+  ...Processing.ts |      90 |    47.82 |     100 |   89.58 | 28-30,56,122      
+  ...Processing.ts |     100 |    84.61 |     100 |     100 | 33,71             
+  preInjection.ts  |      90 |    86.66 |   83.33 |   94.44 | 116,133,150       
+  ...eInjection.ts |   85.92 |     77.1 |   95.65 |   85.92 | ...44-552,632-633 
+  ...Transforms.ts |   86.36 |    72.72 |     100 |   93.44 | 151,246-253       
+  twProcessing.ts  |   98.42 |    83.52 |     100 |   98.25 | 86-92,482         
+  ...Processing.ts |   70.37 |       50 |     100 |   70.37 | 72-83             
+ src/config        |     100 |      100 |     100 |     100 |                   
+  markers.ts       |     100 |      100 |     100 |     100 |                   
+  tailwind.ts      |     100 |      100 |     100 |     100 |                   
+ src/parser        |   95.24 |    89.63 |     100 |   95.19 |                   
+  aspectRatio.ts   |     100 |    92.85 |     100 |     100 | 30                
+  borders.ts       |   93.44 |    89.47 |     100 |   93.22 | ...61,278,287,304 
+  colors.ts        |   87.32 |    81.33 |     100 |   87.32 | 111,121-134       
+  index.ts         |   86.36 |       50 |     100 |   86.36 | 79-83             
+  layout.ts        |   97.07 |    91.54 |     100 |   97.07 | 27-32,52-57       
+  modifiers.ts     |   98.43 |     90.9 |     100 |   98.38 | 225               
+  outline.ts       |   95.12 |    91.17 |     100 |   94.73 | 30,63             
+  placeholder.ts   |     100 |      100 |     100 |     100 |                   
+  shadows.ts       |     100 |      100 |     100 |     100 |                   
+  sizing.ts        |     100 |    97.43 |     100 |     100 | 86,279            
+  spacing.ts       |   97.01 |    94.44 |     100 |   97.01 | 176,204           
+  transforms.ts    |   92.72 |    85.86 |     100 |   92.72 | ...29-134,153-158 
+  typography.ts    |   95.08 |    88.67 |     100 |   95.08 | 183-188           
+ src/stubs         |     100 |      100 |     100 |     100 |                   
+  tw.ts            |     100 |      100 |     100 |     100 |                   
+ src/utils         |   98.88 |    94.54 |     100 |   98.86 |                   
+  colorUtils.ts    |   97.29 |    95.83 |     100 |   97.29 | 103               
+  flattenColors.ts |     100 |      100 |     100 |     100 |                   
+  mergeStyles.ts   |     100 |       90 |     100 |     100 | 82                
+  modifiers.ts     |     100 |     87.5 |     100 |     100 | 50                
+  styleKey.ts      |     100 |      100 |     100 |     100 |                   
+-------------------|---------|----------|---------|---------|-------------------

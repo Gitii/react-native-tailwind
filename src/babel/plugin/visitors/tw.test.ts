@@ -3,6 +3,24 @@ import { describe, expect, it, vi } from "vitest";
 import { transform } from "../../../../test/helpers/babelTransform.js";
 import type { PluginOptions } from "../state.js";
 
+vi.mock("../../config-loader.js", async () => {
+  const actual = await vi.importActual<typeof import("../../config-loader.js")>("../../config-loader.js");
+  return {
+    ...actual,
+    findTailwindConfig: vi.fn(() => "/mock/project/tailwind.config.ts"),
+  };
+});
+
+vi.mock("../../utils/configModuleGenerator.js", async () => {
+  const actual = await vi.importActual<typeof import("../../utils/configModuleGenerator.js")>(
+    "../../utils/configModuleGenerator.js",
+  );
+  return {
+    ...actual,
+    writeConfigModule: vi.fn(), // Don't actually write files in tests
+  };
+});
+
 describe("tw visitor - template tag transformation", () => {
   it("should transform simple tw template literal", () => {
     const input = `
@@ -767,5 +785,91 @@ describe("tw visitor - directional modifiers (RTL/LTR)", () => {
     // Should have both style properties
     expect(output).toContain("rtlStyle:");
     expect(output).toContain("ltrStyle:");
+  });
+});
+
+describe("tw/twStyle - configProvider support", () => {
+  it("should register config refs for tw template with configProvider", () => {
+    const input = `
+      import { tw } from '@mgcrea/react-native-tailwind';
+      const styles = tw\`bg-blue-500 p-4\`;
+    `;
+
+    const output = transform(input, { configProvider: { importFrom: "./provider" } });
+
+    // Should have __twConfig import
+    expect(output).toContain("__twConfig");
+    expect(output).toContain(".generated.tailwind.config");
+
+    // Should have config refs in output
+    expect(output).toContain('__twConfig.theme.colors["blue-500"]');
+    expect(output).toContain('__twConfig.theme.spacing["4"]');
+
+    // Should still have StyleSheet.create
+    expect(output).toContain("StyleSheet.create");
+  });
+
+  it("should register config refs for twStyle with configProvider", () => {
+    const input = `
+      import { twStyle } from '@mgcrea/react-native-tailwind';
+      const styles = twStyle('bg-blue-500 p-4');
+    `;
+
+    const output = transform(input, { configProvider: { importFrom: "./provider" } });
+
+    // Should have __twConfig import
+    expect(output).toContain("__twConfig");
+    expect(output).toContain(".generated.tailwind.config");
+
+    // Should have config refs in output
+    expect(output).toContain('__twConfig.theme.colors["blue-500"]');
+    expect(output).toContain('__twConfig.theme.spacing["4"]');
+
+    // Should still have StyleSheet.create
+    expect(output).toContain("StyleSheet.create");
+  });
+
+  it("should register config refs for tw with multiple theme properties", () => {
+    const input = `
+      import { tw } from '@mgcrea/react-native-tailwind';
+      const styles = tw\`text-lg font-bold border-2 border-red-500\`;
+    `;
+
+    const output = transform(input, { configProvider: { importFrom: "./provider" } });
+
+    // Should have config refs for fontSize and color
+    expect(output).toContain("__twConfig.theme.fontSize.lg");
+    expect(output).toContain('__twConfig.theme.colors["red-500"]');
+  });
+
+  it("should not register config refs when configProvider is not enabled", () => {
+    const input = `
+      import { tw } from '@mgcrea/react-native-tailwind';
+      const styles = tw\`bg-blue-500 p-4\`;
+    `;
+
+    const output = transform(input);
+
+    // Should NOT have __twConfig import
+    expect(output).not.toContain("__twConfig");
+
+    // Should still have StyleSheet.create
+    expect(output).toContain("StyleSheet.create");
+  });
+
+  it("should register config refs for tw with state modifiers and configProvider", () => {
+    const input = `
+      import { tw } from '@mgcrea/react-native-tailwind';
+      const styles = tw\`bg-blue-500 active:bg-blue-700\`;
+    `;
+
+    const output = transform(input, { configProvider: { importFrom: "./provider" } });
+
+    // Should have __twConfig import
+    expect(output).toContain("__twConfig");
+
+    // Should have config refs for both base and active styles
+    expect(output).toContain('__twConfig.theme.colors["blue-500"]');
+    expect(output).toContain('__twConfig.theme.colors["blue-700"]');
   });
 });

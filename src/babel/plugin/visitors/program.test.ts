@@ -1,5 +1,27 @@
-import { describe, expect, it } from "vitest";
+import type { NodePath } from "@babel/core";
+import { transformSync } from "@babel/core";
+import type * as BabelTypes from "@babel/types";
+import { describe, expect, it, vi } from "vitest";
 import { transform } from "../../../../test/helpers/babelTransform.js";
+import { addConfigImport } from "../../utils/styleInjection.js";
+
+vi.mock("../../config-loader.js", async () => {
+  const actual = await vi.importActual<typeof import("../../config-loader.js")>("../../config-loader.js");
+  return {
+    ...actual,
+    findTailwindConfig: vi.fn(() => "/mock/project/tailwind.config.ts"),
+  };
+});
+
+vi.mock("../../utils/configModuleGenerator.js", async () => {
+  const actual = await vi.importActual<typeof import("../../utils/configModuleGenerator.js")>(
+    "../../utils/configModuleGenerator.js",
+  );
+  return {
+    ...actual,
+    writeConfigModule: vi.fn(),
+  };
+});
 
 describe("program visitor - Program.exit behavior", () => {
   describe("StyleSheet injection", () => {
@@ -320,6 +342,129 @@ describe("program visitor - Program.exit behavior", () => {
 
       // Should have StyleSheet
       expect(output).toContain("StyleSheet.create");
+    });
+  });
+
+  describe("configProvider import injection", () => {
+    /**
+     * Helper: run addConfigImport via a custom Babel plugin to test it directly.
+     */
+    function runAddConfigImport(code: string, generatedConfigPath: string, currentFilePath: string): string {
+      const result = transformSync(code, {
+        configFile: false,
+        babelrc: false,
+        filename: currentFilePath,
+        presets: ["@babel/preset-react", ["@babel/preset-typescript", { isTSX: true, allExtensions: true }]],
+        plugins: [
+          ({ types: t }: { types: typeof BabelTypes }) => ({
+            visitor: {
+              Program: {
+                exit(path: NodePath<BabelTypes.Program>) {
+                  addConfigImport(path, generatedConfigPath, currentFilePath, t);
+                },
+              },
+            },
+          }),
+        ],
+      });
+      return result?.code ?? "";
+    }
+
+    it("should inject __twConfig import when addConfigImport is called", () => {
+      const code = `
+        import { View } from 'react-native';
+        function MyComponent() {
+          return <View />;
+        }
+      `;
+
+      const output = runAddConfigImport(
+        code,
+        "/mock/project/.generated.tailwind.config",
+        "/mock/project/src/components/MyComponent.tsx",
+      );
+
+      expect(output).toContain("import { __twConfig }");
+      expect(output).toContain(".generated.tailwind.config");
+    });
+
+    it("should compute correct relative import path", () => {
+      const code = `const x = 1;`;
+
+      const output = runAddConfigImport(
+        code,
+        "/mock/project/.generated.tailwind.config",
+        "/mock/project/src/components/MyComponent.tsx",
+      );
+
+      expect(output).toContain('from "../../.generated.tailwind.config"');
+    });
+
+    it("should add ./ prefix for same-directory imports", () => {
+      const code = `const x = 1;`;
+
+      const output = runAddConfigImport(
+        code,
+        "/mock/project/src/.generated.tailwind.config",
+        "/mock/project/src/MyComponent.tsx",
+      );
+
+      expect(output).toContain('from "./.generated.tailwind.config"');
+    });
+
+    it("should strip .js extension from import path", () => {
+      const code = `const x = 1;`;
+
+      const output = runAddConfigImport(
+        code,
+        "/mock/project/.generated.tailwind.config.js",
+        "/mock/project/src/MyComponent.tsx",
+      );
+
+      expect(output).toContain('from "../.generated.tailwind.config"');
+      expect(output).not.toContain(".js");
+    });
+
+    it("should not duplicate import if already present", () => {
+      const code = `
+        import { __twConfig } from '../../.generated.tailwind.config';
+        const x = 1;
+      `;
+
+      const output = runAddConfigImport(
+        code,
+        "/mock/project/.generated.tailwind.config",
+        "/mock/project/src/components/MyComponent.tsx",
+      );
+
+      // Should only have one __twConfig import
+      const matches = output.match(/__twConfig/g) ?? [];
+      expect(matches.length).toBe(1);
+    });
+
+    it("should NOT inject __twConfig import when configProvider is disabled", () => {
+      const input = `
+        import { View } from 'react-native';
+        function MyComponent() {
+          return <View className="bg-blue-500" />;
+        }
+      `;
+
+      const output = transform(input, undefined, true);
+      expect(output).not.toContain("__twConfig");
+    });
+
+    it("should NOT inject __twConfig import when configRefRegistry is empty", () => {
+      const input = `
+        import { View } from 'react-native';
+        function MyComponent() {
+          return <View className="rounded-lg" />;
+        }
+      `;
+
+      // configProvider enabled, but className has no theme-resolvable values (registry stays empty)
+      const output = transform(input, { configProvider: { importFrom: "./my-provider" } }, true);
+      expect(output).not.toContain("__twConfig");
     });
   });
 });

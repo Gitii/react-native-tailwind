@@ -1,0 +1,38 @@
+QA SCENARIO 2: Verify 3-Layer Architecture
+============================================
+
+ARCHITECTURE VERIFICATION:
+
+Layer 1: User's Provider Module
+  ✓ Described in feature-init-only-theme.md
+  ✓ Shows: configProvider.importFrom pointing to user's module
+  ✓ Shows: importName = "provideConfig" (function signature)
+  ✓ Example: "/absolute-path-or-module/to/some-where/my-config-provider.js"
+
+Layer 2: Generated Config File (.generated.tailwind.config.js)
+  ✓ Explicitly named in feature-init-only-theme.md
+  ✓ Shows: import { provideConfig } from user's provider
+  ✓ Shows: const originalConfig = { ... } (inlined from tailwind.config.js)
+  ✓ Shows: export const __twConfig = provideConfig(originalConfig)
+  ✓ Described in init-only-theme-implementation-plan.md as "shared resolved config module"
+
+Layer 3: Component Files
+  ✓ Shows: import { __twConfig } from "./.generated.tailwind.config.js"
+  ✓ Shows: Components use __twConfig.theme.colors, __twConfig.theme.spacing, etc.
+  ✓ NOT importing directly from provider (correct)
+
+ARCHITECTURE FLOW:
+  User Provider Module
+         ↓ (imports provideConfig)
+  .generated.tailwind.config.js
+         ↓ (imports __twConfig)
+  Component Files
+
+SUMMARY:
+--------
+✓ 3-layer architecture clearly documented
+✓ Generated file shown as intermediary between provider and components
+✓ All layers properly described with code examples
+✓ No direct provider imports in components
+
+All QA checks PASSED.

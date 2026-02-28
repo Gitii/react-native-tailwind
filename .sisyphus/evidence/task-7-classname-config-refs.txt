@@ -1,0 +1,80 @@
+
+[1m[46m RUN [49m[22m [36mv4.0.18 [39m[90m/home/germinii/projects/react-native-tailwind.feat-init-only-config[39m
+
+ [32m✓[39m src/babel/plugin/visitors/className.test.ts[2m > [22mclassName visitor - basic transformation[2m > [22mshould still transform className props[32m 126[2mms[22m[39m
+ [32m✓[39m src/babel/plugin/visitors/className.test.ts[2m > [22mclassName visitor - basic transformation[2m > [22mshould work with both tw and className in same file[32m 14[2mms[22m[39m
+ [32m✓[39m src/babel/plugin/visitors/className.test.ts[2m > [22mclassName visitor - basic transformation[2m > [22mshould merge className with function-based style prop[32m 21[2mms[22m[39m
+ [32m✓[39m src/babel/plugin/visitors/className.test.ts[2m > [22mclassName visitor - basic transformation[2m > [22mshould preserve 'use client' directive when injecting StyleSheet.create[32m 10[2mms[22m[39m
+ [32m✓[39m src/babel/plugin/visitors/className.test.ts[2m > [22mclassName visitor - basic transformation[2m > [22mshould merge dynamic className with function-based style prop[32m 17[2mms[22m[39m
+ [32m✓[39m src/babel/plugin/visitors/className.test.ts[2m > [22mclassName visitor - basic transformation[2m > [22mshould transform className={"..."} (string literal in expression container)[32m 11[2mms[22m[39m
+ [32m✓[39m src/babel/plugin/visitors/className.test.ts[2m > [22mclassName visitor - basic transformation[2m > [22mshould transform className={"..."} with modifiers[32m 14[2mms[22m[39m
+ [32m✓[39m src/babel/plugin/visitors/className.test.ts[2m > [22mclassName visitor - basic transformation[2m > [22mshould transform className={"..."} with platform modifiers[32m 17[2mms[22m[39m
+ [32m✓[39m src/babel/plugin/visitors/className.test.ts[2m > [22mclassName visitor - basic transformation[2m > [22mshould handle empty className={""}[32m 11[2mms[22m[39m
+ [32m✓[39m src/babel/plugin/visitors/className.test.ts[2m > [22mclassName visitor - placeholder: modifier[2m > [22mshould transform placeholder:text-{color} to placeholderTextColor prop[32m 24[2mms[22m[39m
+ [32m✓[39m src/babel/plugin/visitors/className.test.ts[2m > [22mclassName visitor - placeholder: modifier[2m > [22mshould support placeholder colors with opacity[32m 10[2mms[22m[39m
+ [32m✓[39m src/babel/plugin/visitors/className.test.ts[2m > [22mclassName visitor - placeholder: modifier[2m > [22mshould support arbitrary placeholder colors[32m 9[2mms[22m[39m
+ [32m✓[39m src/babel/plugin/visitors/className.test.ts[2m > [22mclassName visitor - placeholder: modifier[2m > [22mshould combine placeholder: with other modifiers[32m 13[2mms[22m[39m
+ [32m✓[39m src/babel/plugin/visitors/className.test.ts[2m > [22mclassName visitor - placeholder: modifier[2m > [22mshould handle multiple placeholder: classes (last wins)[32m 10[2mms[22m[39m
+ [32m✓[39m src/babel/plugin/visitors/className.test.ts[2m > [22mclassName visitor - placeholder: modifier[2m > [22mshould ignore non-text utilities in placeholder: modifier[32m 16[2mms[22m[39m
+ [2m[90m↓[39m[22m src/babel/plugin/visitors/className.test.ts[2m > [22mclassName visitor - placeholder: modifier[2m > [22mshould work with custom colors
+ [32m✓[39m src/babel/plugin/visitors/className.test.ts[2m > [22mclassName visitor - placeholder: modifier[2m > [22mshould not transform placeholder: on non-TextInput elements[32m 6[2mms[22m[39m
+ [32m✓[39m src/babel/plugin/visitors/className.test.ts[2m > [22mclassName visitor - platform modifiers[2m > [22mshould transform platform modifiers to Platform.select()[32m 14[2mms[22m[39m
+ [32m✓[39m src/babel/plugin/visitors/className.test.ts[2m > [22mclassName visitor - platform modifiers[2m > [22mshould support multiple platform modifiers on same element[32m 6[2mms[22m[39m
+ [32m✓[39m src/babel/plugin/visitors/className.test.ts[2m > [22mclassName visitor - platform modifiers[2m > [22mshould support web platform modifier[32m 13[2mms[22m[39m
+ [32m✓[39m src/babel/plugin/visitors/className.test.ts[2m > [22mclassName visitor - platform modifiers[2m > [22mshould work with platform modifiers on all components[32m 15[2mms[22m[39m
+ [32m✓[39m src/babel/plugin/visitors/className.test.ts[2m > [22mclassName visitor - platform modifiers[2m > [22mshould combine platform modifiers with state modifiers[32m 11[2mms[22m[39m
+ [32m✓[39m src/babel/plugin/visitors/className.test.ts[2m > [22mclassName visitor - platform modifiers[2m > [22mshould handle platform-specific colors[32m 7[2mms[22m[39m
+ [32m✓[39m src/babel/plugin/visitors/className.test.ts[2m > [22mclassName visitor - platform modifiers[2m > [22mshould only add Platform import once when needed[32m 12[2mms[22m[39m
+ [32m✓[39m src/babel/plugin/visitors/className.test.ts[2m > [22mclassName visitor - platform modifiers[2m > [22mshould merge with existing Platform import[32m 8[2mms[22m[39m
+ [32m✓[39m src/babel/plugin/visitors/className.test.ts[2m > [22mclassName visitor - platform modifiers[2m > [22mshould handle platform modifiers without base classes[32m 6[2mms[22m[39m
+ [32m✓[39m src/babel/plugin/visitors/className.test.ts[2m > [22mclassName visitor - color scheme modifiers[2m > [22mshould transform dark: modifier to conditional expression[32m 29[2mms[22m[39m
+ [32m✓[39m src/babel/plugin/visitors/className.test.ts[2m > [22mclassName visitor - color scheme modifiers[2m > [22mshould support both dark: and light: modifiers[32m 7[2mms[22m[39m
+ [32m✓[39m src/babel/plugin/visitors/className.test.ts[2m > [22mclassName visitor - color scheme modifiers[2m > [22mshould inject hook once for multiple elements with color scheme modifiers[32m 9[2mms[22m[39m
+ [32m✓[39m src/babel/plugin/visitors/className.test.ts[2m > [22mclassName visitor - color scheme modifiers[2m > [22mshould work with color scheme and platform modifiers together[32m 9[2mms[22m[39m
+ [32m✓[39m src/babel/plugin/visitors/className.test.ts[2m > [22mclassName visitor - color scheme modifiers[2m > [22mshould only add useColorScheme import once when needed[32m 5[2mms[22m[39m
+ [32m✓[39m src/babel/plugin/visitors/className.test.ts[2m > [22mclassName visitor - color scheme modifiers[2m > [22mshould merge with existing useColorScheme import[32m 4[2mms[22m[39m
+ [32m✓[39m src/babel/plugin/visitors/className.test.ts[2m > [22mclassName visitor - color scheme modifiers[2m > [22mshould work with concise arrow functions[32m 7[2mms[22m[39m
+ [32m✓[39m src/babel/plugin/visitors/className.test.ts[2m > [22mclassName visitor - color scheme modifiers[2m > [22mshould inject hook at component level when dark: used in nested callback[32m 18[2mms[22m[39m
+ [32m✓[39m src/babel/plugin/visitors/className.test.ts[2m > [22mclassName visitor - color scheme modifiers[2m > [22mshould handle dynamic expressions with dark:/light: modifiers[32m 4[2mms[22m[39m
+ [32m✓[39m src/babel/plugin/visitors/className.test.ts[2m > [22mclassName visitor - color scheme modifiers[2m > [22mshould handle dynamic expressions with platform modifiers[32m 3[2mms[22m[39m
+ [32m✓[39m src/babel/plugin/visitors/className.test.ts[2m > [22mclassName visitor - color scheme modifiers[2m > [22mshould skip color scheme modifiers when used outside component scope[32m 8[2mms[22m[39m
+ [32m✓[39m src/babel/plugin/visitors/className.test.ts[2m > [22mclassName visitor - custom color scheme hook[2m > [22mshould use custom import source for color scheme hook[32m 3[2mms[22m[39m
+ [32m✓[39m src/babel/plugin/visitors/className.test.ts[2m > [22mclassName visitor - custom color scheme hook[2m > [22mshould use custom hook name[32m 3[2mms[22m[39m
+ [32m✓[39m src/babel/plugin/visitors/className.test.ts[2m > [22mclassName visitor - custom color scheme hook[2m > [22mshould merge custom hook with existing import from same source[32m 13[2mms[22m[39m
+ [32m✓[39m src/babel/plugin/visitors/className.test.ts[2m > [22mclassName visitor - custom color scheme hook[2m > [22mshould not duplicate custom hook if already imported[32m 12[2mms[22m[39m
+ [32m✓[39m src/babel/plugin/visitors/className.test.ts[2m > [22mclassName visitor - custom color scheme hook[2m > [22mshould use react-native by default when no custom config provided[32m 6[2mms[22m[39m
+ [32m✓[39m src/babel/plugin/visitors/className.test.ts[2m > [22mclassName visitor - custom color scheme hook[2m > [22mshould create separate import when only type-only import exists[32m 5[2mms[22m[39m
+ [32m✓[39m src/babel/plugin/visitors/className.test.ts[2m > [22mclassName visitor - custom color scheme hook[2m > [22mshould use aliased identifier when hook is already imported with alias[32m 17[2mms[22m[39m
+ [32m✓[39m src/babel/plugin/visitors/className.test.ts[2m > [22mclassName visitor - custom color scheme hook[2m > [22mshould not treat type-only imports as having the hook[32m 4[2mms[22m[39m
+ [32m✓[39m src/babel/plugin/visitors/className.test.ts[2m > [22mclassName visitor - custom color scheme hook[2m > [22mshould handle both type-only and aliased imports together[32m 7[2mms[22m[39m
+ [32m✓[39m src/babel/plugin/visitors/className.test.ts[2m > [22mclassName visitor - directional border colors[2m > [22mshould transform directional border colors with preset values[32m 27[2mms[22m[39m
+ [32m✓[39m src/babel/plugin/visitors/className.test.ts[2m > [22mclassName visitor - directional border colors[2m > [22mshould combine directional border width and color[32m 9[2mms[22m[39m
+ [32m✓[39m src/babel/plugin/visitors/className.test.ts[2m > [22mclassName visitor - directional border colors[2m > [22mshould support directional border colors with opacity[32m 5[2mms[22m[39m
+ [32m✓[39m src/babel/plugin/visitors/className.test.ts[2m > [22mclassName visitor - directional border colors[2m > [22mshould support directional border colors with arbitrary hex values[32m 4[2mms[22m[39m
+ [32m✓[39m src/babel/plugin/visitors/className.test.ts[2m > [22mclassName visitor - directional border colors[2m > [22mshould support all four directional border colors[32m 4[2mms[22m[39m
+ [32m✓[39m src/babel/plugin/visitors/className.test.ts[2m > [22mclassName visitor - directional border colors[2m > [22mshould combine directional widths, colors, and general border color[32m 4[2mms[22m[39m
+ [32m✓[39m src/babel/plugin/visitors/className.test.ts[2m > [22mclassName visitor - directional border colors[2m > [22mshould work with dynamic className containing directional border colors[32m 5[2mms[22m[39m
+ [32m✓[39m src/babel/plugin/visitors/className.test.ts[2m > [22mclassName visitor - directional modifiers (RTL/LTR)[2m > [22mshould transform rtl: modifier and inject I18nManager import[32m 4[2mms[22m[39m
+ [32m✓[39m src/babel/plugin/visitors/className.test.ts[2m > [22mclassName visitor - directional modifiers (RTL/LTR)[2m > [22mshould transform ltr: modifier with negated conditional[32m 5[2mms[22m[39m
+ [32m✓[39m src/babel/plugin/visitors/className.test.ts[2m > [22mclassName visitor - directional modifiers (RTL/LTR)[2m > [22mshould combine rtl: and ltr: modifiers[32m 5[2mms[22m[39m
+ [32m✓[39m src/babel/plugin/visitors/className.test.ts[2m > [22mclassName visitor - directional modifiers (RTL/LTR)[2m > [22mshould combine directional modifiers with base classes[32m 4[2mms[22m[39m
+ [32m✓[39m src/babel/plugin/visitors/className.test.ts[2m > [22mclassName visitor - directional modifiers (RTL/LTR)[2m > [22mshould combine directional modifiers with platform modifiers[32m 4[2mms[22m[39m
+ [32m✓[39m src/babel/plugin/visitors/className.test.ts[2m > [22mclassName visitor - directional modifiers (RTL/LTR)[2m > [22mshould not add I18nManager import if already present[32m 4[2mms[22m[39m
+ [32m✓[39m src/babel/plugin/visitors/className.test.ts[2m > [22mclassName visitor - directional modifiers (RTL/LTR)[2m > [22mshould work with directional logical properties[32m 3[2mms[22m[39m
+ [32m✓[39m src/babel/plugin/visitors/className.test.ts[2m > [22mclassName visitor - directional modifiers (RTL/LTR)[2m > [22mshould combine directional modifiers with color scheme modifiers[32m 4[2mms[22m[39m
+ [32m✓[39m src/babel/plugin/visitors/className.test.ts[2m > [22mclassName visitor - directional modifiers (RTL/LTR)[2m > [22mshould handle aliased I18nManager import[32m 5[2mms[22m[39m
+ [32m✓[39m src/babel/plugin/visitors/className.test.ts[2m > [22mclassName visitor - directional modifiers (RTL/LTR)[2m > [22mshould preserve 'use client' directive when injecting I18nManager variable[32m 14[2mms[22m[39m
+ [32m✓[39m src/babel/plugin/visitors/className.test.ts[2m > [22mclassName visitor - directional modifiers (RTL/LTR)[2m > [22mshould preserve 'use strict' directive when injecting I18nManager variable[32m 5[2mms[22m[39m
+ [32m✓[39m src/babel/plugin/visitors/className.test.ts[2m > [22mclassName visitor - directional modifiers (RTL/LTR)[2m > [22mshould expand text-start to directional modifiers[32m 7[2mms[22m[39m
+ [32m✓[39m src/babel/plugin/visitors/className.test.ts[2m > [22mclassName visitor - directional modifiers (RTL/LTR)[2m > [22mshould expand text-end to directional modifiers[32m 7[2mms[22m[39m
+ [32m✓[39m src/babel/plugin/visitors/className.test.ts[2m > [22mclassName visitor - configProvider config refs[2m > [22mshould emit config refs for theme-derived color and spacing values[32m 5[2mms[22m[39m
+ [32m✓[39m src/babel/plugin/visitors/className.test.ts[2m > [22mclassName visitor - configProvider config refs[2m > [22mshould keep arbitrary values as literals[32m 3[2mms[22m[39m
+ [32m✓[39m src/babel/plugin/visitors/className.test.ts[2m > [22mclassName visitor - configProvider config refs[2m > [22mshould keep opacity-modified values as literals[32m 3[2mms[22m[39m
+ [32m✓[39m src/babel/plugin/visitors/className.test.ts[2m > [22mclassName visitor - configProvider config refs[2m > [22mshould keep non-theme properties as literals[32m 4[2mms[22m[39m
+ [32m✓[39m src/babel/plugin/visitors/className.test.ts[2m > [22mclassName visitor - configProvider config refs[2m > [22mshould not emit config refs when configProvider is not enabled[32m 4[2mms[22m[39m
+
+[2m Test Files [22m [1m[32m1 passed[39m[22m[90m (1)[39m
+[2m      Tests [22m [1m[32m70 passed[39m[22m[2m | [22m[33m1 skipped[39m[90m (71)[39m
+[2m   Start at [22m 14:00:59
+[2m   Duration [22m 2.07s[2m (transform 768ms, setup 86ms, import 1.01s, tests 768ms, environment 0ms)[22m
+

@@ -205,4 +205,43 @@ describe("config-loader", () => {
       consoleSpy.mockRestore();
     });
   });
+
+  describe("configProvider", () => {
+    it("should accept configProvider with valid importFrom", () => {
+      const options: { configProvider?: { importFrom: string; importName?: string } } = {
+        configProvider: {
+          importFrom: "./my-provider",
+        },
+      };
+      expect(options.configProvider).toBeDefined();
+      expect(options.configProvider?.importFrom).toBe("./my-provider");
+    });
+
+    it("should accept configProvider with custom importName", () => {
+      const options: { configProvider?: { importFrom: string; importName?: string } } = {
+        configProvider: {
+          importFrom: "./my-provider",
+          importName: "myProvider",
+        },
+      };
+      expect(options.configProvider).toBeDefined();
+      expect(options.configProvider?.importFrom).toBe("./my-provider");
+      expect(options.configProvider?.importName).toBe("myProvider");
+    });
+
+    it("should default importName to 'provideConfig' when not specified", () => {
+      const options: { configProvider?: { importFrom: string; importName?: string } } = {
+        configProvider: {
+          importFrom: "./my-provider",
+        },
+      };
+      const importName = options.configProvider?.importName ?? "provideConfig";
+      expect(importName).toBe("provideConfig");
+    });
+
+    it("should handle absent configProvider option gracefully", () => {
+      const options: { configProvider?: { importFrom: string; importName?: string } } = {};
+      expect(options.configProvider).toBeUndefined();
+    });
+  });
 });

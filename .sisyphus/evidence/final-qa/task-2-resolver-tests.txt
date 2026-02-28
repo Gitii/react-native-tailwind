@@ -1,0 +1,18 @@
+TASK 2 QA: Config ref resolver produces correct mappings
+========================================================
+Date: 2026-02-28
+Command: npx vitest run src/babel/utils/configRefResolver.test.ts
+
+RESULT: ✅ PASS
+- 12 tests passed (0 failed)
+- bg-blue-500 → { "backgroundColor": ["theme", "colors", "blue-500"] }
+- p-4 → { "padding": ["theme", "spacing", "4"] }
+- text-xl → { "fontSize": ["theme", "fontSize", "xl"] }
+- Arbitrary values bg-[#ff0000] → empty map
+- Opacity-modified bg-blue-500/50 → empty map
+- Multi-class resolves both refs
+
+OUTPUT:
+  ✓ src/babel/utils/configRefResolver.test.ts (12 tests) 13ms
+  Test Files: 1 passed (1)
+  Tests: 12 passed (12)

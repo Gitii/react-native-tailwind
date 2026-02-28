@@ -5,6 +5,8 @@
 import type * as BabelTypes from "@babel/types";
 import type { CustomTheme, DirectionalModifierType, ParsedModifier } from "../../parser/index.js";
 import type { StyleObject } from "../../types/core.js";
+import type { FullResolvedTheme } from "./configRefResolver.js";
+import { resolveConfigRefs } from "./configRefResolver.js";
 import { hasRuntimeDimensions } from "./windowDimensionsProcessing.js";
 
 /**
@@ -17,6 +19,21 @@ export interface DirectionalModifierProcessingState {
   stylesIdentifier: string;
   needsI18nManagerImport: boolean;
   i18nManagerVariableName: string;
+  configProviderEnabled?: boolean;
+  configRefRegistry?: Map<string, Map<string, string[]>>;
+  fullResolvedTheme?: FullResolvedTheme;
+}
+
+function registerConfigRefs(
+  state: DirectionalModifierProcessingState,
+  styleKey: string,
+  className: string,
+): void {
+  if (!state.configProviderEnabled || !state.configRefRegistry || !state.fullResolvedTheme) return;
+  const refs = resolveConfigRefs(className, state.fullResolvedTheme);
+  if (refs.size > 0) {
+    state.configRefRegistry.set(styleKey, refs);
+  }
 }
 
 /**
@@ -81,6 +98,7 @@ export function processDirectionalModifiers(
 
     // Register style in the registry
     state.styleRegistry.set(styleKey, styleObject);
+    registerConfigRefs(state, styleKey, classNames);
 
     // Create conditional:
     // - For rtl: _twIsRTL && styles._rtl_...

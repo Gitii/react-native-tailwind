@@ -1,0 +1,6 @@
+--
+125-  if (state.configProviderEnabled && state.configRefRegistry.size > 0) {
+126-    if (state.generatedConfigPath) {
+127:      addConfigImport(path, state.generatedConfigPath, state.file.opts.filename ?? "", t);
+128-    }
+129-}

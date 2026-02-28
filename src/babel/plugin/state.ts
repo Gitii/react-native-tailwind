@@ -4,11 +4,22 @@
 
 import type { NodePath, PluginPass } from "@babel/core";
 import type * as BabelTypes from "@babel/types";
+import { SPACING_SCALE } from "../../parser/spacing.js";
+import { FONT_SIZES } from "../../parser/typography.js";
 import type { SchemeModifierConfig } from "../../types/config.js";
 import type { StyleObject } from "../../types/core.js";
+import { COLORS } from "../../utils/colorUtils.js";
 import type { CustomTheme } from "../config-loader.js";
 import { extractCustomTheme } from "../config-loader.js";
 import { DEFAULT_CLASS_ATTRIBUTES, buildAttributeMatchers } from "../utils/attributeMatchers.js";
+import type { FullResolvedTheme } from "../utils/configRefResolver.js";
+
+/** Default font family map (mirrors FONT_FAMILY_MAP keys in parser/typography.ts) */
+const DEFAULT_FONT_FAMILY: Record<string, string> = {
+  sans: "System",
+  serif: "serif",
+  mono: "Courier",
+};
 
 /**
  * Plugin options
@@ -82,6 +93,34 @@ export type PluginOptions = {
      */
     importName?: string;
   };
+
+  /**
+   * Configuration for config provider hook import
+   *
+   * Allows using custom config provider functions to inject config refs
+   * into generated styles at compile time.
+   *
+   * @example
+   * // Use custom config provider
+   * {
+   *   importFrom: './my-provider',
+   *   importName: 'provideConfig'
+   * }
+   *
+   * @default undefined (feature disabled)
+   */
+  configProvider?: {
+    /**
+     * Module to import the config provider from
+     */
+    importFrom: string;
+
+    /**
+     * Name of the provider function to import
+     * @default 'provideConfig'
+     */
+    importName?: string;
+  };
 };
 
 /**
@@ -108,6 +147,7 @@ export type PluginState = PluginPass & {
   i18nManagerVariableName: string; // Variable name for the RTL state (e.g., '_twIsRTL')
   i18nManagerLocalIdentifier?: string; // Local identifier if I18nManager is already imported with an alias
   customTheme: CustomTheme;
+  fullResolvedTheme: FullResolvedTheme;
   schemeModifierConfig: SchemeModifierConfig;
   supportedAttributes: Set<string>;
   attributePatterns: RegExp[];
@@ -121,6 +161,12 @@ export type PluginState = PluginPass & {
   functionComponentsNeedingColorScheme: Set<NodePath<BabelTypes.Function>>;
   // Track function components that need windowDimensions hook injection
   functionComponentsNeedingWindowDimensions: Set<NodePath<BabelTypes.Function>>;
+  // Config provider configuration
+  configProviderEnabled: boolean;
+  configProviderImportFrom: string;
+  configProviderImportName: string;
+  configRefRegistry: Map<string, Map<string, string[]>>;
+  generatedConfigPath: string;
 };
 
 // Default identifier for the generated StyleSheet constant
@@ -134,6 +180,8 @@ export const DEFAULT_STYLES_IDENTIFIER = "_twStyles";
  * @param colorSchemeImportSource - Where to import the color scheme hook from
  * @param colorSchemeHookName - Name of the color scheme hook to import
  * @param schemeModifierConfig - Configuration for scheme: modifier expansion
+ * @param configProviderImportFrom - Module to import the config provider from
+ * @param configProviderImportName - Name of the config provider function to import
  * @returns Initial plugin state
  */
 export function createInitialState(
@@ -142,6 +190,8 @@ export function createInitialState(
   colorSchemeImportSource: string,
   colorSchemeHookName: string,
   schemeModifierConfig: SchemeModifierConfig,
+  configProviderImportFrom = "",
+  configProviderImportName = "provideConfig",
 ): Partial<PluginState> {
   // Build attribute matchers from options
   const attributes = options?.attributes ?? [...DEFAULT_CLASS_ATTRIBUTES];
@@ -150,6 +200,14 @@ export function createInitialState(
 
   // Load custom theme from tailwind.config.*
   const customTheme = extractCustomTheme(filename);
+
+  // Build fully resolved theme by merging built-in constants with custom theme
+  const fullResolvedTheme: FullResolvedTheme = {
+    colors: { ...COLORS, ...customTheme.colors },
+    spacing: { ...SPACING_SCALE, ...customTheme.spacing },
+    fontSize: { ...FONT_SIZES, ...customTheme.fontSize },
+    fontFamily: { ...DEFAULT_FONT_FAMILY, ...customTheme.fontFamily },
+  };
 
   return {
     styleRegistry: new Map(),
@@ -172,6 +230,7 @@ export function createInitialState(
     i18nManagerVariableName: "_twIsRTL",
     i18nManagerLocalIdentifier: undefined,
     customTheme,
+    fullResolvedTheme,
     schemeModifierConfig,
     supportedAttributes: exactMatches,
     attributePatterns: patterns,
@@ -181,5 +240,10 @@ export function createInitialState(
     reactNativeImportPath: undefined,
     functionComponentsNeedingColorScheme: new Set(),
     functionComponentsNeedingWindowDimensions: new Set(),
+    configProviderEnabled: !!configProviderImportFrom,
+    configProviderImportFrom,
+    configProviderImportName,
+    configRefRegistry: new Map(),
+    generatedConfigPath: "",
   };
 }

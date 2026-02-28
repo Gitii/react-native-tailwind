@@ -17,3 +17,6 @@ link-assets-manifest.json
 
 CLAUDE.md
 .claude/
+
+# Generated config files
+.generated.tailwind.config.js

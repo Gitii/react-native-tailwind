@@ -1,0 +1,30 @@
+QA SCENARIO 1: Verify Generated File References
+================================================
+
+COMMAND 1: Count .generated references in feature-init-only-theme.md
+Result: 2 references found ✓
+Expected: > 0
+Status: PASS
+
+COMMAND 2: Count .generated references in init-only-theme-implementation-plan.md
+Result: 3 references found ✓
+Expected: > 0
+Status: PASS
+
+COMMAND 3: Check for "import directly from provider" in feature-init-only-theme.md
+Result: 0 matches ✓
+Expected: 0
+Status: PASS
+
+COMMAND 4: Check for "import directly from provider" in init-only-theme-implementation-plan.md
+Result: 0 matches ✓
+Expected: 0
+Status: PASS
+
+SUMMARY:
+--------
+✓ Generated file references present in both docs
+✓ No direct provider import language found
+✓ Architecture correctly shows intermediary generated file
+
+All QA checks PASSED.

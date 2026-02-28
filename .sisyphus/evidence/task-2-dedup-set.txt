@@ -1,0 +1,24 @@
+40-  };
+41-
+42-  // Config provider configuration from plugin options
+43-  const configProviderImportFrom = options?.configProvider?.importFrom ?? "";
+44-  const configProviderImportName = options?.configProvider?.importName ?? "provideConfig";
+45:  const generatedConfigPaths = new Set<string>();
+46-
+47-  // Warn if configProvider is present but importFrom is missing
+--
+72-
+73-          if (state.configProviderEnabled) {
+74-            const tailwindConfigPath = findTailwindConfig(dirname(state.file.opts.filename ?? ""));
+75-            if (tailwindConfigPath) {
+76-              const genPath = getConfigModulePath(tailwindConfigPath);
+77:              if (!generatedConfigPaths.has(genPath)) {
+78-                const content = generateConfigModule(
+79-                  state.fullResolvedTheme,
+80-                  state.configProviderImportFrom,
+81-                  state.configProviderImportName,
+82-                );
+83-                writeConfigModule(genPath, content);
+84:                generatedConfigPaths.add(genPath);
+85-              }
+86-              state.generatedConfigPath = genPath;

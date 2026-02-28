@@ -1,0 +1,646 @@
+$ bun run lint && bun run check && bun run spec src/babel/plugin.configProvider.test.ts
+$ eslint src/
+
+/home/germinii/projects/react-native-tailwind.feat-init-only-config/src/babel/plugin/visitors/className.test.ts
+  343:6  warning  Disabled test - if you want to skip a test temporarily, use .todo() instead  vitest/no-disabled-tests
+
+✖ 1 problem (0 errors, 1 warning)
+
+$ tsc --noEmit
+$ vitest --run --coverage src/babel/plugin.configProvider.test.ts
+
+[1m[46m RUN [49m[22m [36mv4.0.18 [39m[90m/home/germinii/projects/react-native-tailwind.feat-init-only-config[39m
+      [2mCoverage enabled with [22m[33mv8[39m
+
+ [31m❯[39m src/babel/plugin.configProvider.test.ts [2m([22m[2m29 tests[22m[2m | [22m[31m22 failed[39m[2m)[22m[32m 275[2mms[22m[39m
+[31m     [31m×[31m transforms className with color and spacing config refs[39m[32m 111[2mms[22m[39m
+[31m     [31m×[31m transforms className with fontSize config refs[39m[32m 11[2mms[22m[39m
+[31m     [31m×[31m transforms className with fontFamily config refs[39m[32m 5[2mms[22m[39m
+[31m     [31m×[31m transforms border color config refs[39m[32m 5[2mms[22m[39m
+[31m     [31m×[31m uses config refs for theme values and literals for built-in scales[39m[32m 6[2mms[22m[39m
+     [32m✓[39m keeps arbitrary values as literals[32m 5[2mms[22m[39m
+     [32m✓[39m keeps opacity-modified values as literals[32m 5[2mms[22m[39m
+     [32m✓[39m keeps non-theme properties as literals[32m 4[2mms[22m[39m
+[31m     [31m×[31m transforms dark: modifier with config refs and conditional structure[39m[32m 10[2mms[22m[39m
+[31m     [31m×[31m transforms light: modifier with config refs[39m[32m 5[2mms[22m[39m
+[31m     [31m×[31m transforms combined dark: and light: modifiers[39m[32m 5[2mms[22m[39m
+[31m     [31m×[31m transforms scheme: modifier with config refs in both branches[39m[32m 6[2mms[22m[39m
+[31m     [31m×[31m transforms ios: modifier with config refs[39m[32m 5[2mms[22m[39m
+[31m     [31m×[31m transforms android: modifier with config refs[39m[32m 5[2mms[22m[39m
+[31m     [31m×[31m transforms combined ios: and android: modifiers with config refs[39m[32m 6[2mms[22m[39m
+[31m     [31m×[31m transforms tw`` with config refs[39m[32m 11[2mms[22m[39m
+[31m     [31m×[31m transforms twStyle() with config refs[39m[32m 4[2mms[22m[39m
+[31m     [31m×[31m transforms tw`` with state modifiers and config refs[39m[32m 3[2mms[22m[39m
+[31m     [31m×[31m transforms multiple className attributes in same file[39m[32m 8[2mms[22m[39m
+[31m     [31m×[31m transforms multiple separate components in same file[39m[32m 7[2mms[22m[39m
+[31m     [31m×[31m transforms mixed className and tw`` in same file[39m[32m 11[2mms[22m[39m
+     [32m✓[39m does not inject __twConfig when configProvider is disabled[32m 3[2mms[22m[39m
+     [32m✓[39m does not inject __twConfig when no theme-resolvable classes are used[32m 3[2mms[22m[39m
+     [32m✓[39m does not inject __twConfig for tw when configProvider is disabled[32m 1[2mms[22m[39m
+[31m     [31m×[31m generates correct import path from configProvider.importFrom[39m[32m 6[2mms[22m[39m
+[31m     [31m×[31m uses __twConfig as the default import name[39m[32m 3[2mms[22m[39m
+[31m     [31m×[31m transforms a complete card component with multiple theme categories[39m[32m 7[2mms[22m[39m
+[31m     [31m×[31m transforms a theme-aware component with dark mode and platform modifiers[39m[32m 6[2mms[22m[39m
+     [32m✓[39m transforms conditional className (ternary) with literal values[32m 5[2mms[22m[39m
+
+[31m⎯⎯⎯⎯⎯⎯[39m[1m[41m Failed Tests 22 [49m[22m[31m⎯⎯⎯⎯⎯⎯⎯[39m
+
+[41m[1m FAIL [22m[49m src/babel/plugin.configProvider.test.ts[2m > [22mconfigProvider E2E - basic transforms[2m > [22mtransforms className with color and spacing config refs
+[31m[1mAssertionError[22m: expected 'import { View, StyleSheet } from \'re…' to contain '.generated.tailwind.config'[39m
+
+[32m- Expected[39m
+[31m+ Received[39m
+
+[32m- .generated.tailwind.config[39m
+[31m+ import { View, StyleSheet } from 'react-native';[39m
+[31m+ import { __twConfig } from "../../../home/germinii/projects/react-native-tailwind.feat-init-only-config/my-provider";[39m
+[31m+ const _twStyles = StyleSheet.create({[39m
+[31m+   _bg_blue_500_p_4: {[39m
+[31m+     backgroundColor: __twConfig.theme.colors["blue-500"],[39m
+[31m+     padding: __twConfig.theme.spacing["4"][39m
+[31m+   }[39m
+[31m+ });[39m
+[31m+ export default function App() {[39m
+[31m+   return /*#__PURE__*/React.createElement(View, {[39m
+[31m+     style: _twStyles._bg_blue_500_p_4[39m
+[31m+   });[39m
+[31m+ }[39m
+
+[36m [2m❯[22m src/babel/plugin.configProvider.test.ts:[2m56:20[22m[39m
+    [90m 54| [39m    [90m// Import injection[39m
+    [90m 55| [39m    [34mexpect[39m(output)[33m.[39m[34mtoContain[39m([32m"import { __twConfig }"[39m)[33m;[39m
+    [90m 56| [39m    [34mexpect[39m(output)[33m.[39m[34mtoContain[39m([32m".generated.tailwind.config"[39m)[33m;[39m
+    [90m   | [39m                   [31m^[39m
+    [90m 57| [39m    [34mexpect[39m(output)[33m.[39mnot[33m.[39m[34mtoContain[39m([32m"./my-provider"[39m)[33m;[39m
+    [90m 58| [39m
+
+[31m[2m⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/22]⎯[22m[39m
+
+[41m[1m FAIL [22m[49m src/babel/plugin.configProvider.test.ts[2m > [22mconfigProvider E2E - basic transforms[2m > [22mtransforms className with fontSize config refs
+[31m[1mError[22m: Snapshot `configProvider E2E - basic transforms > transforms className with fontSize config refs 1` mismatched[39m
+
+[32m- Expected[39m
+[31m+ Received[39m
+
+[33m@@ -1,7 +1,7 @@[39m
+[2m  "import { Text, StyleSheet } from 'react-native';[22m
+[32m- import { __twConfig } from "./theme";[39m
+[31m+ import { __twConfig } from ".[7m./../../home/germinii/projects/react-native-tailwind.feat-init-only-config[27m/theme";[39m
+[2m  const _twStyles = StyleSheet.create({[22m
+[2m    _font_bold_text_2xl: {[22m
+[2m      fontSize: __twConfig.theme.fontSize["2xl"],[22m
+[2m      fontWeight: "700"[22m
+[2m    }[22m
+
+[36m [2m❯[22m src/babel/plugin.configProvider.test.ts:[2m79:20[22m[39m
+    [90m 77| [39m    [34mexpect[39m(output)[33m.[39m[34mtoContain[39m([32m"__twConfig.theme.fontSize"[39m)[33m;[39m
+    [90m 78| [39m
+    [90m 79| [39m    [34mexpect[39m(output)[33m.[39m[34mtoMatchSnapshot[39m()[33m;[39m
+    [90m   | [39m                   [31m^[39m
+    [90m 80| [39m  })[33m;[39m
+    [90m 81| [39m
+
+[31m[2m⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[2/22]⎯[22m[39m
+
+[41m[1m FAIL [22m[49m src/babel/plugin.configProvider.test.ts[2m > [22mconfigProvider E2E - basic transforms[2m > [22mtransforms className with fontFamily config refs
+[31m[1mError[22m: Snapshot `configProvider E2E - basic transforms > transforms className with fontFamily config refs 1` mismatched[39m
+
+[32m- Expected[39m
+[31m+ Received[39m
+
+[33m@@ -1,7 +1,7 @@[39m
+[2m  "import { Text, StyleSheet } from 'react-native';[22m
+[32m- import { __twConfig } from "./theme";[39m
+[31m+ import { __twConfig } from ".[7m./../../home/germinii/projects/react-native-tailwind.feat-init-only-config[27m/theme";[39m
+[2m  const _twStyles = StyleSheet.create({[22m
+[2m    _font_sans: {[22m
+[2m      fontFamily: __twConfig.theme.fontFamily.sans[22m
+[2m    }[22m
+[2m  });[22m
+
+[36m [2m❯[22m src/babel/plugin.configProvider.test.ts:[2m95:20[22m[39m
+    [90m 93| [39m    [34mexpect[39m(output)[33m.[39m[34mtoContain[39m([32m"__twConfig.theme.fontFamily"[39m)[33m;[39m
+    [90m 94| [39m
+    [90m 95| [39m    [34mexpect[39m(output)[33m.[39m[34mtoMatchSnapshot[39m()[33m;[39m
+    [90m   | [39m                   [31m^[39m
+    [90m 96| [39m  })[33m;[39m
+    [90m 97| [39m
+
+[31m[2m⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[3/22]⎯[22m[39m
+
+[41m[1m FAIL [22m[49m src/babel/plugin.configProvider.test.ts[2m > [22mconfigProvider E2E - basic transforms[2m > [22mtransforms border color config refs
+[31m[1mError[22m: Snapshot `configProvider E2E - basic transforms > transforms border color config refs 1` mismatched[39m
+
+[32m- Expected[39m
+[31m+ Received[39m
+
+[33m@@ -1,7 +1,7 @@[39m
+[2m  "import { View, StyleSheet } from 'react-native';[22m
+[32m- import { __twConfig } from "./theme";[39m
+[31m+ import { __twConfig } from ".[7m./../../home/germinii/projects/react-native-tailwind.feat-init-only-config[27m/theme";[39m
+[2m  const _twStyles = StyleSheet.create({[22m
+[2m    _border_border_red_500: {[22m
+[2m      borderWidth: 1,[22m
+[2m      borderColor: __twConfig.theme.colors["red-500"][22m
+[2m    }[22m
+
+[36m [2m❯[22m src/babel/plugin.configProvider.test.ts:[2m109:20[22m[39m
+    [90m107| [39m
+    [90m108| [39m    [34mexpect[39m(output)[33m.[39m[34mtoContain[39m([32m'__twConfig.theme.colors["red-500"]'[39m)[33m;[39m
+    [90m109| [39m    [34mexpect[39m(output)[33m.[39m[34mtoMatchSnapshot[39m()[33m;[39m
+    [90m   | [39m                   [31m^[39m
+    [90m110| [39m  })[33m;[39m
+    [90m111| [39m})[33m;[39m
+
+[31m[2m⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[4/22]⎯[22m[39m
+
+[41m[1m FAIL [22m[49m src/babel/plugin.configProvider.test.ts[2m > [22mconfigProvider E2E - mixed refs and literals[2m > [22muses config refs for theme values and literals for built-in scales
+[31m[1mError[22m: Snapshot `configProvider E2E - mixed refs and literals > uses config refs for theme values and literals for built-in scales 1` mismatched[39m
+
+[32m- Expected[39m
+[31m+ Received[39m
+
+[33m@@ -1,7 +1,7 @@[39m
+[2m  "import { View, StyleSheet } from 'react-native';[22m
+[32m- import { __twConfig } from "./my-provider";[39m
+[31m+ import { __twConfig } from ".[7m./../../home/germinii/projects/react-native-tailwind.feat-init-only-config[27m/my-provider";[39m
+[2m  const _twStyles = StyleSheet.create({[22m
+[2m    _bg_blue_500_p_4_rounded_lg: {[22m
+[2m      backgroundColor: __twConfig.theme.colors["blue-500"],[22m
+[2m      padding: __twConfig.theme.spacing["4"],[22m
+[2m      borderRadius: 8[22m
+
+[36m [2m❯[22m src/babel/plugin.configProvider.test.ts:[2m134:20[22m[39m
+    [90m132| [39m    [34mexpect[39m(output)[33m.[39m[34mtoMatch[39m([36m/borderRadius:\s*8/[39m)[33m;[39m
+    [90m133| [39m
+    [90m134| [39m    [34mexpect[39m(output)[33m.[39m[34mtoMatchSnapshot[39m()[33m;[39m
+    [90m   | [39m                   [31m^[39m
+    [90m135| [39m  })[33m;[39m
+    [90m136| [39m
+
+[31m[2m⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[5/22]⎯[22m[39m
+
+[41m[1m FAIL [22m[49m src/babel/plugin.configProvider.test.ts[2m > [22mconfigProvider E2E - dark/light mode modifiers[2m > [22mtransforms dark: modifier with config refs and conditional structure
+[31m[1mError[22m: Snapshot `configProvider E2E - dark/light mode modifiers > transforms dark: modifier with config refs and conditional structure 1` mismatched[39m
+
+[32m- Expected[39m
+[31m+ Received[39m
+
+[33m@@ -1,7 +1,7 @@[39m
+[2m  "import { View, StyleSheet, useColorScheme } from 'react-native';[22m
+[32m- import { __twConfig } from "./my-provider";[39m
+[31m+ import { __twConfig } from ".[7m./../../home/germinii/projects/react-native-tailwind.feat-init-only-config[27m/my-provider";[39m
+[2m  const _twStyles = StyleSheet.create({[22m
+[2m    _bg_white: {[22m
+[2m      backgroundColor: __twConfig.theme.colors.white[22m
+[2m    },[22m
+[2m    _dark_bg_gray_900: {[22m
+
+[36m [2m❯[22m src/babel/plugin.configProvider.test.ts:[2m213:20[22m[39m
+    [90m211| [39m    [34mexpect[39m(output)[33m.[39m[34mtoContain[39m([32m"import { __twConfig }"[39m)[33m;[39m
+    [90m212| [39m
+    [90m213| [39m    [34mexpect[39m(output)[33m.[39m[34mtoMatchSnapshot[39m()[33m;[39m
+    [90m   | [39m                   [31m^[39m
+    [90m214| [39m  })[33m;[39m
+    [90m215| [39m
+
+[31m[2m⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[6/22]⎯[22m[39m
+
+[41m[1m FAIL [22m[49m src/babel/plugin.configProvider.test.ts[2m > [22mconfigProvider E2E - dark/light mode modifiers[2m > [22mtransforms light: modifier with config refs
+[31m[1mError[22m: Snapshot `configProvider E2E - dark/light mode modifiers > transforms light: modifier with config refs 1` mismatched[39m
+
+[32m- Expected[39m
+[31m+ Received[39m
+
+[33m@@ -1,7 +1,7 @@[39m
+[2m  "import { Text, StyleSheet, useColorScheme } from 'react-native';[22m
+[32m- import { __twConfig } from "./my-provider";[39m
+[31m+ import { __twConfig } from ".[7m./../../home/germinii/projects/react-native-tailwind.feat-init-only-config[27m/my-provider";[39m
+[2m  const _twStyles = StyleSheet.create({[22m
+[2m    _text_gray_900: {[22m
+[2m      color: __twConfig.theme.colors["gray-900"][22m
+[2m    },[22m
+[2m    _light_text_white: {[22m
+
+[36m [2m❯[22m src/babel/plugin.configProvider.test.ts:[2m233:20[22m[39m
+    [90m231| [39m    [34mexpect[39m(output)[33m.[39m[34mtoMatch[39m([36m/_twColorScheme\s*===\s*['"]light['"]/[39m)[33m;[39m
+    [90m232| [39m
+    [90m233| [39m    [34mexpect[39m(output)[33m.[39m[34mtoMatchSnapshot[39m()[33m;[39m
+    [90m   | [39m                   [31m^[39m
+    [90m234| [39m  })[33m;[39m
+    [90m235| [39m
+
+[31m[2m⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[7/22]⎯[22m[39m
+
+[41m[1m FAIL [22m[49m src/babel/plugin.configProvider.test.ts[2m > [22mconfigProvider E2E - dark/light mode modifiers[2m > [22mtransforms combined dark: and light: modifiers
+[31m[1mError[22m: Snapshot `configProvider E2E - dark/light mode modifiers > transforms combined dark: and light: modifiers 1` mismatched[39m
+
+[32m- Expected[39m
+[31m+ Received[39m
+
+[33m@@ -1,7 +1,7 @@[39m
+[2m  "import { View, StyleSheet, useColorScheme } from 'react-native';[22m
+[32m- import { __twConfig } from "./my-provider";[39m
+[31m+ import { __twConfig } from ".[7m./../../home/germinii/projects/react-native-tailwind.feat-init-only-config[27m/my-provider";[39m
+[2m  const _twStyles = StyleSheet.create({[22m
+[2m    _dark_bg_gray_900: {[22m
+[2m      backgroundColor: __twConfig.theme.colors["gray-900"][22m
+[2m    },[22m
+[2m    _light_bg_white: {[22m
+
+[36m [2m❯[22m src/babel/plugin.configProvider.test.ts:[2m258:20[22m[39m
+    [90m256| [39m    [34mexpect[39m(hookMatches[33m.[39mlength)[33m.[39m[34mtoBe[39m([34m1[39m)[33m;[39m
+    [90m257| [39m
+    [90m258| [39m    [34mexpect[39m(output)[33m.[39m[34mtoMatchSnapshot[39m()[33m;[39m
+    [90m   | [39m                   [31m^[39m
+    [90m259| [39m  })[33m;[39m
+    [90m260| [39m
+
+[31m[2m⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[8/22]⎯[22m[39m
+
+[41m[1m FAIL [22m[49m src/babel/plugin.configProvider.test.ts[2m > [22mconfigProvider E2E - dark/light mode modifiers[2m > [22mtransforms scheme: modifier with config refs in both branches
+[31m[1mError[22m: Snapshot `configProvider E2E - dark/light mode modifiers > transforms scheme: modifier with config refs in both branches 1` mismatched[39m
+
+[32m- Expected[39m
+[31m+ Received[39m
+
+[33m@@ -1,7 +1,7 @@[39m
+[2m  "import { View, StyleSheet, useColorScheme } from 'react-native';[22m
+[32m- import { __twConfig } from "./my-provider";[39m
+[31m+ import { __twConfig } from ".[7m./../../home/germinii/projects/react-native-tailwind.feat-init-only-config[27m/my-provider";[39m
+[2m  const _twStyles = StyleSheet.create({[22m
+[2m    _dark_bg_primary_dark: {[22m
+[2m      backgroundColor: __twConfig.theme.colors["primary-dark"][22m
+[2m    },[22m
+[2m    _light_bg_primary_light: {[22m
+
+[36m [2m❯[22m src/babel/plugin.configProvider.test.ts:[2m290:22[22m[39m
+    [90m288| [39m      [34mexpect[39m(output)[33m.[39m[34mtoMatch[39m([36m/_twColorScheme\s*===\s*['"]light['"]/[39m)[33m;[39m
+    [90m289| [39m
+    [90m290| [39m      [34mexpect[39m(output)[33m.[39m[34mtoMatchSnapshot[39m()[33m;[39m
+    [90m   | [39m                     [31m^[39m
+    [90m291| [39m    } [35mfinally[39m {
+    [90m292| [39m      extractCustomThemeSpy[33m.[39m[34mmockRestore[39m()[33m;[39m
+
+[31m[2m⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[9/22]⎯[22m[39m
+
+[41m[1m FAIL [22m[49m src/babel/plugin.configProvider.test.ts[2m > [22mconfigProvider E2E - platform modifiers[2m > [22mtransforms ios: modifier with config refs
+[31m[1mError[22m: Snapshot `configProvider E2E - platform modifiers > transforms ios: modifier with config refs 1` mismatched[39m
+
+[32m- Expected[39m
+[31m+ Received[39m
+
+[33m@@ -1,7 +1,7 @@[39m
+[2m  "import { View, StyleSheet, Platform } from 'react-native';[22m
+[32m- import { __twConfig } from "./my-provider";[39m
+[31m+ import { __twConfig } from ".[7m./../../home/germinii/projects/react-native-tailwind.feat-init-only-config[27m/my-provider";[39m
+[2m  const _twStyles = StyleSheet.create({[22m
+[2m    _p_4: {[22m
+[2m      padding: __twConfig.theme.spacing["4"][22m
+[2m    },[22m
+[2m    _ios_p_6: {[22m
+
+[36m [2m❯[22m src/babel/plugin.configProvider.test.ts:[2m317:20[22m[39m
+    [90m315| [39m    [34mexpect[39m(output)[33m.[39m[34mtoContain[39m([32m"Platform.select"[39m)[33m;[39m
+    [90m316| [39m
+    [90m317| [39m    [34mexpect[39m(output)[33m.[39m[34mtoMatchSnapshot[39m()[33m;[39m
+    [90m   | [39m                   [31m^[39m
+    [90m318| [39m  })[33m;[39m
+    [90m319| [39m
+
+[31m[2m⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[10/22]⎯[22m[39m
+
+[41m[1m FAIL [22m[49m src/babel/plugin.configProvider.test.ts[2m > [22mconfigProvider E2E - platform modifiers[2m > [22mtransforms android: modifier with config refs
+[31m[1mError[22m: Snapshot `configProvider E2E - platform modifiers > transforms android: modifier with config refs 1` mismatched[39m
+
+[32m- Expected[39m
+[31m+ Received[39m
+
+[33m@@ -1,7 +1,7 @@[39m
+[2m  "import { View, StyleSheet, Platform } from 'react-native';[22m
+[32m- import { __twConfig } from "./my-provider";[39m
+[31m+ import { __twConfig } from ".[7m./../../home/germinii/projects/react-native-tailwind.feat-init-only-config[27m/my-provider";[39m
+[2m  const _twStyles = StyleSheet.create({[22m
+[2m    _bg_blue_500: {[22m
+[2m      backgroundColor: __twConfig.theme.colors["blue-500"][22m
+[2m    },[22m
+[2m    _android_bg_green_500: {[22m
+
+[36m [2m❯[22m src/babel/plugin.configProvider.test.ts:[2m337:20[22m[39m
+    [90m335| [39m    [34mexpect[39m(output)[33m.[39m[34mtoContain[39m([32m"Platform.select"[39m)[33m;[39m
+    [90m336| [39m
+    [90m337| [39m    [34mexpect[39m(output)[33m.[39m[34mtoMatchSnapshot[39m()[33m;[39m
+    [90m   | [39m                   [31m^[39m
+    [90m338| [39m  })[33m;[39m
+    [90m339| [39m
+
+[31m[2m⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[11/22]⎯[22m[39m
+
+[41m[1m FAIL [22m[49m src/babel/plugin.configProvider.test.ts[2m > [22mconfigProvider E2E - platform modifiers[2m > [22mtransforms combined ios: and android: modifiers with config refs
+[31m[1mError[22m: Snapshot `configProvider E2E - platform modifiers > transforms combined ios: and android: modifiers with config refs 1` mismatched[39m
+
+[32m- Expected[39m
+[31m+ Received[39m
+
+[33m@@ -1,7 +1,7 @@[39m
+[2m  "import { View, StyleSheet, Platform } from 'react-native';[22m
+[32m- import { __twConfig } from "./my-provider";[39m
+[31m+ import { __twConfig } from ".[7m./../../home/germinii/projects/react-native-tailwind.feat-init-only-config[27m/my-provider";[39m
+[2m  const _twStyles = StyleSheet.create({[22m
+[2m    _ios_p_4: {[22m
+[2m      padding: __twConfig.theme.spacing["4"][22m
+[2m    },[22m
+[2m    _android_p_2: {[22m
+
+[36m [2m❯[22m src/babel/plugin.configProvider.test.ts:[2m354:20[22m[39m
+    [90m352| [39m    [34mexpect[39m(output)[33m.[39m[34mtoContain[39m([32m"Platform.select"[39m)[33m;[39m
+    [90m353| [39m
+    [90m354| [39m    [34mexpect[39m(output)[33m.[39m[34mtoMatchSnapshot[39m()[33m;[39m
+    [90m   | [39m                   [31m^[39m
+    [90m355| [39m  })[33m;[39m
+    [90m356| [39m})[33m;[39m
+
+[31m[2m⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[12/22]⎯[22m[39m
+
+[41m[1m FAIL [22m[49m src/babel/plugin.configProvider.test.ts[2m > [22mconfigProvider E2E - tw template literals[2m > [22mtransforms tw`` with config refs
+[31m[1mAssertionError[22m: expected 'import { StyleSheet } from "react-nat…' to contain '.generated.tailwind.config'[39m
+
+[32m- Expected[39m
+[31m+ Received[39m
+
+[32m- .generated.tailwind.config[39m
+[31m+ import { StyleSheet } from "react-native";[39m
+[31m+ import { __twConfig } from "../../../home/germinii/projects/react-native-tailwind.feat-init-only-config/my-provider";[39m
+[31m+ const _twStyles = StyleSheet.create({[39m
+[31m+   _bg_blue_500_p_4: {[39m
+[31m+     backgroundColor: __twConfig.theme.colors["blue-500"],[39m
+[31m+     padding: __twConfig.theme.spacing["4"][39m
+[31m+   }[39m
+[31m+ });[39m
+[31m+ const styles = {[39m
+[31m+   style: _twStyles._bg_blue_500_p_4[39m
+[31m+ };[39m
+
+[36m [2m❯[22m src/babel/plugin.configProvider.test.ts:[2m375:20[22m[39m
+    [90m373| [39m    [90m// Import injection[39m
+    [90m374| [39m    [34mexpect[39m(output)[33m.[39m[34mtoContain[39m([32m"__twConfig"[39m)[33m;[39m
+    [90m375| [39m    [34mexpect[39m(output)[33m.[39m[34mtoContain[39m([32m".generated.tailwind.config"[39m)[33m;[39m
+    [90m   | [39m                   [31m^[39m
+    [90m376| [39m    [34mexpect[39m(output)[33m.[39mnot[33m.[39m[34mtoContain[39m([32m"./my-provider"[39m)[33m;[39m
+    [90m377| [39m
+
+[31m[2m⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[13/22]⎯[22m[39m
+
+[41m[1m FAIL [22m[49m src/babel/plugin.configProvider.test.ts[2m > [22mconfigProvider E2E - tw template literals[2m > [22mtransforms twStyle() with config refs
+[31m[1mError[22m: Snapshot `configProvider E2E - tw template literals > transforms twStyle() with config refs 1` mismatched[39m
+
+[32m- Expected[39m
+[31m+ Received[39m
+
+[33m@@ -1,7 +1,7 @@[39m
+[2m  "import { StyleSheet } from "react-native";[22m
+[32m- import { __twConfig } from "./my-provider";[39m
+[31m+ import { __twConfig } from ".[7m./../../home/germinii/projects/react-native-tailwind.feat-init-only-config[27m/my-provider";[39m
+[2m  const _twStyles = StyleSheet.create({[22m
+[2m    _bg_red_500_m_2: {[22m
+[2m      backgroundColor: __twConfig.theme.colors["red-500"],[22m
+[2m      margin: __twConfig.theme.spacing["2"][22m
+[2m    }[22m
+
+[36m [2m❯[22m src/babel/plugin.configProvider.test.ts:[2m396:20[22m[39m
+    [90m394| [39m    [34mexpect[39m(output)[33m.[39m[34mtoContain[39m([32m'__twConfig.theme.spacing["2"]'[39m)[33m;[39m
+    [90m395| [39m
+    [90m396| [39m    [34mexpect[39m(output)[33m.[39m[34mtoMatchSnapshot[39m()[33m;[39m
+    [90m   | [39m                   [31m^[39m
+    [90m397| [39m  })[33m;[39m
+    [90m398| [39m
+
+[31m[2m⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[14/22]⎯[22m[39m
+
+[41m[1m FAIL [22m[49m src/babel/plugin.configProvider.test.ts[2m > [22mconfigProvider E2E - tw template literals[2m > [22mtransforms tw`` with state modifiers and config refs
+[31m[1mError[22m: Snapshot `configProvider E2E - tw template literals > transforms tw`` with state modifiers and config refs 1` mismatched[39m
+
+[32m- Expected[39m
+[31m+ Received[39m
+
+[33m@@ -1,7 +1,7 @@[39m
+[2m  "import { StyleSheet } from "react-native";[22m
+[32m- import { __twConfig } from "./my-provider";[39m
+[31m+ import { __twConfig } from ".[7m./../../home/germinii/projects/react-native-tailwind.feat-init-only-config[27m/my-provider";[39m
+[2m  const _twStyles = StyleSheet.create({[22m
+[2m    _bg_blue_500: {[22m
+[2m      backgroundColor: __twConfig.theme.colors["blue-500"][22m
+[2m    },[22m
+[2m    _active_bg_blue_700: {[22m
+
+[36m [2m❯[22m src/babel/plugin.configProvider.test.ts:[2m411:20[22m[39m
+    [90m409| [39m    [34mexpect[39m(output)[33m.[39m[34mtoContain[39m([32m'__twConfig.theme.colors["blue-700"]'[39m)[33m;[39m
+    [90m410| [39m
+    [90m411| [39m    [34mexpect[39m(output)[33m.[39m[34mtoMatchSnapshot[39m()[33m;[39m
+    [90m   | [39m                   [31m^[39m
+    [90m412| [39m  })[33m;[39m
+    [90m413| [39m})[33m;[39m
+
+[31m[2m⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[15/22]⎯[22m[39m
+
+[41m[1m FAIL [22m[49m src/babel/plugin.configProvider.test.ts[2m > [22mconfigProvider E2E - multiple components[2m > [22mtransforms multiple className attributes in same file
+[31m[1mError[22m: Snapshot `configProvider E2E - multiple components > transforms multiple className attributes in same file 1` mismatched[39m
+
+[32m- Expected[39m
+[31m+ Received[39m
+
+[33m@@ -1,7 +1,7 @@[39m
+[2m  "import { View, Text, StyleSheet } from 'react-native';[22m
+[32m- import { __twConfig } from "./my-provider";[39m
+[31m+ import { __twConfig } from ".[7m./../../home/germinii/projects/react-native-tailwind.feat-init-only-config[27m/my-provider";[39m
+[2m  const _twStyles = StyleSheet.create({[22m
+[2m    _bg_blue_500_p_4: {[22m
+[2m      backgroundColor: __twConfig.theme.colors["blue-500"],[22m
+[2m      padding: __twConfig.theme.spacing["4"][22m
+[2m    },[22m
+
+[36m [2m❯[22m src/babel/plugin.configProvider.test.ts:[2m442:20[22m[39m
+    [90m440| [39m    [34mexpect[39m(importMatches[33m.[39mlength)[33m.[39m[34mtoBe[39m([34m1[39m)[33m;[39m
+    [90m441| [39m
+    [90m442| [39m    [34mexpect[39m(output)[33m.[39m[34mtoMatchSnapshot[39m()[33m;[39m
+    [90m   | [39m                   [31m^[39m
+    [90m443| [39m  })[33m;[39m
+    [90m444| [39m
+
+[31m[2m⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[16/22]⎯[22m[39m
+
+[41m[1m FAIL [22m[49m src/babel/plugin.configProvider.test.ts[2m > [22mconfigProvider E2E - multiple components[2m > [22mtransforms multiple separate components in same file
+[31m[1mError[22m: Snapshot `configProvider E2E - multiple components > transforms multiple separate components in same file 1` mismatched[39m
+
+[32m- Expected[39m
+[31m+ Received[39m
+
+[33m@@ -1,7 +1,7 @@[39m
+[2m  "import { View, Text, StyleSheet } from 'react-native';[22m
+[32m- import { __twConfig } from "./theme";[39m
+[31m+ import { __twConfig } from ".[7m./../../home/germinii/projects/react-native-tailwind.feat-init-only-config[27m/theme";[39m
+[2m  const _twStyles = StyleSheet.create({[22m
+[2m    _bg_red_500_m_2: {[22m
+[2m      backgroundColor: __twConfig.theme.colors["red-500"],[22m
+[2m      margin: __twConfig.theme.spacing["2"][22m
+[2m    },[22m
+
+[36m [2m❯[22m src/babel/plugin.configProvider.test.ts:[2m470:20[22m[39m
+    [90m468| [39m    [34mexpect[39m(importMatches[33m.[39mlength)[33m.[39m[34mtoBe[39m([34m1[39m)[33m;[39m
+    [90m469| [39m
+    [90m470| [39m    [34mexpect[39m(output)[33m.[39m[34mtoMatchSnapshot[39m()[33m;[39m
+    [90m   | [39m                   [31m^[39m
+    [90m471| [39m  })[33m;[39m
+    [90m472| [39m
+
+[31m[2m⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[17/22]⎯[22m[39m
+
+[41m[1m FAIL [22m[49m src/babel/plugin.configProvider.test.ts[2m > [22mconfigProvider E2E - multiple components[2m > [22mtransforms mixed className and tw`` in same file
+[31m[1mError[22m: Snapshot `configProvider E2E - multiple components > transforms mixed className and tw`` in same file 1` mismatched[39m
+
+[32m- Expected[39m
+[31m+ Received[39m
+
+[33m@@ -1,7 +1,7 @@[39m
+[2m  "import { View, Text, StyleSheet } from 'react-native';[22m
+[32m- import { __twConfig } from "./my-provider";[39m
+[31m+ import { __twConfig } from ".[7m./../../home/germinii/projects/react-native-tailwind.feat-init-only-config[27m/my-provider";[39m
+[2m  const _twStyles = StyleSheet.create({[22m
+[2m    _bg_gray_100_p_4: {[22m
+[2m      backgroundColor: __twConfig.theme.colors["gray-100"],[22m
+[2m      padding: __twConfig.theme.spacing["4"][22m
+[2m    },[22m
+
+[36m [2m❯[22m src/babel/plugin.configProvider.test.ts:[2m501:20[22m[39m
+    [90m499| [39m    [34mexpect[39m(importMatches[33m.[39mlength)[33m.[39m[34mtoBe[39m([34m1[39m)[33m;[39m
+    [90m500| [39m
+    [90m501| [39m    [34mexpect[39m(output)[33m.[39m[34mtoMatchSnapshot[39m()[33m;[39m
+    [90m   | [39m                   [31m^[39m
+    [90m502| [39m  })[33m;[39m
+    [90m503| [39m})[33m;[39m
+
+[31m[2m⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[18/22]⎯[22m[39m
+
+[41m[1m FAIL [22m[49m src/babel/plugin.configProvider.test.ts[2m > [22mconfigProvider E2E - import path generation[2m > [22mgenerates correct import path from configProvider.importFrom
+[31m[1mAssertionError[22m: expected 'import { View, StyleSheet } from \'re…' to contain '.generated.tailwind.config'[39m
+
+[32m- Expected[39m
+[31m+ Received[39m
+
+[32m- .generated.tailwind.config[39m
+[31m+ import { View, StyleSheet } from 'react-native';[39m
+[31m+ import { __twConfig } from "../../../home/germinii/projects/react-native-tailwind.feat-init-only-config/my-custom-provider";[39m
+[31m+ const _twStyles = StyleSheet.create({[39m
+[31m+   _bg_blue_500: {[39m
+[31m+     backgroundColor: __twConfig.theme.colors["blue-500"][39m
+[31m+   }[39m
+[31m+ });[39m
+[31m+ export function Component() {[39m
+[31m+   return /*#__PURE__*/React.createElement(View, {[39m
+[31m+     style: _twStyles._bg_blue_500[39m
+[31m+   });[39m
+[31m+ }[39m
+
+[36m [2m❯[22m src/babel/plugin.configProvider.test.ts:[2m570:20[22m[39m
+    [90m568| [39m    [35mconst[39m output [33m=[39m [34mtransformWithConfig[39m(input[33m,[39m [32m"./my-custom-provider"[39m)[33m;[39m
+    [90m569| [39m
+    [90m570| [39m    [34mexpect[39m(output)[33m.[39m[34mtoContain[39m([32m".generated.tailwind.config"[39m)[33m;[39m
+    [90m   | [39m                   [31m^[39m
+    [90m571| [39m    [34mexpect[39m(output)[33m.[39mnot[33m.[39m[34mtoContain[39m([32m"./my-custom-provider"[39m)[33m;[39m
+    [90m572| [39m    [34mexpect[39m(output)[33m.[39m[34mtoContain[39m([32m"import { __twConfig }"[39m)[33m;[39m
+
+[31m[2m⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[19/22]⎯[22m[39m
+
+[41m[1m FAIL [22m[49m src/babel/plugin.configProvider.test.ts[2m > [22mconfigProvider E2E - import path generation[2m > [22muses __twConfig as the default import name
+[31m[1mError[22m: Snapshot `configProvider E2E - import path generation > uses __twConfig as the default import name 1` mismatched[39m
+
+[32m- Expected[39m
+[31m+ Received[39m
+
+[33m@@ -1,7 +1,7 @@[39m
+[2m  "import { View, StyleSheet } from 'react-native';[22m
+[32m- import { __twConfig } from "./provider";[39m
+[31m+ import { __twConfig } from ".[7m./../../home/germinii/projects/react-native-tailwind.feat-init-only-config[27m/provider";[39m
+[2m  const _twStyles = StyleSheet.create({[22m
+[2m    _bg_blue_500: {[22m
+[2m      backgroundColor: __twConfig.theme.colors["blue-500"][22m
+[2m    }[22m
+[2m  });[22m
+
+[36m [2m❯[22m src/babel/plugin.configProvider.test.ts:[2m593:20[22m[39m
+    [90m591| [39m    [34mexpect[39m(output)[33m.[39m[34mtoContain[39m([32m"__twConfig.theme.colors"[39m)[33m;[39m
+    [90m592| [39m
+    [90m593| [39m    [34mexpect[39m(output)[33m.[39m[34mtoMatchSnapshot[39m()[33m;[39m
+    [90m   | [39m                   [31m^[39m
+    [90m594| [39m  })[33m;[39m
+    [90m595| [39m})[33m;[39m
+
+[31m[2m⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[20/22]⎯[22m[39m
+
+[41m[1m FAIL [22m[49m src/babel/plugin.configProvider.test.ts[2m > [22mconfigProvider E2E - real-world scenarios[2m > [22mtransforms a complete card component with multiple theme categories
+[31m[1mError[22m: Snapshot `configProvider E2E - real-world scenarios > transforms a complete card component with multiple theme categories 1` mismatched[39m
+
+[32m- Expected[39m
+[31m+ Received[39m
+
+[33m@@ -1,7 +1,7 @@[39m
+[2m  "import { View, Text, StyleSheet } from 'react-native';[22m
+[32m- import { __twConfig } from "./my-theme";[39m
+[31m+ import { __twConfig } from ".[7m./../../home/germinii/projects/react-native-tailwind.feat-init-only-config[27m/my-theme";[39m
+[2m  const _twStyles = StyleSheet.create({[22m
+[2m    _bg_white_border_border_gray_200_m_2_p_4: {[22m
+[2m      backgroundColor: __twConfig.theme.colors.white,[22m
+[2m      padding: __twConfig.theme.spacing["4"],[22m
+[2m      margin: __twConfig.theme.spacing["2"],[22m
+
+[36m [2m❯[22m src/babel/plugin.configProvider.test.ts:[2m632:20[22m[39m
+    [90m630| [39m    [34mexpect[39m(output)[33m.[39m[34mtoContain[39m([32m"StyleSheet.create"[39m)[33m;[39m
+    [90m631| [39m
+    [90m632| [39m    [34mexpect[39m(output)[33m.[39m[34mtoMatchSnapshot[39m()[33m;[39m
+    [90m   | [39m                   [31m^[39m
+    [90m633| [39m  })[33m;[39m
+    [90m634| [39m
+
+[31m[2m⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[21/22]⎯[22m[39m
+
+[41m[1m FAIL [22m[49m src/babel/plugin.configProvider.test.ts[2m > [22mconfigProvider E2E - real-world scenarios[2m > [22mtransforms a theme-aware component with dark mode and platform modifiers
+[31m[1mError[22m: Snapshot `configProvider E2E - real-world scenarios > transforms a theme-aware component with dark mode and platform modifiers 1` mismatched[39m
+
+[32m- Expected[39m
+[31m+ Received[39m
+
+[33m@@ -1,7 +1,7 @@[39m
+[2m  "import { View, Text, StyleSheet, Platform, useColorScheme } from 'react-native';[22m
+[32m- import { __twConfig } from "./my-provider";[39m
+[31m+ import { __twConfig } from ".[7m./../../home/germinii/projects/react-native-tailwind.feat-init-only-config[27m/my-provider";[39m
+[2m  const _twStyles = StyleSheet.create({[22m
+[2m    _bg_white_p_4: {[22m
+[2m      backgroundColor: __twConfig.theme.colors.white,[22m
+[2m      padding: __twConfig.theme.spacing["4"][22m
+[2m    },[22m
+
+[36m [2m❯[22m src/babel/plugin.configProvider.test.ts:[2m669:20[22m[39m
+    [90m667| [39m    [34mexpect[39m(output)[33m.[39m[34mtoContain[39m([32m"useColorScheme"[39m)[33m;[39m
+    [90m668| [39m
+    [90m669| [39m    [34mexpect[39m(output)[33m.[39m[34mtoMatchSnapshot[39m()[33m;[39m
+    [90m   | [39m                   [31m^[39m
+    [90m670| [39m  })[33m;[39m
+    [90m671| [39m
+
+[31m[2m⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[22/22]⎯[22m[39m
+
+
+[2m  Snapshots [22m [1m[31m19 failed[39m[22m
+[2m            [22m [1m[33m3 obsolete[39m[22m
+[2m            [22m [90m↳[39m [2msrc/babel/[22m[1mplugin.configProvider[22m[2m.test.ts[22m
+[2m            [22m   [90m·[39m configProvider E2E - basic transforms > transforms className with color and spacing config refs 1
+[2m            [22m   [90m·[39m configProvider E2E - import path generation > generates correct import path from configProvider.importFrom 1
+[2m            [22m   [90m·[39m configProvider E2E - tw template literals > transforms tw`` with config refs 1
+
+[2m Test Files [22m [1m[31m1 failed[39m[22m[90m (1)[39m
+[2m      Tests [22m [1m[31m22 failed[39m[22m[2m | [22m[1m[32m7 passed[39m[22m[90m (29)[39m
+[2m   Start at [22m 15:58:58
+[2m   Duration [22m 1.24s[2m (transform 346ms, setup 46ms, import 501ms, tests 275ms, environment 0ms)[22m
+
+error: script "spec" exited with code 1
+error: script "test" exited with code 1

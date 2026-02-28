@@ -1,0 +1,23 @@
+TASK 10 QA: End-to-End Integration Tests
+=========================================
+Date: 2026-02-28
+Command: npx vitest run src/babel/plugin.configProvider.test.ts
+
+RESULT: ✅ PASS
+- 29 tests passed (0 failed)
+
+Test Coverage:
+- Basic transforms (4): color, spacing, fontSize, fontFamily, border color
+- Mixed refs & literals (4): theme refs vs built-in scales, arbitrary, opacity
+- Dark/light mode (4): dark: modifier, light: modifier, combined, scheme: expansion
+- Platform modifiers (3): ios:, android:, combined
+- tw`` template literals (3): tw``, twStyle(), state modifiers
+- Multiple components (3): nested, separate, mixed className + tw``
+- Negative cases (3): disabled configProvider, no theme classes, tw without configProvider
+- Import path (2): custom importFrom, default __twConfig name
+- Real-world scenarios (3): card component, theme-aware with dark+platform, conditional
+
+OUTPUT:
+  ✓ src/babel/plugin.configProvider.test.ts (29 tests) 238ms
+  Test Files: 1 passed (1)
+  Tests: 29 passed (29)

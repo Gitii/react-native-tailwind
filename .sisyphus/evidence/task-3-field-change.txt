@@ -1,0 +1,3 @@
+126:    if (state.generatedConfigPath) {
+127:      addConfigImport(path, state.generatedConfigPath, state.file.opts.filename ?? "", t);
+✓ configProviderImportFrom not found (expected)

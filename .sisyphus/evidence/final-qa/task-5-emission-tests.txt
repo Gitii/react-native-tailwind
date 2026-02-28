@@ -1,0 +1,16 @@
+TASK 5 QA: AST emission for config refs
+========================================
+Date: 2026-02-28
+Command: npx vitest run src/babel/utils/styleInjection.configRef.test.ts
+
+RESULT: ✅ PASS
+- 5 tests passed (0 failed)
+- Config-ref property emits __twConfig.theme.colors["blue-500"] MemberExpression
+- Non-ref property emits literal as before
+- Mixed style: some refs, some literals — both correct
+- Nested types bypass config refs and stay as valueToNode()
+
+OUTPUT:
+  ✓ src/babel/utils/styleInjection.configRef.test.ts (5 tests) 54ms
+  Test Files: 1 passed (1)
+  Tests: 5 passed (5)

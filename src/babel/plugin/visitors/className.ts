@@ -20,6 +20,7 @@ import { generateStyleKey } from "../../../utils/styleKey.js";
 import { getTargetStyleProp, isAttributeSupported } from "../../utils/attributeMatchers.js";
 import { processColorSchemeModifiers } from "../../utils/colorSchemeModifierProcessing.js";
 import { getComponentModifierSupport, getStatePropertyForModifier } from "../../utils/componentSupport.js";
+import { resolveConfigRefs } from "../../utils/configRefResolver.js";
 import { processDirectionalModifiers } from "../../utils/directionalModifierProcessing.js";
 import { processDynamicExpression } from "../../utils/dynamicProcessing.js";
 import { createStyleFunction, processStaticClassNameWithModifiers } from "../../utils/modifierProcessing.js";
@@ -42,6 +43,18 @@ import {
 } from "../../utils/windowDimensionsProcessing.js";
 import { findComponentScope } from "../componentScope.js";
 import type { PluginState } from "../state.js";
+
+/**
+ * Register config refs for a style key if configProvider is enabled.
+ * Must be called immediately after each styleRegistry.set() call.
+ */
+function registerConfigRefs(state: PluginState, styleKey: string, className: string): void {
+  if (!state.configProviderEnabled) return;
+  const refs = resolveConfigRefs(className, state.fullResolvedTheme);
+  if (refs.size > 0) {
+    state.configRefRegistry.set(styleKey, refs);
+  }
+}
 
 /**
  * JSXAttribute visitor
@@ -201,6 +214,7 @@ export function jsxAttributeVisitor(
 
           const baseStyleKey = generateStyleKey(baseClassName);
           state.styleRegistry.set(baseStyleKey, baseStyleObject);
+          registerConfigRefs(state, baseStyleKey, baseClassName);
           styleArrayElements.push(
             t.memberExpression(t.identifier(state.stylesIdentifier), t.identifier(baseStyleKey)),
           );
@@ -263,6 +277,7 @@ export function jsxAttributeVisitor(
           const modifierStyleObject = parseClassName(modifierClassNames, state.customTheme);
           const modifierStyleKey = generateStyleKey(`${modifierType}_${modifierClassNames}`);
           state.styleRegistry.set(modifierStyleKey, modifierStyleObject);
+          registerConfigRefs(state, modifierStyleKey, modifierClassNames);
 
           const stateProperty = getStatePropertyForModifier(modifierType);
           const conditionalExpression = t.logicalExpression(
@@ -315,6 +330,7 @@ export function jsxAttributeVisitor(
 
         const baseStyleKey = generateStyleKey(baseClassName);
         state.styleRegistry.set(baseStyleKey, baseStyleObject);
+        registerConfigRefs(state, baseStyleKey, baseClassName);
         styleExpressions.push(
           t.memberExpression(t.identifier(state.stylesIdentifier), t.identifier(baseStyleKey)),
         );
@@ -512,6 +528,7 @@ export function jsxAttributeVisitor(
         if (Object.keys(staticStyles).length > 0) {
           const styleKey = generateStyleKey(classNameForStyle);
           state.styleRegistry.set(styleKey, staticStyles);
+          registerConfigRefs(state, styleKey, classNameForStyle);
           styleExpressions.push(
             t.memberExpression(t.identifier(state.stylesIdentifier), t.identifier(styleKey)),
           );
@@ -577,6 +594,7 @@ export function jsxAttributeVisitor(
 
     const styleKey = generateStyleKey(classNameForStyle);
     state.styleRegistry.set(styleKey, styleObject);
+    registerConfigRefs(state, styleKey, classNameForStyle);
 
     // Check if there's already a style prop on this element
     const styleAttribute = findStyleAttribute(path, targetStyleProp, t);

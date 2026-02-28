@@ -1,6 +1,26 @@
 /* eslint-disable @typescript-eslint/no-empty-function */
 import { describe, expect, it, vi } from "vitest";
-import { transform } from "../../../../test/helpers/babelTransform.js";
+import { transform, transformWithConfig } from "../../../../test/helpers/babelTransform.js";
+import { extractCustomTheme } from "../../config-loader.js";
+
+vi.mock("../../config-loader.js", async () => {
+  const actual = await vi.importActual<typeof import("../../config-loader.js")>("../../config-loader.js");
+  return {
+    ...actual,
+    findTailwindConfig: vi.fn(() => "/mock/project/tailwind.config.ts"),
+    extractCustomTheme: vi.fn(actual.extractCustomTheme),
+  };
+});
+
+vi.mock("../../utils/configModuleGenerator.js", async () => {
+  const actual = await vi.importActual<typeof import("../../utils/configModuleGenerator.js")>(
+    "../../utils/configModuleGenerator.js",
+  );
+  return {
+    ...actual,
+    writeConfigModule: vi.fn(),
+  };
+});
 
 describe("className visitor - basic transformation", () => {
   it("should still transform className props", () => {
@@ -1619,5 +1639,149 @@ describe("className visitor - directional modifiers (RTL/LTR)", () => {
     // text-end expands to ltr:text-right rtl:text-left
     expect(output).toContain("_ltr_text_right");
     expect(output).toContain("_rtl_text_left");
+  });
+});
+
+describe("className visitor - configProvider config refs", () => {
+  it("should emit config refs for theme-derived color and spacing values", () => {
+    const input = `
+      import { View } from 'react-native';
+      export function Component() {
+        return <View className="bg-blue-500 p-4" />;
+      }
+    `;
+
+    const output = transformWithConfig(input, "./my-provider");
+
+    // Should have config ref for color
+    expect(output).toContain('__twConfig.theme.colors["blue-500"]');
+    // Should have config ref for spacing
+    expect(output).toContain('__twConfig.theme.spacing["4"]');
+    // Should import __twConfig
+    expect(output).toContain("__twConfig");
+  });
+
+  it("should emit config refs for dark: and preserve dark conditional structure", () => {
+    const input = `
+      import { View } from 'react-native';
+      export function Component() {
+        return <View className="bg-white dark:bg-gray-900" />;
+      }
+    `;
+
+    const output = transformWithConfig(input, "./my-provider");
+
+    expect(output).toMatch(/__twConfig\.theme\.colors(?:\.white|\["white"\])/);
+    expect(output).toContain('__twConfig.theme.colors["gray-900"]');
+    expect(output).toMatch(/_twColorScheme\s*===\s*['"]dark['"]\s*&&\s*_twStyles\._dark_bg_gray_900/);
+    expect(output).toContain("useColorScheme");
+    expect(output).toContain("useColorScheme()");
+  });
+
+  it("should emit config refs for light: and preserve light conditional structure", () => {
+    const input = `
+      import { Text } from 'react-native';
+      export function Component() {
+        return <Text className="light:text-white" />;
+      }
+    `;
+
+    const output = transformWithConfig(input, "./my-provider");
+
+    expect(output).toMatch(/__twConfig\.theme\.colors(?:\.white|\["white"\])/);
+    expect(output).toMatch(/_twColorScheme\s*===\s*['"]light['"]\s*&&\s*_twStyles\._light_text_white/);
+    expect(output).toContain("useColorScheme");
+    expect(output).toContain("useColorScheme()");
+  });
+
+  it("should emit config refs for scheme: expansions in both dark and light branches", () => {
+    vi.mocked(extractCustomTheme).mockReturnValue({
+      colors: {
+        "primary-dark": "#111111",
+        "primary-light": "#f8f8f8",
+      },
+      fontFamily: {},
+      fontSize: {},
+      spacing: {},
+    });
+
+    try {
+      const input = `
+        import { View } from 'react-native';
+        export function Component() {
+          return <View className="scheme:bg-primary" />;
+        }
+      `;
+
+      const output = transformWithConfig(input, "./my-provider");
+
+      expect(output).toContain('__twConfig.theme.colors["primary-dark"]');
+      expect(output).toContain('__twConfig.theme.colors["primary-light"]');
+      expect(output).toMatch(/_twColorScheme\s*===\s*['"]dark['"]\s*&&\s*_twStyles\._dark_bg_primary_dark/);
+      expect(output).toMatch(/_twColorScheme\s*===\s*['"]light['"]\s*&&\s*_twStyles\._light_bg_primary_light/);
+      expect(output).toContain("useColorScheme");
+      expect(output).toContain("useColorScheme()");
+    } finally {
+      vi.mocked(extractCustomTheme).mockRestore();
+    }
+  });
+
+  it("should keep arbitrary values as literals", () => {
+    const input = `
+      import { View } from 'react-native';
+      export function Component() {
+        return <View className="bg-[#ff0000]" />;
+      }
+    `;
+
+    const output = transformWithConfig(input, "./my-provider");
+
+    // Arbitrary values should stay literal
+    expect(output).toContain('"#ff0000"');
+    // Should NOT have config ref for arbitrary values
+    expect(output).not.toContain("__twConfig.theme.colors");
+  });
+
+  it("should keep opacity-modified values as literals", () => {
+    const input = `
+      import { View } from 'react-native';
+      export function Component() {
+        return <View className="bg-blue-500/50" />;
+      }
+    `;
+
+    const output = transformWithConfig(input, "./my-provider");
+
+    // Opacity-modified values should stay literal (8-digit hex)
+    expect(output).not.toContain("__twConfig.theme.colors");
+  });
+
+  it("should keep non-theme properties as literals", () => {
+    const input = `
+      import { View } from 'react-native';
+      export function Component() {
+        return <View className="rounded-lg" />;
+      }
+    `;
+
+    const output = transformWithConfig(input, "./my-provider");
+
+    // borderRadius is not in the theme, should be literal
+    expect(output).toContain("8");
+    expect(output).not.toContain("__twConfig");
+  });
+
+  it("should not emit config refs when configProvider is not enabled", () => {
+    const input = `
+      import { View } from 'react-native';
+      export function Component() {
+        return <View className="bg-blue-500 p-4" />;
+      }
+    `;
+
+    const output = transform(input, undefined, true);
+
+    // Without configProvider, should NOT have config refs
+    expect(output).not.toContain("__twConfig");
   });
 });

@@ -1,0 +1,17 @@
+TASK 9 QA: Dark/light mode with config refs
+=============================================
+Date: 2026-02-28
+Evidence from cross-task integration test + E2E tests
+
+RESULT: ✅ PASS
+- Dark mode: bg-white dark:bg-gray-900 → both use config refs
+  - __twConfig.theme.colors.white (base)
+  - __twConfig.theme.colors["gray-900"] (dark conditional)
+- Conditional structure preserved: _twColorScheme === "dark"
+- useColorScheme hook still injected
+- All existing dark/light mode tests pass (included in className.test.ts 73 pass)
+
+Verified via:
+- className.test.ts: 73 passed, 1 skipped
+- plugin.configProvider.test.ts: 29 passed (includes 4 dark/light mode scenarios)
+- final-qa-integration.test.ts: Test 2 dark mode + config refs PASSED

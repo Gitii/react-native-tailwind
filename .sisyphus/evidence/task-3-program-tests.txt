@@ -1,0 +1,2 @@
+✓ All 21 program visitor tests PASSED
+Test file: src/babel/plugin/visitors/program.test.ts

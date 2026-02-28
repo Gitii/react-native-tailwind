@@ -1,0 +1,35 @@
+CROSS-TASK INTEGRATION TESTS
+=============================
+Date: 2026-02-28
+Method: Direct transform tests via final-qa-integration.test.ts (13 tests)
+
+RESULT: ✅ ALL 4 INTEGRATION TESTS PASS
+
+Test 1: Full Pipeline (option → resolver → emission → import)
+  Input: <View className="bg-blue-500 p-4 text-white" /> with configProvider
+  ✅ __twConfig.theme.colors["blue-500"] present
+  ✅ __twConfig.theme.spacing["4"] present
+  ✅ __twConfig.theme.colors.white present (dot access for single-word keys)
+  ✅ import { __twConfig } from "./provider" injected
+  ✅ StyleSheet.create structure preserved
+
+Test 2: Dark Mode + Config Refs
+  Input: <View className="bg-white dark:bg-gray-900" /> with configProvider
+  ✅ __twConfig.theme.colors.white present (base style)
+  ✅ __twConfig.theme.colors["gray-900"] present (dark conditional)
+  ✅ _twColorScheme === "dark" conditional preserved
+  ✅ import { __twConfig } injected
+
+Test 3: Platform Modifiers + Config Refs
+  Input: <View className="p-4 ios:p-6 android:p-8" /> with configProvider
+  ✅ __twConfig.theme.spacing["4"] (base)
+  ✅ __twConfig.theme.spacing["6"] (ios)
+  ✅ __twConfig.theme.spacing["8"] (android)
+  ✅ Platform.select structure preserved
+  ✅ import { __twConfig } injected
+
+Test 4: Mixed tw`` + className
+  Input: tw`bg-blue-500` + className="p-4" with configProvider
+  ✅ __twConfig.theme.colors["blue-500"] (tw ref)
+  ✅ __twConfig.theme.spacing["4"] (className ref)
+  ✅ Single import { __twConfig } (deduplicated)

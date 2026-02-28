@@ -5,6 +5,8 @@
 
 import type { PluginObj } from "@babel/core";
 import * as BabelTypes from "@babel/types";
+import { dirname } from "node:path";
+import { findTailwindConfig } from "./config-loader.js";
 import { isComponentScope } from "./plugin/componentScope.js";
 import type { PluginOptions, PluginState } from "./plugin/state.js";
 import { createInitialState } from "./plugin/state.js";
@@ -12,6 +14,11 @@ import { jsxAttributeVisitor } from "./plugin/visitors/className.js";
 import { importDeclarationVisitor } from "./plugin/visitors/imports.js";
 import { programEnter, programExit } from "./plugin/visitors/program.js";
 import { callExpressionVisitor, taggedTemplateVisitor } from "./plugin/visitors/tw.js";
+import {
+  generateConfigModule,
+  getConfigModulePath,
+  writeConfigModule,
+} from "./utils/configModuleGenerator.js";
 import { scanForColorSchemeModifiers } from "./utils/preInjection.js";
 import { injectColorSchemeHook } from "./utils/styleInjection.js";
 
@@ -32,6 +39,19 @@ export default function reactNativeTailwindBabelPlugin(
     lightSuffix: options?.schemeModifier?.lightSuffix ?? "-light",
   };
 
+  // Config provider configuration from plugin options
+  const configProviderImportFrom = options?.configProvider?.importFrom ?? "";
+  const configProviderImportName = options?.configProvider?.importName ?? "provideConfig";
+  const generatedConfigPaths = new Set<string>();
+
+  // Warn if configProvider is present but importFrom is missing
+  if (options?.configProvider && !configProviderImportFrom) {
+    console.warn(
+      "[react-native-tailwind] configProvider option detected but importFrom is missing. " +
+        "Config provider feature will be disabled.",
+    );
+  }
+
   return {
     name: "react-native-tailwind",
 
@@ -45,8 +65,31 @@ export default function reactNativeTailwindBabelPlugin(
             colorSchemeImportSource,
             colorSchemeHookName,
             schemeModifierConfig,
+            configProviderImportFrom,
+            configProviderImportName,
           );
           Object.assign(state, initialState);
+
+          if (state.configProviderEnabled) {
+            const tailwindConfigPath = findTailwindConfig(dirname(state.file.opts.filename ?? ""));
+            if (tailwindConfigPath) {
+              const genPath = getConfigModulePath(tailwindConfigPath);
+              if (!generatedConfigPaths.has(genPath)) {
+                const content = generateConfigModule(
+                  state.fullResolvedTheme,
+                  state.configProviderImportFrom,
+                  state.configProviderImportName,
+                );
+                writeConfigModule(genPath, content);
+                generatedConfigPaths.add(genPath);
+              }
+              state.generatedConfigPath = genPath;
+            } else {
+              console.warn(
+                "[react-native-tailwind] No tailwind.config.* found. Config provider feature requires a tailwind config file.",
+              );
+            }
+          }
 
           // Pre-traverse: inject color scheme hooks BEFORE React Compiler's
           // analysis phase. React Compiler captures reactive dependencies during

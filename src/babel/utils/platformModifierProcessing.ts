@@ -5,6 +5,8 @@
 import type * as BabelTypes from "@babel/types";
 import type { CustomTheme, ParsedModifier, PlatformModifierType } from "../../parser/index.js";
 import type { StyleObject } from "../../types/core.js";
+import type { FullResolvedTheme } from "./configRefResolver.js";
+import { resolveConfigRefs } from "./configRefResolver.js";
 import { hasRuntimeDimensions } from "./windowDimensionsProcessing.js";
 
 /**
@@ -16,6 +18,21 @@ export interface PlatformModifierProcessingState {
   customTheme: CustomTheme;
   stylesIdentifier: string;
   needsPlatformImport: boolean;
+  configProviderEnabled?: boolean;
+  configRefRegistry?: Map<string, Map<string, string[]>>;
+  fullResolvedTheme?: FullResolvedTheme;
+}
+
+function registerConfigRefs(
+  state: PlatformModifierProcessingState,
+  styleKey: string,
+  className: string,
+): void {
+  if (!state.configProviderEnabled || !state.configRefRegistry || !state.fullResolvedTheme) return;
+  const refs = resolveConfigRefs(className, state.fullResolvedTheme);
+  if (refs.size > 0) {
+    state.configRefRegistry.set(styleKey, refs);
+  }
 }
 
 /**
@@ -77,6 +94,7 @@ export function processPlatformModifiers(
 
     // Register style in the registry
     state.styleRegistry.set(styleKey, styleObject);
+    registerConfigRefs(state, styleKey, classNames);
 
     // Create property: ios: styles._ios_shadow_lg
     const styleReference = t.memberExpression(t.identifier(state.stylesIdentifier), t.identifier(styleKey));

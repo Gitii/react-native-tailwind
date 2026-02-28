@@ -1,0 +1,972 @@
+$ bun run lint && bun run check && bun run spec src/babel/plugin.configProvider.test.ts
+$ eslint src/
+
+/home/germinii/projects/react-native-tailwind.feat-init-only-config/src/babel/plugin/visitors/className.test.ts
+  343:6  warning  Disabled test - if you want to skip a test temporarily, use .todo() instead  vitest/no-disabled-tests
+
+✖ 1 problem (0 errors, 1 warning)
+
+$ tsc --noEmit
+$ vitest --run --coverage src/babel/plugin.configProvider.test.ts
+
+[1m[46m RUN [49m[22m [36mv4.0.18 [39m[90m/home/germinii/projects/react-native-tailwind.feat-init-only-config[39m
+      [2mCoverage enabled with [22m[33mv8[39m
+
+ [31m❯[39m src/babel/plugin.configProvider.test.ts [2m([22m[2m29 tests[22m[2m | [22m[31m27 failed[39m[2m)[22m[33m 334[2mms[22m[39m
+[31m     [31m×[31m transforms className with color and spacing config refs[39m[32m 127[2mms[22m[39m
+[31m     [31m×[31m transforms className with fontSize config refs[39m[32m 8[2mms[22m[39m
+[31m     [31m×[31m transforms className with fontFamily config refs[39m[32m 6[2mms[22m[39m
+[31m     [31m×[31m transforms border color config refs[39m[32m 8[2mms[22m[39m
+[31m     [31m×[31m uses config refs for theme values and literals for built-in scales[39m[32m 5[2mms[22m[39m
+[31m     [31m×[31m keeps arbitrary values as literals[39m[32m 5[2mms[22m[39m
+[31m     [31m×[31m keeps opacity-modified values as literals[39m[32m 7[2mms[22m[39m
+[31m     [31m×[31m keeps non-theme properties as literals[39m[32m 6[2mms[22m[39m
+[31m     [31m×[31m transforms dark: modifier with config refs and conditional structure[39m[32m 6[2mms[22m[39m
+[31m     [31m×[31m transforms light: modifier with config refs[39m[32m 5[2mms[22m[39m
+[31m     [31m×[31m transforms combined dark: and light: modifiers[39m[32m 8[2mms[22m[39m
+[31m     [31m×[31m transforms scheme: modifier with config refs in both branches[39m[32m 6[2mms[22m[39m
+[31m     [31m×[31m transforms ios: modifier with config refs[39m[32m 6[2mms[22m[39m
+[31m     [31m×[31m transforms android: modifier with config refs[39m[32m 7[2mms[22m[39m
+[31m     [31m×[31m transforms combined ios: and android: modifiers with config refs[39m[32m 7[2mms[22m[39m
+[31m     [31m×[31m transforms tw`` with config refs[39m[32m 8[2mms[22m[39m
+[31m     [31m×[31m transforms twStyle() with config refs[39m[32m 4[2mms[22m[39m
+[31m     [31m×[31m transforms tw`` with state modifiers and config refs[39m[32m 3[2mms[22m[39m
+[31m     [31m×[31m transforms multiple className attributes in same file[39m[32m 8[2mms[22m[39m
+[31m     [31m×[31m transforms multiple separate components in same file[39m[32m 5[2mms[22m[39m
+[31m     [31m×[31m transforms mixed className and tw`` in same file[39m[32m 14[2mms[22m[39m
+     [32m✓[39m does not inject __twConfig when configProvider is disabled[32m 27[2mms[22m[39m
+[31m     [31m×[31m does not inject __twConfig when no theme-resolvable classes are used[39m[32m 5[2mms[22m[39m
+     [32m✓[39m does not inject __twConfig for tw when configProvider is disabled[32m 10[2mms[22m[39m
+[31m     [31m×[31m generates correct import path from configProvider.importFrom[39m[32m 7[2mms[22m[39m
+[31m     [31m×[31m uses __twConfig as the default import name[39m[32m 7[2mms[22m[39m
+[31m     [31m×[31m transforms a complete card component with multiple theme categories[39m[32m 7[2mms[22m[39m
+[31m     [31m×[31m transforms a theme-aware component with dark mode and platform modifiers[39m[32m 5[2mms[22m[39m
+[31m     [31m×[31m transforms conditional className (ternary) with literal values[39m[32m 5[2mms[22m[39m
+
+[31m⎯⎯⎯⎯⎯⎯[39m[1m[41m Failed Tests 27 [49m[22m[31m⎯⎯⎯⎯⎯⎯⎯[39m
+
+[41m[1m FAIL [22m[49m src/babel/plugin.configProvider.test.ts[2m > [22mconfigProvider E2E - basic transforms[2m > [22mtransforms className with color and spacing config refs
+[31m[1mError[22m: /mock/project/src/test.tsx: [react-native-tailwind] Failed to write generated config module at /mock/project/.generated.tailwind.config.js: Error: ENOENT: no such file or directory, open '/mock/project/.generated.tailwind.config.js'[39m
+[36m [2m❯[22m writeConfigModule src/babel/utils/configModuleGenerator.ts:[2m110:11[22m[39m
+    [90m108| [39m    fs[33m.[39m[34mwriteFileSync[39m(outputPath[33m,[39m content[33m,[39m [32m"utf8"[39m)[33m;[39m
+    [90m109| [39m  } [35mcatch[39m (error) {
+    [90m110| [39m    [35mthrow[39m [35mnew[39m [33mError[39m(
+    [90m   | [39m          [31m^[39m
+    [90m111| [39m      `[react-native-tailwind] Failed to write generated config module…
+    [90m112| [39m    )[33m;[39m
+[90m [2m❯[22m PluginPass.enter src/babel/plugin.ts:[2m83:17[22m[39m
+[90m [2m❯[22m newFn node_modules/@babel/traverse/lib/visitors.js:[2m168:14[22m[39m
+[90m [2m❯[22m NodePath._call node_modules/@babel/traverse/lib/path/context.js:[2m50:20[22m[39m
+[90m [2m❯[22m NodePath.call node_modules/@babel/traverse/lib/path/context.js:[2m40:18[22m[39m
+[90m [2m❯[22m NodePath.visit node_modules/@babel/traverse/lib/path/context.js:[2m87:31[22m[39m
+[90m [2m❯[22m TraversalContext.visitQueue node_modules/@babel/traverse/lib/context.js:[2m96:16[22m[39m
+[90m [2m❯[22m TraversalContext.visitSingle node_modules/@babel/traverse/lib/context.js:[2m72:19[22m[39m
+[90m [2m❯[22m TraversalContext.visit node_modules/@babel/traverse/lib/context.js:[2m119:19[22m[39m
+[90m [2m❯[22m traverseNode node_modules/@babel/traverse/lib/traverse-node.js:[2m130:17[22m[39m
+[90m [2m❯[22m traverse node_modules/@babel/traverse/lib/index.js:[2m53:34[22m[39m
+[90m [2m❯[22m transformFile node_modules/@babel/core/lib/transformation/index.js:[2m79:29[22m[39m
+[90m [2m❯[22m run node_modules/@babel/core/lib/transformation/index.js:[2m25:12[22m[39m
+[90m [2m❯[22m transform node_modules/@babel/core/lib/transform.js:[2m22:33[22m[39m
+[90m [2m❯[22m evaluateSync node_modules/gensync/index.js:[2m251:28[22m[39m
+[90m [2m❯[22m sync node_modules/gensync/index.js:[2m89:14[22m[39m
+[90m [2m❯[22m stopHiding - secret - don't use this - v1 node_modules/@babel/core/lib/errors/rewrite-stack-trace.js:[2m47:12[22m[39m
+[90m [2m❯[22m transformSync node_modules/@babel/core/lib/transform.js:[2m40:76[22m[39m
+[90m [2m❯[22m transform test/helpers/babelTransform.ts:[2m38:18[22m[39m
+[90m [2m❯[22m Module.transformWithConfig test/helpers/babelTransform.ts:[2m69:10[22m[39m
+[90m [2m❯[22m transformWithConfig src/babel/plugin.configProvider.test.ts:[2m26:10[22m[39m
+[90m [2m❯[22m src/babel/plugin.configProvider.test.ts:[2m48:20[22m[39m
+
+[31m[2m⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/27]⎯[22m[39m
+
+[41m[1m FAIL [22m[49m src/babel/plugin.configProvider.test.ts[2m > [22mconfigProvider E2E - basic transforms[2m > [22mtransforms className with fontSize config refs
+[31m[1mError[22m: /mock/project/src/test.tsx: [react-native-tailwind] Failed to write generated config module at /mock/project/.generated.tailwind.config.js: Error: ENOENT: no such file or directory, open '/mock/project/.generated.tailwind.config.js'[39m
+[36m [2m❯[22m writeConfigModule src/babel/utils/configModuleGenerator.ts:[2m110:11[22m[39m
+    [90m108| [39m    fs[33m.[39m[34mwriteFileSync[39m(outputPath[33m,[39m content[33m,[39m [32m"utf8"[39m)[33m;[39m
+    [90m109| [39m  } [35mcatch[39m (error) {
+    [90m110| [39m    [35mthrow[39m [35mnew[39m [33mError[39m(
+    [90m   | [39m          [31m^[39m
+    [90m111| [39m      `[react-native-tailwind] Failed to write generated config module…
+    [90m112| [39m    )[33m;[39m
+[90m [2m❯[22m PluginPass.enter src/babel/plugin.ts:[2m83:17[22m[39m
+[90m [2m❯[22m newFn node_modules/@babel/traverse/lib/visitors.js:[2m168:14[22m[39m
+[90m [2m❯[22m NodePath._call node_modules/@babel/traverse/lib/path/context.js:[2m50:20[22m[39m
+[90m [2m❯[22m NodePath.call node_modules/@babel/traverse/lib/path/context.js:[2m40:18[22m[39m
+[90m [2m❯[22m NodePath.visit node_modules/@babel/traverse/lib/path/context.js:[2m87:31[22m[39m
+[90m [2m❯[22m TraversalContext.visitQueue node_modules/@babel/traverse/lib/context.js:[2m96:16[22m[39m
+[90m [2m❯[22m TraversalContext.visitSingle node_modules/@babel/traverse/lib/context.js:[2m72:19[22m[39m
+[90m [2m❯[22m TraversalContext.visit node_modules/@babel/traverse/lib/context.js:[2m119:19[22m[39m
+[90m [2m❯[22m traverseNode node_modules/@babel/traverse/lib/traverse-node.js:[2m130:17[22m[39m
+[90m [2m❯[22m traverse node_modules/@babel/traverse/lib/index.js:[2m53:34[22m[39m
+[90m [2m❯[22m transformFile node_modules/@babel/core/lib/transformation/index.js:[2m79:29[22m[39m
+[90m [2m❯[22m run node_modules/@babel/core/lib/transformation/index.js:[2m25:12[22m[39m
+[90m [2m❯[22m transform node_modules/@babel/core/lib/transform.js:[2m22:33[22m[39m
+[90m [2m❯[22m evaluateSync node_modules/gensync/index.js:[2m251:28[22m[39m
+[90m [2m❯[22m sync node_modules/gensync/index.js:[2m89:14[22m[39m
+[90m [2m❯[22m stopHiding - secret - don't use this - v1 node_modules/@babel/core/lib/errors/rewrite-stack-trace.js:[2m47:12[22m[39m
+[90m [2m❯[22m transformSync node_modules/@babel/core/lib/transform.js:[2m40:76[22m[39m
+[90m [2m❯[22m transform test/helpers/babelTransform.ts:[2m38:18[22m[39m
+[90m [2m❯[22m Module.transformWithConfig test/helpers/babelTransform.ts:[2m69:10[22m[39m
+[90m [2m❯[22m transformWithConfig src/babel/plugin.configProvider.test.ts:[2m26:10[22m[39m
+[90m [2m❯[22m src/babel/plugin.configProvider.test.ts:[2m74:20[22m[39m
+
+[31m[2m⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[2/27]⎯[22m[39m
+
+[41m[1m FAIL [22m[49m src/babel/plugin.configProvider.test.ts[2m > [22mconfigProvider E2E - basic transforms[2m > [22mtransforms className with fontFamily config refs
+[31m[1mError[22m: /mock/project/src/test.tsx: [react-native-tailwind] Failed to write generated config module at /mock/project/.generated.tailwind.config.js: Error: ENOENT: no such file or directory, open '/mock/project/.generated.tailwind.config.js'[39m
+[36m [2m❯[22m writeConfigModule src/babel/utils/configModuleGenerator.ts:[2m110:11[22m[39m
+    [90m108| [39m    fs[33m.[39m[34mwriteFileSync[39m(outputPath[33m,[39m content[33m,[39m [32m"utf8"[39m)[33m;[39m
+    [90m109| [39m  } [35mcatch[39m (error) {
+    [90m110| [39m    [35mthrow[39m [35mnew[39m [33mError[39m(
+    [90m   | [39m          [31m^[39m
+    [90m111| [39m      `[react-native-tailwind] Failed to write generated config module…
+    [90m112| [39m    )[33m;[39m
+[90m [2m❯[22m PluginPass.enter src/babel/plugin.ts:[2m83:17[22m[39m
+[90m [2m❯[22m newFn node_modules/@babel/traverse/lib/visitors.js:[2m168:14[22m[39m
+[90m [2m❯[22m NodePath._call node_modules/@babel/traverse/lib/path/context.js:[2m50:20[22m[39m
+[90m [2m❯[22m NodePath.call node_modules/@babel/traverse/lib/path/context.js:[2m40:18[22m[39m
+[90m [2m❯[22m NodePath.visit node_modules/@babel/traverse/lib/path/context.js:[2m87:31[22m[39m
+[90m [2m❯[22m TraversalContext.visitQueue node_modules/@babel/traverse/lib/context.js:[2m96:16[22m[39m
+[90m [2m❯[22m TraversalContext.visitSingle node_modules/@babel/traverse/lib/context.js:[2m72:19[22m[39m
+[90m [2m❯[22m TraversalContext.visit node_modules/@babel/traverse/lib/context.js:[2m119:19[22m[39m
+[90m [2m❯[22m traverseNode node_modules/@babel/traverse/lib/traverse-node.js:[2m130:17[22m[39m
+[90m [2m❯[22m traverse node_modules/@babel/traverse/lib/index.js:[2m53:34[22m[39m
+[90m [2m❯[22m transformFile node_modules/@babel/core/lib/transformation/index.js:[2m79:29[22m[39m
+[90m [2m❯[22m run node_modules/@babel/core/lib/transformation/index.js:[2m25:12[22m[39m
+[90m [2m❯[22m transform node_modules/@babel/core/lib/transform.js:[2m22:33[22m[39m
+[90m [2m❯[22m evaluateSync node_modules/gensync/index.js:[2m251:28[22m[39m
+[90m [2m❯[22m sync node_modules/gensync/index.js:[2m89:14[22m[39m
+[90m [2m❯[22m stopHiding - secret - don't use this - v1 node_modules/@babel/core/lib/errors/rewrite-stack-trace.js:[2m47:12[22m[39m
+[90m [2m❯[22m transformSync node_modules/@babel/core/lib/transform.js:[2m40:76[22m[39m
+[90m [2m❯[22m transform test/helpers/babelTransform.ts:[2m38:18[22m[39m
+[90m [2m❯[22m Module.transformWithConfig test/helpers/babelTransform.ts:[2m69:10[22m[39m
+[90m [2m❯[22m transformWithConfig src/babel/plugin.configProvider.test.ts:[2m26:10[22m[39m
+[90m [2m❯[22m src/babel/plugin.configProvider.test.ts:[2m90:20[22m[39m
+
+[31m[2m⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[3/27]⎯[22m[39m
+
+[41m[1m FAIL [22m[49m src/babel/plugin.configProvider.test.ts[2m > [22mconfigProvider E2E - basic transforms[2m > [22mtransforms border color config refs
+[31m[1mError[22m: /mock/project/src/test.tsx: [react-native-tailwind] Failed to write generated config module at /mock/project/.generated.tailwind.config.js: Error: ENOENT: no such file or directory, open '/mock/project/.generated.tailwind.config.js'[39m
+[36m [2m❯[22m writeConfigModule src/babel/utils/configModuleGenerator.ts:[2m110:11[22m[39m
+    [90m108| [39m    fs[33m.[39m[34mwriteFileSync[39m(outputPath[33m,[39m content[33m,[39m [32m"utf8"[39m)[33m;[39m
+    [90m109| [39m  } [35mcatch[39m (error) {
+    [90m110| [39m    [35mthrow[39m [35mnew[39m [33mError[39m(
+    [90m   | [39m          [31m^[39m
+    [90m111| [39m      `[react-native-tailwind] Failed to write generated config module…
+    [90m112| [39m    )[33m;[39m
+[90m [2m❯[22m PluginPass.enter src/babel/plugin.ts:[2m83:17[22m[39m
+[90m [2m❯[22m newFn node_modules/@babel/traverse/lib/visitors.js:[2m168:14[22m[39m
+[90m [2m❯[22m NodePath._call node_modules/@babel/traverse/lib/path/context.js:[2m50:20[22m[39m
+[90m [2m❯[22m NodePath.call node_modules/@babel/traverse/lib/path/context.js:[2m40:18[22m[39m
+[90m [2m❯[22m NodePath.visit node_modules/@babel/traverse/lib/path/context.js:[2m87:31[22m[39m
+[90m [2m❯[22m TraversalContext.visitQueue node_modules/@babel/traverse/lib/context.js:[2m96:16[22m[39m
+[90m [2m❯[22m TraversalContext.visitSingle node_modules/@babel/traverse/lib/context.js:[2m72:19[22m[39m
+[90m [2m❯[22m TraversalContext.visit node_modules/@babel/traverse/lib/context.js:[2m119:19[22m[39m
+[90m [2m❯[22m traverseNode node_modules/@babel/traverse/lib/traverse-node.js:[2m130:17[22m[39m
+[90m [2m❯[22m traverse node_modules/@babel/traverse/lib/index.js:[2m53:34[22m[39m
+[90m [2m❯[22m transformFile node_modules/@babel/core/lib/transformation/index.js:[2m79:29[22m[39m
+[90m [2m❯[22m run node_modules/@babel/core/lib/transformation/index.js:[2m25:12[22m[39m
+[90m [2m❯[22m transform node_modules/@babel/core/lib/transform.js:[2m22:33[22m[39m
+[90m [2m❯[22m evaluateSync node_modules/gensync/index.js:[2m251:28[22m[39m
+[90m [2m❯[22m sync node_modules/gensync/index.js:[2m89:14[22m[39m
+[90m [2m❯[22m stopHiding - secret - don't use this - v1 node_modules/@babel/core/lib/errors/rewrite-stack-trace.js:[2m47:12[22m[39m
+[90m [2m❯[22m transformSync node_modules/@babel/core/lib/transform.js:[2m40:76[22m[39m
+[90m [2m❯[22m transform test/helpers/babelTransform.ts:[2m38:18[22m[39m
+[90m [2m❯[22m Module.transformWithConfig test/helpers/babelTransform.ts:[2m69:10[22m[39m
+[90m [2m❯[22m transformWithConfig src/babel/plugin.configProvider.test.ts:[2m26:10[22m[39m
+[90m [2m❯[22m src/babel/plugin.configProvider.test.ts:[2m106:20[22m[39m
+
+[31m[2m⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[4/27]⎯[22m[39m
+
+[41m[1m FAIL [22m[49m src/babel/plugin.configProvider.test.ts[2m > [22mconfigProvider E2E - mixed refs and literals[2m > [22muses config refs for theme values and literals for built-in scales
+[31m[1mError[22m: /mock/project/src/test.tsx: [react-native-tailwind] Failed to write generated config module at /mock/project/.generated.tailwind.config.js: Error: ENOENT: no such file or directory, open '/mock/project/.generated.tailwind.config.js'[39m
+[36m [2m❯[22m writeConfigModule src/babel/utils/configModuleGenerator.ts:[2m110:11[22m[39m
+    [90m108| [39m    fs[33m.[39m[34mwriteFileSync[39m(outputPath[33m,[39m content[33m,[39m [32m"utf8"[39m)[33m;[39m
+    [90m109| [39m  } [35mcatch[39m (error) {
+    [90m110| [39m    [35mthrow[39m [35mnew[39m [33mError[39m(
+    [90m   | [39m          [31m^[39m
+    [90m111| [39m      `[react-native-tailwind] Failed to write generated config module…
+    [90m112| [39m    )[33m;[39m
+[90m [2m❯[22m PluginPass.enter src/babel/plugin.ts:[2m83:17[22m[39m
+[90m [2m❯[22m newFn node_modules/@babel/traverse/lib/visitors.js:[2m168:14[22m[39m
+[90m [2m❯[22m NodePath._call node_modules/@babel/traverse/lib/path/context.js:[2m50:20[22m[39m
+[90m [2m❯[22m NodePath.call node_modules/@babel/traverse/lib/path/context.js:[2m40:18[22m[39m
+[90m [2m❯[22m NodePath.visit node_modules/@babel/traverse/lib/path/context.js:[2m87:31[22m[39m
+[90m [2m❯[22m TraversalContext.visitQueue node_modules/@babel/traverse/lib/context.js:[2m96:16[22m[39m
+[90m [2m❯[22m TraversalContext.visitSingle node_modules/@babel/traverse/lib/context.js:[2m72:19[22m[39m
+[90m [2m❯[22m TraversalContext.visit node_modules/@babel/traverse/lib/context.js:[2m119:19[22m[39m
+[90m [2m❯[22m traverseNode node_modules/@babel/traverse/lib/traverse-node.js:[2m130:17[22m[39m
+[90m [2m❯[22m traverse node_modules/@babel/traverse/lib/index.js:[2m53:34[22m[39m
+[90m [2m❯[22m transformFile node_modules/@babel/core/lib/transformation/index.js:[2m79:29[22m[39m
+[90m [2m❯[22m run node_modules/@babel/core/lib/transformation/index.js:[2m25:12[22m[39m
+[90m [2m❯[22m transform node_modules/@babel/core/lib/transform.js:[2m22:33[22m[39m
+[90m [2m❯[22m evaluateSync node_modules/gensync/index.js:[2m251:28[22m[39m
+[90m [2m❯[22m sync node_modules/gensync/index.js:[2m89:14[22m[39m
+[90m [2m❯[22m stopHiding - secret - don't use this - v1 node_modules/@babel/core/lib/errors/rewrite-stack-trace.js:[2m47:12[22m[39m
+[90m [2m❯[22m transformSync node_modules/@babel/core/lib/transform.js:[2m40:76[22m[39m
+[90m [2m❯[22m transform test/helpers/babelTransform.ts:[2m38:18[22m[39m
+[90m [2m❯[22m Module.transformWithConfig test/helpers/babelTransform.ts:[2m69:10[22m[39m
+[90m [2m❯[22m transformWithConfig src/babel/plugin.configProvider.test.ts:[2m26:10[22m[39m
+[90m [2m❯[22m src/babel/plugin.configProvider.test.ts:[2m124:20[22m[39m
+
+[31m[2m⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[5/27]⎯[22m[39m
+
+[41m[1m FAIL [22m[49m src/babel/plugin.configProvider.test.ts[2m > [22mconfigProvider E2E - mixed refs and literals[2m > [22mkeeps arbitrary values as literals
+[31m[1mError[22m: /mock/project/src/test.tsx: [react-native-tailwind] Failed to write generated config module at /mock/project/.generated.tailwind.config.js: Error: ENOENT: no such file or directory, open '/mock/project/.generated.tailwind.config.js'[39m
+[36m [2m❯[22m writeConfigModule src/babel/utils/configModuleGenerator.ts:[2m110:11[22m[39m
+    [90m108| [39m    fs[33m.[39m[34mwriteFileSync[39m(outputPath[33m,[39m content[33m,[39m [32m"utf8"[39m)[33m;[39m
+    [90m109| [39m  } [35mcatch[39m (error) {
+    [90m110| [39m    [35mthrow[39m [35mnew[39m [33mError[39m(
+    [90m   | [39m          [31m^[39m
+    [90m111| [39m      `[react-native-tailwind] Failed to write generated config module…
+    [90m112| [39m    )[33m;[39m
+[90m [2m❯[22m PluginPass.enter src/babel/plugin.ts:[2m83:17[22m[39m
+[90m [2m❯[22m newFn node_modules/@babel/traverse/lib/visitors.js:[2m168:14[22m[39m
+[90m [2m❯[22m NodePath._call node_modules/@babel/traverse/lib/path/context.js:[2m50:20[22m[39m
+[90m [2m❯[22m NodePath.call node_modules/@babel/traverse/lib/path/context.js:[2m40:18[22m[39m
+[90m [2m❯[22m NodePath.visit node_modules/@babel/traverse/lib/path/context.js:[2m87:31[22m[39m
+[90m [2m❯[22m TraversalContext.visitQueue node_modules/@babel/traverse/lib/context.js:[2m96:16[22m[39m
+[90m [2m❯[22m TraversalContext.visitSingle node_modules/@babel/traverse/lib/context.js:[2m72:19[22m[39m
+[90m [2m❯[22m TraversalContext.visit node_modules/@babel/traverse/lib/context.js:[2m119:19[22m[39m
+[90m [2m❯[22m traverseNode node_modules/@babel/traverse/lib/traverse-node.js:[2m130:17[22m[39m
+[90m [2m❯[22m traverse node_modules/@babel/traverse/lib/index.js:[2m53:34[22m[39m
+[90m [2m❯[22m transformFile node_modules/@babel/core/lib/transformation/index.js:[2m79:29[22m[39m
+[90m [2m❯[22m run node_modules/@babel/core/lib/transformation/index.js:[2m25:12[22m[39m
+[90m [2m❯[22m transform node_modules/@babel/core/lib/transform.js:[2m22:33[22m[39m
+[90m [2m❯[22m evaluateSync node_modules/gensync/index.js:[2m251:28[22m[39m
+[90m [2m❯[22m sync node_modules/gensync/index.js:[2m89:14[22m[39m
+[90m [2m❯[22m stopHiding - secret - don't use this - v1 node_modules/@babel/core/lib/errors/rewrite-stack-trace.js:[2m47:12[22m[39m
+[90m [2m❯[22m transformSync node_modules/@babel/core/lib/transform.js:[2m40:76[22m[39m
+[90m [2m❯[22m transform test/helpers/babelTransform.ts:[2m38:18[22m[39m
+[90m [2m❯[22m Module.transformWithConfig test/helpers/babelTransform.ts:[2m69:10[22m[39m
+[90m [2m❯[22m transformWithConfig src/babel/plugin.configProvider.test.ts:[2m26:10[22m[39m
+[90m [2m❯[22m src/babel/plugin.configProvider.test.ts:[2m145:20[22m[39m
+
+[31m[2m⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[6/27]⎯[22m[39m
+
+[41m[1m FAIL [22m[49m src/babel/plugin.configProvider.test.ts[2m > [22mconfigProvider E2E - mixed refs and literals[2m > [22mkeeps opacity-modified values as literals
+[31m[1mError[22m: /mock/project/src/test.tsx: [react-native-tailwind] Failed to write generated config module at /mock/project/.generated.tailwind.config.js: Error: ENOENT: no such file or directory, open '/mock/project/.generated.tailwind.config.js'[39m
+[36m [2m❯[22m writeConfigModule src/babel/utils/configModuleGenerator.ts:[2m110:11[22m[39m
+    [90m108| [39m    fs[33m.[39m[34mwriteFileSync[39m(outputPath[33m,[39m content[33m,[39m [32m"utf8"[39m)[33m;[39m
+    [90m109| [39m  } [35mcatch[39m (error) {
+    [90m110| [39m    [35mthrow[39m [35mnew[39m [33mError[39m(
+    [90m   | [39m          [31m^[39m
+    [90m111| [39m      `[react-native-tailwind] Failed to write generated config module…
+    [90m112| [39m    )[33m;[39m
+[90m [2m❯[22m PluginPass.enter src/babel/plugin.ts:[2m83:17[22m[39m
+[90m [2m❯[22m newFn node_modules/@babel/traverse/lib/visitors.js:[2m168:14[22m[39m
+[90m [2m❯[22m NodePath._call node_modules/@babel/traverse/lib/path/context.js:[2m50:20[22m[39m
+[90m [2m❯[22m NodePath.call node_modules/@babel/traverse/lib/path/context.js:[2m40:18[22m[39m
+[90m [2m❯[22m NodePath.visit node_modules/@babel/traverse/lib/path/context.js:[2m87:31[22m[39m
+[90m [2m❯[22m TraversalContext.visitQueue node_modules/@babel/traverse/lib/context.js:[2m96:16[22m[39m
+[90m [2m❯[22m TraversalContext.visitSingle node_modules/@babel/traverse/lib/context.js:[2m72:19[22m[39m
+[90m [2m❯[22m TraversalContext.visit node_modules/@babel/traverse/lib/context.js:[2m119:19[22m[39m
+[90m [2m❯[22m traverseNode node_modules/@babel/traverse/lib/traverse-node.js:[2m130:17[22m[39m
+[90m [2m❯[22m traverse node_modules/@babel/traverse/lib/index.js:[2m53:34[22m[39m
+[90m [2m❯[22m transformFile node_modules/@babel/core/lib/transformation/index.js:[2m79:29[22m[39m
+[90m [2m❯[22m run node_modules/@babel/core/lib/transformation/index.js:[2m25:12[22m[39m
+[90m [2m❯[22m transform node_modules/@babel/core/lib/transform.js:[2m22:33[22m[39m
+[90m [2m❯[22m evaluateSync node_modules/gensync/index.js:[2m251:28[22m[39m
+[90m [2m❯[22m sync node_modules/gensync/index.js:[2m89:14[22m[39m
+[90m [2m❯[22m stopHiding - secret - don't use this - v1 node_modules/@babel/core/lib/errors/rewrite-stack-trace.js:[2m47:12[22m[39m
+[90m [2m❯[22m transformSync node_modules/@babel/core/lib/transform.js:[2m40:76[22m[39m
+[90m [2m❯[22m transform test/helpers/babelTransform.ts:[2m38:18[22m[39m
+[90m [2m❯[22m Module.transformWithConfig test/helpers/babelTransform.ts:[2m69:10[22m[39m
+[90m [2m❯[22m transformWithConfig src/babel/plugin.configProvider.test.ts:[2m26:10[22m[39m
+[90m [2m❯[22m src/babel/plugin.configProvider.test.ts:[2m163:20[22m[39m
+
+[31m[2m⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[7/27]⎯[22m[39m
+
+[41m[1m FAIL [22m[49m src/babel/plugin.configProvider.test.ts[2m > [22mconfigProvider E2E - mixed refs and literals[2m > [22mkeeps non-theme properties as literals
+[31m[1mError[22m: /mock/project/src/test.tsx: [react-native-tailwind] Failed to write generated config module at /mock/project/.generated.tailwind.config.js: Error: ENOENT: no such file or directory, open '/mock/project/.generated.tailwind.config.js'[39m
+[36m [2m❯[22m writeConfigModule src/babel/utils/configModuleGenerator.ts:[2m110:11[22m[39m
+    [90m108| [39m    fs[33m.[39m[34mwriteFileSync[39m(outputPath[33m,[39m content[33m,[39m [32m"utf8"[39m)[33m;[39m
+    [90m109| [39m  } [35mcatch[39m (error) {
+    [90m110| [39m    [35mthrow[39m [35mnew[39m [33mError[39m(
+    [90m   | [39m          [31m^[39m
+    [90m111| [39m      `[react-native-tailwind] Failed to write generated config module…
+    [90m112| [39m    )[33m;[39m
+[90m [2m❯[22m PluginPass.enter src/babel/plugin.ts:[2m83:17[22m[39m
+[90m [2m❯[22m newFn node_modules/@babel/traverse/lib/visitors.js:[2m168:14[22m[39m
+[90m [2m❯[22m NodePath._call node_modules/@babel/traverse/lib/path/context.js:[2m50:20[22m[39m
+[90m [2m❯[22m NodePath.call node_modules/@babel/traverse/lib/path/context.js:[2m40:18[22m[39m
+[90m [2m❯[22m NodePath.visit node_modules/@babel/traverse/lib/path/context.js:[2m87:31[22m[39m
+[90m [2m❯[22m TraversalContext.visitQueue node_modules/@babel/traverse/lib/context.js:[2m96:16[22m[39m
+[90m [2m❯[22m TraversalContext.visitSingle node_modules/@babel/traverse/lib/context.js:[2m72:19[22m[39m
+[90m [2m❯[22m TraversalContext.visit node_modules/@babel/traverse/lib/context.js:[2m119:19[22m[39m
+[90m [2m❯[22m traverseNode node_modules/@babel/traverse/lib/traverse-node.js:[2m130:17[22m[39m
+[90m [2m❯[22m traverse node_modules/@babel/traverse/lib/index.js:[2m53:34[22m[39m
+[90m [2m❯[22m transformFile node_modules/@babel/core/lib/transformation/index.js:[2m79:29[22m[39m
+[90m [2m❯[22m run node_modules/@babel/core/lib/transformation/index.js:[2m25:12[22m[39m
+[90m [2m❯[22m transform node_modules/@babel/core/lib/transform.js:[2m22:33[22m[39m
+[90m [2m❯[22m evaluateSync node_modules/gensync/index.js:[2m251:28[22m[39m
+[90m [2m❯[22m sync node_modules/gensync/index.js:[2m89:14[22m[39m
+[90m [2m❯[22m stopHiding - secret - don't use this - v1 node_modules/@babel/core/lib/errors/rewrite-stack-trace.js:[2m47:12[22m[39m
+[90m [2m❯[22m transformSync node_modules/@babel/core/lib/transform.js:[2m40:76[22m[39m
+[90m [2m❯[22m transform test/helpers/babelTransform.ts:[2m38:18[22m[39m
+[90m [2m❯[22m Module.transformWithConfig test/helpers/babelTransform.ts:[2m69:10[22m[39m
+[90m [2m❯[22m transformWithConfig src/babel/plugin.configProvider.test.ts:[2m26:10[22m[39m
+[90m [2m❯[22m src/babel/plugin.configProvider.test.ts:[2m179:20[22m[39m
+
+[31m[2m⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[8/27]⎯[22m[39m
+
+[41m[1m FAIL [22m[49m src/babel/plugin.configProvider.test.ts[2m > [22mconfigProvider E2E - dark/light mode modifiers[2m > [22mtransforms dark: modifier with config refs and conditional structure
+[31m[1mError[22m: /mock/project/src/test.tsx: [react-native-tailwind] Failed to write generated config module at /mock/project/.generated.tailwind.config.js: Error: ENOENT: no such file or directory, open '/mock/project/.generated.tailwind.config.js'[39m
+[36m [2m❯[22m writeConfigModule src/babel/utils/configModuleGenerator.ts:[2m110:11[22m[39m
+    [90m108| [39m    fs[33m.[39m[34mwriteFileSync[39m(outputPath[33m,[39m content[33m,[39m [32m"utf8"[39m)[33m;[39m
+    [90m109| [39m  } [35mcatch[39m (error) {
+    [90m110| [39m    [35mthrow[39m [35mnew[39m [33mError[39m(
+    [90m   | [39m          [31m^[39m
+    [90m111| [39m      `[react-native-tailwind] Failed to write generated config module…
+    [90m112| [39m    )[33m;[39m
+[90m [2m❯[22m PluginPass.enter src/babel/plugin.ts:[2m83:17[22m[39m
+[90m [2m❯[22m newFn node_modules/@babel/traverse/lib/visitors.js:[2m168:14[22m[39m
+[90m [2m❯[22m NodePath._call node_modules/@babel/traverse/lib/path/context.js:[2m50:20[22m[39m
+[90m [2m❯[22m NodePath.call node_modules/@babel/traverse/lib/path/context.js:[2m40:18[22m[39m
+[90m [2m❯[22m NodePath.visit node_modules/@babel/traverse/lib/path/context.js:[2m87:31[22m[39m
+[90m [2m❯[22m TraversalContext.visitQueue node_modules/@babel/traverse/lib/context.js:[2m96:16[22m[39m
+[90m [2m❯[22m TraversalContext.visitSingle node_modules/@babel/traverse/lib/context.js:[2m72:19[22m[39m
+[90m [2m❯[22m TraversalContext.visit node_modules/@babel/traverse/lib/context.js:[2m119:19[22m[39m
+[90m [2m❯[22m traverseNode node_modules/@babel/traverse/lib/traverse-node.js:[2m130:17[22m[39m
+[90m [2m❯[22m traverse node_modules/@babel/traverse/lib/index.js:[2m53:34[22m[39m
+[90m [2m❯[22m transformFile node_modules/@babel/core/lib/transformation/index.js:[2m79:29[22m[39m
+[90m [2m❯[22m run node_modules/@babel/core/lib/transformation/index.js:[2m25:12[22m[39m
+[90m [2m❯[22m transform node_modules/@babel/core/lib/transform.js:[2m22:33[22m[39m
+[90m [2m❯[22m evaluateSync node_modules/gensync/index.js:[2m251:28[22m[39m
+[90m [2m❯[22m sync node_modules/gensync/index.js:[2m89:14[22m[39m
+[90m [2m❯[22m stopHiding - secret - don't use this - v1 node_modules/@babel/core/lib/errors/rewrite-stack-trace.js:[2m47:12[22m[39m
+[90m [2m❯[22m transformSync node_modules/@babel/core/lib/transform.js:[2m40:76[22m[39m
+[90m [2m❯[22m transform test/helpers/babelTransform.ts:[2m38:18[22m[39m
+[90m [2m❯[22m Module.transformWithConfig test/helpers/babelTransform.ts:[2m69:10[22m[39m
+[90m [2m❯[22m transformWithConfig src/babel/plugin.configProvider.test.ts:[2m26:10[22m[39m
+[90m [2m❯[22m src/babel/plugin.configProvider.test.ts:[2m199:20[22m[39m
+
+[31m[2m⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[9/27]⎯[22m[39m
+
+[41m[1m FAIL [22m[49m src/babel/plugin.configProvider.test.ts[2m > [22mconfigProvider E2E - dark/light mode modifiers[2m > [22mtransforms light: modifier with config refs
+[31m[1mError[22m: /mock/project/src/test.tsx: [react-native-tailwind] Failed to write generated config module at /mock/project/.generated.tailwind.config.js: Error: ENOENT: no such file or directory, open '/mock/project/.generated.tailwind.config.js'[39m
+[36m [2m❯[22m writeConfigModule src/babel/utils/configModuleGenerator.ts:[2m110:11[22m[39m
+    [90m108| [39m    fs[33m.[39m[34mwriteFileSync[39m(outputPath[33m,[39m content[33m,[39m [32m"utf8"[39m)[33m;[39m
+    [90m109| [39m  } [35mcatch[39m (error) {
+    [90m110| [39m    [35mthrow[39m [35mnew[39m [33mError[39m(
+    [90m   | [39m          [31m^[39m
+    [90m111| [39m      `[react-native-tailwind] Failed to write generated config module…
+    [90m112| [39m    )[33m;[39m
+[90m [2m❯[22m PluginPass.enter src/babel/plugin.ts:[2m83:17[22m[39m
+[90m [2m❯[22m newFn node_modules/@babel/traverse/lib/visitors.js:[2m168:14[22m[39m
+[90m [2m❯[22m NodePath._call node_modules/@babel/traverse/lib/path/context.js:[2m50:20[22m[39m
+[90m [2m❯[22m NodePath.call node_modules/@babel/traverse/lib/path/context.js:[2m40:18[22m[39m
+[90m [2m❯[22m NodePath.visit node_modules/@babel/traverse/lib/path/context.js:[2m87:31[22m[39m
+[90m [2m❯[22m TraversalContext.visitQueue node_modules/@babel/traverse/lib/context.js:[2m96:16[22m[39m
+[90m [2m❯[22m TraversalContext.visitSingle node_modules/@babel/traverse/lib/context.js:[2m72:19[22m[39m
+[90m [2m❯[22m TraversalContext.visit node_modules/@babel/traverse/lib/context.js:[2m119:19[22m[39m
+[90m [2m❯[22m traverseNode node_modules/@babel/traverse/lib/traverse-node.js:[2m130:17[22m[39m
+[90m [2m❯[22m traverse node_modules/@babel/traverse/lib/index.js:[2m53:34[22m[39m
+[90m [2m❯[22m transformFile node_modules/@babel/core/lib/transformation/index.js:[2m79:29[22m[39m
+[90m [2m❯[22m run node_modules/@babel/core/lib/transformation/index.js:[2m25:12[22m[39m
+[90m [2m❯[22m transform node_modules/@babel/core/lib/transform.js:[2m22:33[22m[39m
+[90m [2m❯[22m evaluateSync node_modules/gensync/index.js:[2m251:28[22m[39m
+[90m [2m❯[22m sync node_modules/gensync/index.js:[2m89:14[22m[39m
+[90m [2m❯[22m stopHiding - secret - don't use this - v1 node_modules/@babel/core/lib/errors/rewrite-stack-trace.js:[2m47:12[22m[39m
+[90m [2m❯[22m transformSync node_modules/@babel/core/lib/transform.js:[2m40:76[22m[39m
+[90m [2m❯[22m transform test/helpers/babelTransform.ts:[2m38:18[22m[39m
+[90m [2m❯[22m Module.transformWithConfig test/helpers/babelTransform.ts:[2m69:10[22m[39m
+[90m [2m❯[22m transformWithConfig src/babel/plugin.configProvider.test.ts:[2m26:10[22m[39m
+[90m [2m❯[22m src/babel/plugin.configProvider.test.ts:[2m224:20[22m[39m
+
+[31m[2m⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[10/27]⎯[22m[39m
+
+[41m[1m FAIL [22m[49m src/babel/plugin.configProvider.test.ts[2m > [22mconfigProvider E2E - dark/light mode modifiers[2m > [22mtransforms combined dark: and light: modifiers
+[31m[1mError[22m: /mock/project/src/test.tsx: [react-native-tailwind] Failed to write generated config module at /mock/project/.generated.tailwind.config.js: Error: ENOENT: no such file or directory, open '/mock/project/.generated.tailwind.config.js'[39m
+[36m [2m❯[22m writeConfigModule src/babel/utils/configModuleGenerator.ts:[2m110:11[22m[39m
+    [90m108| [39m    fs[33m.[39m[34mwriteFileSync[39m(outputPath[33m,[39m content[33m,[39m [32m"utf8"[39m)[33m;[39m
+    [90m109| [39m  } [35mcatch[39m (error) {
+    [90m110| [39m    [35mthrow[39m [35mnew[39m [33mError[39m(
+    [90m   | [39m          [31m^[39m
+    [90m111| [39m      `[react-native-tailwind] Failed to write generated config module…
+    [90m112| [39m    )[33m;[39m
+[90m [2m❯[22m PluginPass.enter src/babel/plugin.ts:[2m83:17[22m[39m
+[90m [2m❯[22m newFn node_modules/@babel/traverse/lib/visitors.js:[2m168:14[22m[39m
+[90m [2m❯[22m NodePath._call node_modules/@babel/traverse/lib/path/context.js:[2m50:20[22m[39m
+[90m [2m❯[22m NodePath.call node_modules/@babel/traverse/lib/path/context.js:[2m40:18[22m[39m
+[90m [2m❯[22m NodePath.visit node_modules/@babel/traverse/lib/path/context.js:[2m87:31[22m[39m
+[90m [2m❯[22m TraversalContext.visitQueue node_modules/@babel/traverse/lib/context.js:[2m96:16[22m[39m
+[90m [2m❯[22m TraversalContext.visitSingle node_modules/@babel/traverse/lib/context.js:[2m72:19[22m[39m
+[90m [2m❯[22m TraversalContext.visit node_modules/@babel/traverse/lib/context.js:[2m119:19[22m[39m
+[90m [2m❯[22m traverseNode node_modules/@babel/traverse/lib/traverse-node.js:[2m130:17[22m[39m
+[90m [2m❯[22m traverse node_modules/@babel/traverse/lib/index.js:[2m53:34[22m[39m
+[90m [2m❯[22m transformFile node_modules/@babel/core/lib/transformation/index.js:[2m79:29[22m[39m
+[90m [2m❯[22m run node_modules/@babel/core/lib/transformation/index.js:[2m25:12[22m[39m
+[90m [2m❯[22m transform node_modules/@babel/core/lib/transform.js:[2m22:33[22m[39m
+[90m [2m❯[22m evaluateSync node_modules/gensync/index.js:[2m251:28[22m[39m
+[90m [2m❯[22m sync node_modules/gensync/index.js:[2m89:14[22m[39m
+[90m [2m❯[22m stopHiding - secret - don't use this - v1 node_modules/@babel/core/lib/errors/rewrite-stack-trace.js:[2m47:12[22m[39m
+[90m [2m❯[22m transformSync node_modules/@babel/core/lib/transform.js:[2m40:76[22m[39m
+[90m [2m❯[22m transform test/helpers/babelTransform.ts:[2m38:18[22m[39m
+[90m [2m❯[22m Module.transformWithConfig test/helpers/babelTransform.ts:[2m69:10[22m[39m
+[90m [2m❯[22m transformWithConfig src/babel/plugin.configProvider.test.ts:[2m26:10[22m[39m
+[90m [2m❯[22m src/babel/plugin.configProvider.test.ts:[2m244:20[22m[39m
+
+[31m[2m⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[11/27]⎯[22m[39m
+
+[41m[1m FAIL [22m[49m src/babel/plugin.configProvider.test.ts[2m > [22mconfigProvider E2E - dark/light mode modifiers[2m > [22mtransforms scheme: modifier with config refs in both branches
+[31m[1mError[22m: /mock/project/src/test.tsx: [react-native-tailwind] Failed to write generated config module at /mock/project/.generated.tailwind.config.js: Error: ENOENT: no such file or directory, open '/mock/project/.generated.tailwind.config.js'[39m
+[36m [2m❯[22m writeConfigModule src/babel/utils/configModuleGenerator.ts:[2m110:11[22m[39m
+    [90m108| [39m    fs[33m.[39m[34mwriteFileSync[39m(outputPath[33m,[39m content[33m,[39m [32m"utf8"[39m)[33m;[39m
+    [90m109| [39m  } [35mcatch[39m (error) {
+    [90m110| [39m    [35mthrow[39m [35mnew[39m [33mError[39m(
+    [90m   | [39m          [31m^[39m
+    [90m111| [39m      `[react-native-tailwind] Failed to write generated config module…
+    [90m112| [39m    )[33m;[39m
+[90m [2m❯[22m PluginPass.enter src/babel/plugin.ts:[2m83:17[22m[39m
+[90m [2m❯[22m newFn node_modules/@babel/traverse/lib/visitors.js:[2m168:14[22m[39m
+[90m [2m❯[22m NodePath._call node_modules/@babel/traverse/lib/path/context.js:[2m50:20[22m[39m
+[90m [2m❯[22m NodePath.call node_modules/@babel/traverse/lib/path/context.js:[2m40:18[22m[39m
+[90m [2m❯[22m NodePath.visit node_modules/@babel/traverse/lib/path/context.js:[2m87:31[22m[39m
+[90m [2m❯[22m TraversalContext.visitQueue node_modules/@babel/traverse/lib/context.js:[2m96:16[22m[39m
+[90m [2m❯[22m TraversalContext.visitSingle node_modules/@babel/traverse/lib/context.js:[2m72:19[22m[39m
+[90m [2m❯[22m TraversalContext.visit node_modules/@babel/traverse/lib/context.js:[2m119:19[22m[39m
+[90m [2m❯[22m traverseNode node_modules/@babel/traverse/lib/traverse-node.js:[2m130:17[22m[39m
+[90m [2m❯[22m traverse node_modules/@babel/traverse/lib/index.js:[2m53:34[22m[39m
+[90m [2m❯[22m transformFile node_modules/@babel/core/lib/transformation/index.js:[2m79:29[22m[39m
+[90m [2m❯[22m run node_modules/@babel/core/lib/transformation/index.js:[2m25:12[22m[39m
+[90m [2m❯[22m transform node_modules/@babel/core/lib/transform.js:[2m22:33[22m[39m
+[90m [2m❯[22m evaluateSync node_modules/gensync/index.js:[2m251:28[22m[39m
+[90m [2m❯[22m sync node_modules/gensync/index.js:[2m89:14[22m[39m
+[90m [2m❯[22m stopHiding - secret - don't use this - v1 node_modules/@babel/core/lib/errors/rewrite-stack-trace.js:[2m47:12[22m[39m
+[90m [2m❯[22m transformSync node_modules/@babel/core/lib/transform.js:[2m40:76[22m[39m
+[90m [2m❯[22m transform test/helpers/babelTransform.ts:[2m38:18[22m[39m
+[90m [2m❯[22m Module.transformWithConfig test/helpers/babelTransform.ts:[2m69:10[22m[39m
+[90m [2m❯[22m transformWithConfig src/babel/plugin.configProvider.test.ts:[2m26:10[22m[39m
+[90m [2m❯[22m src/babel/plugin.configProvider.test.ts:[2m280:22[22m[39m
+
+[31m[2m⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[12/27]⎯[22m[39m
+
+[41m[1m FAIL [22m[49m src/babel/plugin.configProvider.test.ts[2m > [22mconfigProvider E2E - platform modifiers[2m > [22mtransforms ios: modifier with config refs
+[31m[1mError[22m: /mock/project/src/test.tsx: [react-native-tailwind] Failed to write generated config module at /mock/project/.generated.tailwind.config.js: Error: ENOENT: no such file or directory, open '/mock/project/.generated.tailwind.config.js'[39m
+[36m [2m❯[22m writeConfigModule src/babel/utils/configModuleGenerator.ts:[2m110:11[22m[39m
+    [90m108| [39m    fs[33m.[39m[34mwriteFileSync[39m(outputPath[33m,[39m content[33m,[39m [32m"utf8"[39m)[33m;[39m
+    [90m109| [39m  } [35mcatch[39m (error) {
+    [90m110| [39m    [35mthrow[39m [35mnew[39m [33mError[39m(
+    [90m   | [39m          [31m^[39m
+    [90m111| [39m      `[react-native-tailwind] Failed to write generated config module…
+    [90m112| [39m    )[33m;[39m
+[90m [2m❯[22m PluginPass.enter src/babel/plugin.ts:[2m83:17[22m[39m
+[90m [2m❯[22m newFn node_modules/@babel/traverse/lib/visitors.js:[2m168:14[22m[39m
+[90m [2m❯[22m NodePath._call node_modules/@babel/traverse/lib/path/context.js:[2m50:20[22m[39m
+[90m [2m❯[22m NodePath.call node_modules/@babel/traverse/lib/path/context.js:[2m40:18[22m[39m
+[90m [2m❯[22m NodePath.visit node_modules/@babel/traverse/lib/path/context.js:[2m87:31[22m[39m
+[90m [2m❯[22m TraversalContext.visitQueue node_modules/@babel/traverse/lib/context.js:[2m96:16[22m[39m
+[90m [2m❯[22m TraversalContext.visitSingle node_modules/@babel/traverse/lib/context.js:[2m72:19[22m[39m
+[90m [2m❯[22m TraversalContext.visit node_modules/@babel/traverse/lib/context.js:[2m119:19[22m[39m
+[90m [2m❯[22m traverseNode node_modules/@babel/traverse/lib/traverse-node.js:[2m130:17[22m[39m
+[90m [2m❯[22m traverse node_modules/@babel/traverse/lib/index.js:[2m53:34[22m[39m
+[90m [2m❯[22m transformFile node_modules/@babel/core/lib/transformation/index.js:[2m79:29[22m[39m
+[90m [2m❯[22m run node_modules/@babel/core/lib/transformation/index.js:[2m25:12[22m[39m
+[90m [2m❯[22m transform node_modules/@babel/core/lib/transform.js:[2m22:33[22m[39m
+[90m [2m❯[22m evaluateSync node_modules/gensync/index.js:[2m251:28[22m[39m
+[90m [2m❯[22m sync node_modules/gensync/index.js:[2m89:14[22m[39m
+[90m [2m❯[22m stopHiding - secret - don't use this - v1 node_modules/@babel/core/lib/errors/rewrite-stack-trace.js:[2m47:12[22m[39m
+[90m [2m❯[22m transformSync node_modules/@babel/core/lib/transform.js:[2m40:76[22m[39m
+[90m [2m❯[22m transform test/helpers/babelTransform.ts:[2m38:18[22m[39m
+[90m [2m❯[22m Module.transformWithConfig test/helpers/babelTransform.ts:[2m69:10[22m[39m
+[90m [2m❯[22m transformWithConfig src/babel/plugin.configProvider.test.ts:[2m26:10[22m[39m
+[90m [2m❯[22m src/babel/plugin.configProvider.test.ts:[2m308:20[22m[39m
+
+[31m[2m⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[13/27]⎯[22m[39m
+
+[41m[1m FAIL [22m[49m src/babel/plugin.configProvider.test.ts[2m > [22mconfigProvider E2E - platform modifiers[2m > [22mtransforms android: modifier with config refs
+[31m[1mError[22m: /mock/project/src/test.tsx: [react-native-tailwind] Failed to write generated config module at /mock/project/.generated.tailwind.config.js: Error: ENOENT: no such file or directory, open '/mock/project/.generated.tailwind.config.js'[39m
+[36m [2m❯[22m writeConfigModule src/babel/utils/configModuleGenerator.ts:[2m110:11[22m[39m
+    [90m108| [39m    fs[33m.[39m[34mwriteFileSync[39m(outputPath[33m,[39m content[33m,[39m [32m"utf8"[39m)[33m;[39m
+    [90m109| [39m  } [35mcatch[39m (error) {
+    [90m110| [39m    [35mthrow[39m [35mnew[39m [33mError[39m(
+    [90m   | [39m          [31m^[39m
+    [90m111| [39m      `[react-native-tailwind] Failed to write generated config module…
+    [90m112| [39m    )[33m;[39m
+[90m [2m❯[22m PluginPass.enter src/babel/plugin.ts:[2m83:17[22m[39m
+[90m [2m❯[22m newFn node_modules/@babel/traverse/lib/visitors.js:[2m168:14[22m[39m
+[90m [2m❯[22m NodePath._call node_modules/@babel/traverse/lib/path/context.js:[2m50:20[22m[39m
+[90m [2m❯[22m NodePath.call node_modules/@babel/traverse/lib/path/context.js:[2m40:18[22m[39m
+[90m [2m❯[22m NodePath.visit node_modules/@babel/traverse/lib/path/context.js:[2m87:31[22m[39m
+[90m [2m❯[22m TraversalContext.visitQueue node_modules/@babel/traverse/lib/context.js:[2m96:16[22m[39m
+[90m [2m❯[22m TraversalContext.visitSingle node_modules/@babel/traverse/lib/context.js:[2m72:19[22m[39m
+[90m [2m❯[22m TraversalContext.visit node_modules/@babel/traverse/lib/context.js:[2m119:19[22m[39m
+[90m [2m❯[22m traverseNode node_modules/@babel/traverse/lib/traverse-node.js:[2m130:17[22m[39m
+[90m [2m❯[22m traverse node_modules/@babel/traverse/lib/index.js:[2m53:34[22m[39m
+[90m [2m❯[22m transformFile node_modules/@babel/core/lib/transformation/index.js:[2m79:29[22m[39m
+[90m [2m❯[22m run node_modules/@babel/core/lib/transformation/index.js:[2m25:12[22m[39m
+[90m [2m❯[22m transform node_modules/@babel/core/lib/transform.js:[2m22:33[22m[39m
+[90m [2m❯[22m evaluateSync node_modules/gensync/index.js:[2m251:28[22m[39m
+[90m [2m❯[22m sync node_modules/gensync/index.js:[2m89:14[22m[39m
+[90m [2m❯[22m stopHiding - secret - don't use this - v1 node_modules/@babel/core/lib/errors/rewrite-stack-trace.js:[2m47:12[22m[39m
+[90m [2m❯[22m transformSync node_modules/@babel/core/lib/transform.js:[2m40:76[22m[39m
+[90m [2m❯[22m transform test/helpers/babelTransform.ts:[2m38:18[22m[39m
+[90m [2m❯[22m Module.transformWithConfig test/helpers/babelTransform.ts:[2m69:10[22m[39m
+[90m [2m❯[22m transformWithConfig src/babel/plugin.configProvider.test.ts:[2m26:10[22m[39m
+[90m [2m❯[22m src/babel/plugin.configProvider.test.ts:[2m328:20[22m[39m
+
+[31m[2m⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[14/27]⎯[22m[39m
+
+[41m[1m FAIL [22m[49m src/babel/plugin.configProvider.test.ts[2m > [22mconfigProvider E2E - platform modifiers[2m > [22mtransforms combined ios: and android: modifiers with config refs
+[31m[1mError[22m: /mock/project/src/test.tsx: [react-native-tailwind] Failed to write generated config module at /mock/project/.generated.tailwind.config.js: Error: ENOENT: no such file or directory, open '/mock/project/.generated.tailwind.config.js'[39m
+[36m [2m❯[22m writeConfigModule src/babel/utils/configModuleGenerator.ts:[2m110:11[22m[39m
+    [90m108| [39m    fs[33m.[39m[34mwriteFileSync[39m(outputPath[33m,[39m content[33m,[39m [32m"utf8"[39m)[33m;[39m
+    [90m109| [39m  } [35mcatch[39m (error) {
+    [90m110| [39m    [35mthrow[39m [35mnew[39m [33mError[39m(
+    [90m   | [39m          [31m^[39m
+    [90m111| [39m      `[react-native-tailwind] Failed to write generated config module…
+    [90m112| [39m    )[33m;[39m
+[90m [2m❯[22m PluginPass.enter src/babel/plugin.ts:[2m83:17[22m[39m
+[90m [2m❯[22m newFn node_modules/@babel/traverse/lib/visitors.js:[2m168:14[22m[39m
+[90m [2m❯[22m NodePath._call node_modules/@babel/traverse/lib/path/context.js:[2m50:20[22m[39m
+[90m [2m❯[22m NodePath.call node_modules/@babel/traverse/lib/path/context.js:[2m40:18[22m[39m
+[90m [2m❯[22m NodePath.visit node_modules/@babel/traverse/lib/path/context.js:[2m87:31[22m[39m
+[90m [2m❯[22m TraversalContext.visitQueue node_modules/@babel/traverse/lib/context.js:[2m96:16[22m[39m
+[90m [2m❯[22m TraversalContext.visitSingle node_modules/@babel/traverse/lib/context.js:[2m72:19[22m[39m
+[90m [2m❯[22m TraversalContext.visit node_modules/@babel/traverse/lib/context.js:[2m119:19[22m[39m
+[90m [2m❯[22m traverseNode node_modules/@babel/traverse/lib/traverse-node.js:[2m130:17[22m[39m
+[90m [2m❯[22m traverse node_modules/@babel/traverse/lib/index.js:[2m53:34[22m[39m
+[90m [2m❯[22m transformFile node_modules/@babel/core/lib/transformation/index.js:[2m79:29[22m[39m
+[90m [2m❯[22m run node_modules/@babel/core/lib/transformation/index.js:[2m25:12[22m[39m
+[90m [2m❯[22m transform node_modules/@babel/core/lib/transform.js:[2m22:33[22m[39m
+[90m [2m❯[22m evaluateSync node_modules/gensync/index.js:[2m251:28[22m[39m
+[90m [2m❯[22m sync node_modules/gensync/index.js:[2m89:14[22m[39m
+[90m [2m❯[22m stopHiding - secret - don't use this - v1 node_modules/@babel/core/lib/errors/rewrite-stack-trace.js:[2m47:12[22m[39m
+[90m [2m❯[22m transformSync node_modules/@babel/core/lib/transform.js:[2m40:76[22m[39m
+[90m [2m❯[22m transform test/helpers/babelTransform.ts:[2m38:18[22m[39m
+[90m [2m❯[22m Module.transformWithConfig test/helpers/babelTransform.ts:[2m69:10[22m[39m
+[90m [2m❯[22m transformWithConfig src/babel/plugin.configProvider.test.ts:[2m26:10[22m[39m
+[90m [2m❯[22m src/babel/plugin.configProvider.test.ts:[2m348:20[22m[39m
+
+[31m[2m⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[15/27]⎯[22m[39m
+
+[41m[1m FAIL [22m[49m src/babel/plugin.configProvider.test.ts[2m > [22mconfigProvider E2E - tw template literals[2m > [22mtransforms tw`` with config refs
+[31m[1mError[22m: /mock/project/src/test.tsx: [react-native-tailwind] Failed to write generated config module at /mock/project/.generated.tailwind.config.js: Error: ENOENT: no such file or directory, open '/mock/project/.generated.tailwind.config.js'[39m
+[36m [2m❯[22m writeConfigModule src/babel/utils/configModuleGenerator.ts:[2m110:11[22m[39m
+    [90m108| [39m    fs[33m.[39m[34mwriteFileSync[39m(outputPath[33m,[39m content[33m,[39m [32m"utf8"[39m)[33m;[39m
+    [90m109| [39m  } [35mcatch[39m (error) {
+    [90m110| [39m    [35mthrow[39m [35mnew[39m [33mError[39m(
+    [90m   | [39m          [31m^[39m
+    [90m111| [39m      `[react-native-tailwind] Failed to write generated config module…
+    [90m112| [39m    )[33m;[39m
+[90m [2m❯[22m PluginPass.enter src/babel/plugin.ts:[2m83:17[22m[39m
+[90m [2m❯[22m newFn node_modules/@babel/traverse/lib/visitors.js:[2m168:14[22m[39m
+[90m [2m❯[22m NodePath._call node_modules/@babel/traverse/lib/path/context.js:[2m50:20[22m[39m
+[90m [2m❯[22m NodePath.call node_modules/@babel/traverse/lib/path/context.js:[2m40:18[22m[39m
+[90m [2m❯[22m NodePath.visit node_modules/@babel/traverse/lib/path/context.js:[2m87:31[22m[39m
+[90m [2m❯[22m TraversalContext.visitQueue node_modules/@babel/traverse/lib/context.js:[2m96:16[22m[39m
+[90m [2m❯[22m TraversalContext.visitSingle node_modules/@babel/traverse/lib/context.js:[2m72:19[22m[39m
+[90m [2m❯[22m TraversalContext.visit node_modules/@babel/traverse/lib/context.js:[2m119:19[22m[39m
+[90m [2m❯[22m traverseNode node_modules/@babel/traverse/lib/traverse-node.js:[2m130:17[22m[39m
+[90m [2m❯[22m traverse node_modules/@babel/traverse/lib/index.js:[2m53:34[22m[39m
+[90m [2m❯[22m transformFile node_modules/@babel/core/lib/transformation/index.js:[2m79:29[22m[39m
+[90m [2m❯[22m run node_modules/@babel/core/lib/transformation/index.js:[2m25:12[22m[39m
+[90m [2m❯[22m transform node_modules/@babel/core/lib/transform.js:[2m22:33[22m[39m
+[90m [2m❯[22m evaluateSync node_modules/gensync/index.js:[2m251:28[22m[39m
+[90m [2m❯[22m sync node_modules/gensync/index.js:[2m89:14[22m[39m
+[90m [2m❯[22m stopHiding - secret - don't use this - v1 node_modules/@babel/core/lib/errors/rewrite-stack-trace.js:[2m47:12[22m[39m
+[90m [2m❯[22m transformSync node_modules/@babel/core/lib/transform.js:[2m40:76[22m[39m
+[90m [2m❯[22m Module.transform test/helpers/babelTransform.ts:[2m38:18[22m[39m
+[90m [2m❯[22m transform src/babel/plugin.configProvider.test.ts:[2m18:10[22m[39m
+[90m [2m❯[22m src/babel/plugin.configProvider.test.ts:[2m367:20[22m[39m
+
+[31m[2m⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[16/27]⎯[22m[39m
+
+[41m[1m FAIL [22m[49m src/babel/plugin.configProvider.test.ts[2m > [22mconfigProvider E2E - tw template literals[2m > [22mtransforms twStyle() with config refs
+[31m[1mError[22m: /mock/project/src/test.tsx: [react-native-tailwind] Failed to write generated config module at /mock/project/.generated.tailwind.config.js: Error: ENOENT: no such file or directory, open '/mock/project/.generated.tailwind.config.js'[39m
+[36m [2m❯[22m writeConfigModule src/babel/utils/configModuleGenerator.ts:[2m110:11[22m[39m
+    [90m108| [39m    fs[33m.[39m[34mwriteFileSync[39m(outputPath[33m,[39m content[33m,[39m [32m"utf8"[39m)[33m;[39m
+    [90m109| [39m  } [35mcatch[39m (error) {
+    [90m110| [39m    [35mthrow[39m [35mnew[39m [33mError[39m(
+    [90m   | [39m          [31m^[39m
+    [90m111| [39m      `[react-native-tailwind] Failed to write generated config module…
+    [90m112| [39m    )[33m;[39m
+[90m [2m❯[22m PluginPass.enter src/babel/plugin.ts:[2m83:17[22m[39m
+[90m [2m❯[22m newFn node_modules/@babel/traverse/lib/visitors.js:[2m168:14[22m[39m
+[90m [2m❯[22m NodePath._call node_modules/@babel/traverse/lib/path/context.js:[2m50:20[22m[39m
+[90m [2m❯[22m NodePath.call node_modules/@babel/traverse/lib/path/context.js:[2m40:18[22m[39m
+[90m [2m❯[22m NodePath.visit node_modules/@babel/traverse/lib/path/context.js:[2m87:31[22m[39m
+[90m [2m❯[22m TraversalContext.visitQueue node_modules/@babel/traverse/lib/context.js:[2m96:16[22m[39m
+[90m [2m❯[22m TraversalContext.visitSingle node_modules/@babel/traverse/lib/context.js:[2m72:19[22m[39m
+[90m [2m❯[22m TraversalContext.visit node_modules/@babel/traverse/lib/context.js:[2m119:19[22m[39m
+[90m [2m❯[22m traverseNode node_modules/@babel/traverse/lib/traverse-node.js:[2m130:17[22m[39m
+[90m [2m❯[22m traverse node_modules/@babel/traverse/lib/index.js:[2m53:34[22m[39m
+[90m [2m❯[22m transformFile node_modules/@babel/core/lib/transformation/index.js:[2m79:29[22m[39m
+[90m [2m❯[22m run node_modules/@babel/core/lib/transformation/index.js:[2m25:12[22m[39m
+[90m [2m❯[22m transform node_modules/@babel/core/lib/transform.js:[2m22:33[22m[39m
+[90m [2m❯[22m evaluateSync node_modules/gensync/index.js:[2m251:28[22m[39m
+[90m [2m❯[22m sync node_modules/gensync/index.js:[2m89:14[22m[39m
+[90m [2m❯[22m stopHiding - secret - don't use this - v1 node_modules/@babel/core/lib/errors/rewrite-stack-trace.js:[2m47:12[22m[39m
+[90m [2m❯[22m transformSync node_modules/@babel/core/lib/transform.js:[2m40:76[22m[39m
+[90m [2m❯[22m Module.transform test/helpers/babelTransform.ts:[2m38:18[22m[39m
+[90m [2m❯[22m transform src/babel/plugin.configProvider.test.ts:[2m18:10[22m[39m
+[90m [2m❯[22m src/babel/plugin.configProvider.test.ts:[2m390:20[22m[39m
+
+[31m[2m⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[17/27]⎯[22m[39m
+
+[41m[1m FAIL [22m[49m src/babel/plugin.configProvider.test.ts[2m > [22mconfigProvider E2E - tw template literals[2m > [22mtransforms tw`` with state modifiers and config refs
+[31m[1mError[22m: /mock/project/src/test.tsx: [react-native-tailwind] Failed to write generated config module at /mock/project/.generated.tailwind.config.js: Error: ENOENT: no such file or directory, open '/mock/project/.generated.tailwind.config.js'[39m
+[36m [2m❯[22m writeConfigModule src/babel/utils/configModuleGenerator.ts:[2m110:11[22m[39m
+    [90m108| [39m    fs[33m.[39m[34mwriteFileSync[39m(outputPath[33m,[39m content[33m,[39m [32m"utf8"[39m)[33m;[39m
+    [90m109| [39m  } [35mcatch[39m (error) {
+    [90m110| [39m    [35mthrow[39m [35mnew[39m [33mError[39m(
+    [90m   | [39m          [31m^[39m
+    [90m111| [39m      `[react-native-tailwind] Failed to write generated config module…
+    [90m112| [39m    )[33m;[39m
+[90m [2m❯[22m PluginPass.enter src/babel/plugin.ts:[2m83:17[22m[39m
+[90m [2m❯[22m newFn node_modules/@babel/traverse/lib/visitors.js:[2m168:14[22m[39m
+[90m [2m❯[22m NodePath._call node_modules/@babel/traverse/lib/path/context.js:[2m50:20[22m[39m
+[90m [2m❯[22m NodePath.call node_modules/@babel/traverse/lib/path/context.js:[2m40:18[22m[39m
+[90m [2m❯[22m NodePath.visit node_modules/@babel/traverse/lib/path/context.js:[2m87:31[22m[39m
+[90m [2m❯[22m TraversalContext.visitQueue node_modules/@babel/traverse/lib/context.js:[2m96:16[22m[39m
+[90m [2m❯[22m TraversalContext.visitSingle node_modules/@babel/traverse/lib/context.js:[2m72:19[22m[39m
+[90m [2m❯[22m TraversalContext.visit node_modules/@babel/traverse/lib/context.js:[2m119:19[22m[39m
+[90m [2m❯[22m traverseNode node_modules/@babel/traverse/lib/traverse-node.js:[2m130:17[22m[39m
+[90m [2m❯[22m traverse node_modules/@babel/traverse/lib/index.js:[2m53:34[22m[39m
+[90m [2m❯[22m transformFile node_modules/@babel/core/lib/transformation/index.js:[2m79:29[22m[39m
+[90m [2m❯[22m run node_modules/@babel/core/lib/transformation/index.js:[2m25:12[22m[39m
+[90m [2m❯[22m transform node_modules/@babel/core/lib/transform.js:[2m22:33[22m[39m
+[90m [2m❯[22m evaluateSync node_modules/gensync/index.js:[2m251:28[22m[39m
+[90m [2m❯[22m sync node_modules/gensync/index.js:[2m89:14[22m[39m
+[90m [2m❯[22m stopHiding - secret - don't use this - v1 node_modules/@babel/core/lib/errors/rewrite-stack-trace.js:[2m47:12[22m[39m
+[90m [2m❯[22m transformSync node_modules/@babel/core/lib/transform.js:[2m40:76[22m[39m
+[90m [2m❯[22m Module.transform test/helpers/babelTransform.ts:[2m38:18[22m[39m
+[90m [2m❯[22m transform src/babel/plugin.configProvider.test.ts:[2m18:10[22m[39m
+[90m [2m❯[22m src/babel/plugin.configProvider.test.ts:[2m405:20[22m[39m
+
+[31m[2m⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[18/27]⎯[22m[39m
+
+[41m[1m FAIL [22m[49m src/babel/plugin.configProvider.test.ts[2m > [22mconfigProvider E2E - multiple components[2m > [22mtransforms multiple className attributes in same file
+[31m[1mError[22m: /mock/project/src/test.tsx: [react-native-tailwind] Failed to write generated config module at /mock/project/.generated.tailwind.config.js: Error: ENOENT: no such file or directory, open '/mock/project/.generated.tailwind.config.js'[39m
+[36m [2m❯[22m writeConfigModule src/babel/utils/configModuleGenerator.ts:[2m110:11[22m[39m
+    [90m108| [39m    fs[33m.[39m[34mwriteFileSync[39m(outputPath[33m,[39m content[33m,[39m [32m"utf8"[39m)[33m;[39m
+    [90m109| [39m  } [35mcatch[39m (error) {
+    [90m110| [39m    [35mthrow[39m [35mnew[39m [33mError[39m(
+    [90m   | [39m          [31m^[39m
+    [90m111| [39m      `[react-native-tailwind] Failed to write generated config module…
+    [90m112| [39m    )[33m;[39m
+[90m [2m❯[22m PluginPass.enter src/babel/plugin.ts:[2m83:17[22m[39m
+[90m [2m❯[22m newFn node_modules/@babel/traverse/lib/visitors.js:[2m168:14[22m[39m
+[90m [2m❯[22m NodePath._call node_modules/@babel/traverse/lib/path/context.js:[2m50:20[22m[39m
+[90m [2m❯[22m NodePath.call node_modules/@babel/traverse/lib/path/context.js:[2m40:18[22m[39m
+[90m [2m❯[22m NodePath.visit node_modules/@babel/traverse/lib/path/context.js:[2m87:31[22m[39m
+[90m [2m❯[22m TraversalContext.visitQueue node_modules/@babel/traverse/lib/context.js:[2m96:16[22m[39m
+[90m [2m❯[22m TraversalContext.visitSingle node_modules/@babel/traverse/lib/context.js:[2m72:19[22m[39m
+[90m [2m❯[22m TraversalContext.visit node_modules/@babel/traverse/lib/context.js:[2m119:19[22m[39m
+[90m [2m❯[22m traverseNode node_modules/@babel/traverse/lib/traverse-node.js:[2m130:17[22m[39m
+[90m [2m❯[22m traverse node_modules/@babel/traverse/lib/index.js:[2m53:34[22m[39m
+[90m [2m❯[22m transformFile node_modules/@babel/core/lib/transformation/index.js:[2m79:29[22m[39m
+[90m [2m❯[22m run node_modules/@babel/core/lib/transformation/index.js:[2m25:12[22m[39m
+[90m [2m❯[22m transform node_modules/@babel/core/lib/transform.js:[2m22:33[22m[39m
+[90m [2m❯[22m evaluateSync node_modules/gensync/index.js:[2m251:28[22m[39m
+[90m [2m❯[22m sync node_modules/gensync/index.js:[2m89:14[22m[39m
+[90m [2m❯[22m stopHiding - secret - don't use this - v1 node_modules/@babel/core/lib/errors/rewrite-stack-trace.js:[2m47:12[22m[39m
+[90m [2m❯[22m transformSync node_modules/@babel/core/lib/transform.js:[2m40:76[22m[39m
+[90m [2m❯[22m transform test/helpers/babelTransform.ts:[2m38:18[22m[39m
+[90m [2m❯[22m Module.transformWithConfig test/helpers/babelTransform.ts:[2m69:10[22m[39m
+[90m [2m❯[22m transformWithConfig src/babel/plugin.configProvider.test.ts:[2m26:10[22m[39m
+[90m [2m❯[22m src/babel/plugin.configProvider.test.ts:[2m430:20[22m[39m
+
+[31m[2m⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[19/27]⎯[22m[39m
+
+[41m[1m FAIL [22m[49m src/babel/plugin.configProvider.test.ts[2m > [22mconfigProvider E2E - multiple components[2m > [22mtransforms multiple separate components in same file
+[31m[1mError[22m: /mock/project/src/test.tsx: [react-native-tailwind] Failed to write generated config module at /mock/project/.generated.tailwind.config.js: Error: ENOENT: no such file or directory, open '/mock/project/.generated.tailwind.config.js'[39m
+[36m [2m❯[22m writeConfigModule src/babel/utils/configModuleGenerator.ts:[2m110:11[22m[39m
+    [90m108| [39m    fs[33m.[39m[34mwriteFileSync[39m(outputPath[33m,[39m content[33m,[39m [32m"utf8"[39m)[33m;[39m
+    [90m109| [39m  } [35mcatch[39m (error) {
+    [90m110| [39m    [35mthrow[39m [35mnew[39m [33mError[39m(
+    [90m   | [39m          [31m^[39m
+    [90m111| [39m      `[react-native-tailwind] Failed to write generated config module…
+    [90m112| [39m    )[33m;[39m
+[90m [2m❯[22m PluginPass.enter src/babel/plugin.ts:[2m83:17[22m[39m
+[90m [2m❯[22m newFn node_modules/@babel/traverse/lib/visitors.js:[2m168:14[22m[39m
+[90m [2m❯[22m NodePath._call node_modules/@babel/traverse/lib/path/context.js:[2m50:20[22m[39m
+[90m [2m❯[22m NodePath.call node_modules/@babel/traverse/lib/path/context.js:[2m40:18[22m[39m
+[90m [2m❯[22m NodePath.visit node_modules/@babel/traverse/lib/path/context.js:[2m87:31[22m[39m
+[90m [2m❯[22m TraversalContext.visitQueue node_modules/@babel/traverse/lib/context.js:[2m96:16[22m[39m
+[90m [2m❯[22m TraversalContext.visitSingle node_modules/@babel/traverse/lib/context.js:[2m72:19[22m[39m
+[90m [2m❯[22m TraversalContext.visit node_modules/@babel/traverse/lib/context.js:[2m119:19[22m[39m
+[90m [2m❯[22m traverseNode node_modules/@babel/traverse/lib/traverse-node.js:[2m130:17[22m[39m
+[90m [2m❯[22m traverse node_modules/@babel/traverse/lib/index.js:[2m53:34[22m[39m
+[90m [2m❯[22m transformFile node_modules/@babel/core/lib/transformation/index.js:[2m79:29[22m[39m
+[90m [2m❯[22m run node_modules/@babel/core/lib/transformation/index.js:[2m25:12[22m[39m
+[90m [2m❯[22m transform node_modules/@babel/core/lib/transform.js:[2m22:33[22m[39m
+[90m [2m❯[22m evaluateSync node_modules/gensync/index.js:[2m251:28[22m[39m
+[90m [2m❯[22m sync node_modules/gensync/index.js:[2m89:14[22m[39m
+[90m [2m❯[22m stopHiding - secret - don't use this - v1 node_modules/@babel/core/lib/errors/rewrite-stack-trace.js:[2m47:12[22m[39m
+[90m [2m❯[22m transformSync node_modules/@babel/core/lib/transform.js:[2m40:76[22m[39m
+[90m [2m❯[22m transform test/helpers/babelTransform.ts:[2m38:18[22m[39m
+[90m [2m❯[22m Module.transformWithConfig test/helpers/babelTransform.ts:[2m69:10[22m[39m
+[90m [2m❯[22m transformWithConfig src/babel/plugin.configProvider.test.ts:[2m26:10[22m[39m
+[90m [2m❯[22m src/babel/plugin.configProvider.test.ts:[2m458:20[22m[39m
+
+[31m[2m⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[20/27]⎯[22m[39m
+
+[41m[1m FAIL [22m[49m src/babel/plugin.configProvider.test.ts[2m > [22mconfigProvider E2E - multiple components[2m > [22mtransforms mixed className and tw`` in same file
+[31m[1mError[22m: /mock/project/src/test.tsx: [react-native-tailwind] Failed to write generated config module at /mock/project/.generated.tailwind.config.js: Error: ENOENT: no such file or directory, open '/mock/project/.generated.tailwind.config.js'[39m
+[36m [2m❯[22m writeConfigModule src/babel/utils/configModuleGenerator.ts:[2m110:11[22m[39m
+    [90m108| [39m    fs[33m.[39m[34mwriteFileSync[39m(outputPath[33m,[39m content[33m,[39m [32m"utf8"[39m)[33m;[39m
+    [90m109| [39m  } [35mcatch[39m (error) {
+    [90m110| [39m    [35mthrow[39m [35mnew[39m [33mError[39m(
+    [90m   | [39m          [31m^[39m
+    [90m111| [39m      `[react-native-tailwind] Failed to write generated config module…
+    [90m112| [39m    )[33m;[39m
+[90m [2m❯[22m PluginPass.enter src/babel/plugin.ts:[2m83:17[22m[39m
+[90m [2m❯[22m newFn node_modules/@babel/traverse/lib/visitors.js:[2m168:14[22m[39m
+[90m [2m❯[22m NodePath._call node_modules/@babel/traverse/lib/path/context.js:[2m50:20[22m[39m
+[90m [2m❯[22m NodePath.call node_modules/@babel/traverse/lib/path/context.js:[2m40:18[22m[39m
+[90m [2m❯[22m NodePath.visit node_modules/@babel/traverse/lib/path/context.js:[2m87:31[22m[39m
+[90m [2m❯[22m TraversalContext.visitQueue node_modules/@babel/traverse/lib/context.js:[2m96:16[22m[39m
+[90m [2m❯[22m TraversalContext.visitSingle node_modules/@babel/traverse/lib/context.js:[2m72:19[22m[39m
+[90m [2m❯[22m TraversalContext.visit node_modules/@babel/traverse/lib/context.js:[2m119:19[22m[39m
+[90m [2m❯[22m traverseNode node_modules/@babel/traverse/lib/traverse-node.js:[2m130:17[22m[39m
+[90m [2m❯[22m traverse node_modules/@babel/traverse/lib/index.js:[2m53:34[22m[39m
+[90m [2m❯[22m transformFile node_modules/@babel/core/lib/transformation/index.js:[2m79:29[22m[39m
+[90m [2m❯[22m run node_modules/@babel/core/lib/transformation/index.js:[2m25:12[22m[39m
+[90m [2m❯[22m transform node_modules/@babel/core/lib/transform.js:[2m22:33[22m[39m
+[90m [2m❯[22m evaluateSync node_modules/gensync/index.js:[2m251:28[22m[39m
+[90m [2m❯[22m sync node_modules/gensync/index.js:[2m89:14[22m[39m
+[90m [2m❯[22m stopHiding - secret - don't use this - v1 node_modules/@babel/core/lib/errors/rewrite-stack-trace.js:[2m47:12[22m[39m
+[90m [2m❯[22m transformSync node_modules/@babel/core/lib/transform.js:[2m40:76[22m[39m
+[90m [2m❯[22m Module.transform test/helpers/babelTransform.ts:[2m38:18[22m[39m
+[90m [2m❯[22m transform src/babel/plugin.configProvider.test.ts:[2m18:10[22m[39m
+[90m [2m❯[22m src/babel/plugin.configProvider.test.ts:[2m489:20[22m[39m
+
+[31m[2m⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[21/27]⎯[22m[39m
+
+[41m[1m FAIL [22m[49m src/babel/plugin.configProvider.test.ts[2m > [22mconfigProvider E2E - negative cases[2m > [22mdoes not inject __twConfig when no theme-resolvable classes are used
+[31m[1mError[22m: /mock/project/src/test.tsx: [react-native-tailwind] Failed to write generated config module at /mock/project/.generated.tailwind.config.js: Error: ENOENT: no such file or directory, open '/mock/project/.generated.tailwind.config.js'[39m
+[36m [2m❯[22m writeConfigModule src/babel/utils/configModuleGenerator.ts:[2m110:11[22m[39m
+    [90m108| [39m    fs[33m.[39m[34mwriteFileSync[39m(outputPath[33m,[39m content[33m,[39m [32m"utf8"[39m)[33m;[39m
+    [90m109| [39m  } [35mcatch[39m (error) {
+    [90m110| [39m    [35mthrow[39m [35mnew[39m [33mError[39m(
+    [90m   | [39m          [31m^[39m
+    [90m111| [39m      `[react-native-tailwind] Failed to write generated config module…
+    [90m112| [39m    )[33m;[39m
+[90m [2m❯[22m PluginPass.enter src/babel/plugin.ts:[2m83:17[22m[39m
+[90m [2m❯[22m newFn node_modules/@babel/traverse/lib/visitors.js:[2m168:14[22m[39m
+[90m [2m❯[22m NodePath._call node_modules/@babel/traverse/lib/path/context.js:[2m50:20[22m[39m
+[90m [2m❯[22m NodePath.call node_modules/@babel/traverse/lib/path/context.js:[2m40:18[22m[39m
+[90m [2m❯[22m NodePath.visit node_modules/@babel/traverse/lib/path/context.js:[2m87:31[22m[39m
+[90m [2m❯[22m TraversalContext.visitQueue node_modules/@babel/traverse/lib/context.js:[2m96:16[22m[39m
+[90m [2m❯[22m TraversalContext.visitSingle node_modules/@babel/traverse/lib/context.js:[2m72:19[22m[39m
+[90m [2m❯[22m TraversalContext.visit node_modules/@babel/traverse/lib/context.js:[2m119:19[22m[39m
+[90m [2m❯[22m traverseNode node_modules/@babel/traverse/lib/traverse-node.js:[2m130:17[22m[39m
+[90m [2m❯[22m traverse node_modules/@babel/traverse/lib/index.js:[2m53:34[22m[39m
+[90m [2m❯[22m transformFile node_modules/@babel/core/lib/transformation/index.js:[2m79:29[22m[39m
+[90m [2m❯[22m run node_modules/@babel/core/lib/transformation/index.js:[2m25:12[22m[39m
+[90m [2m❯[22m transform node_modules/@babel/core/lib/transform.js:[2m22:33[22m[39m
+[90m [2m❯[22m evaluateSync node_modules/gensync/index.js:[2m251:28[22m[39m
+[90m [2m❯[22m sync node_modules/gensync/index.js:[2m89:14[22m[39m
+[90m [2m❯[22m stopHiding - secret - don't use this - v1 node_modules/@babel/core/lib/errors/rewrite-stack-trace.js:[2m47:12[22m[39m
+[90m [2m❯[22m transformSync node_modules/@babel/core/lib/transform.js:[2m40:76[22m[39m
+[90m [2m❯[22m transform test/helpers/babelTransform.ts:[2m38:18[22m[39m
+[90m [2m❯[22m Module.transformWithConfig test/helpers/babelTransform.ts:[2m69:10[22m[39m
+[90m [2m❯[22m transformWithConfig src/babel/plugin.configProvider.test.ts:[2m26:10[22m[39m
+[90m [2m❯[22m src/babel/plugin.configProvider.test.ts:[2m533:20[22m[39m
+
+[31m[2m⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[22/27]⎯[22m[39m
+
+[41m[1m FAIL [22m[49m src/babel/plugin.configProvider.test.ts[2m > [22mconfigProvider E2E - import path generation[2m > [22mgenerates correct import path from configProvider.importFrom
+[31m[1mError[22m: /mock/project/src/test.tsx: [react-native-tailwind] Failed to write generated config module at /mock/project/.generated.tailwind.config.js: Error: ENOENT: no such file or directory, open '/mock/project/.generated.tailwind.config.js'[39m
+[36m [2m❯[22m writeConfigModule src/babel/utils/configModuleGenerator.ts:[2m110:11[22m[39m
+    [90m108| [39m    fs[33m.[39m[34mwriteFileSync[39m(outputPath[33m,[39m content[33m,[39m [32m"utf8"[39m)[33m;[39m
+    [90m109| [39m  } [35mcatch[39m (error) {
+    [90m110| [39m    [35mthrow[39m [35mnew[39m [33mError[39m(
+    [90m   | [39m          [31m^[39m
+    [90m111| [39m      `[react-native-tailwind] Failed to write generated config module…
+    [90m112| [39m    )[33m;[39m
+[90m [2m❯[22m PluginPass.enter src/babel/plugin.ts:[2m83:17[22m[39m
+[90m [2m❯[22m newFn node_modules/@babel/traverse/lib/visitors.js:[2m168:14[22m[39m
+[90m [2m❯[22m NodePath._call node_modules/@babel/traverse/lib/path/context.js:[2m50:20[22m[39m
+[90m [2m❯[22m NodePath.call node_modules/@babel/traverse/lib/path/context.js:[2m40:18[22m[39m
+[90m [2m❯[22m NodePath.visit node_modules/@babel/traverse/lib/path/context.js:[2m87:31[22m[39m
+[90m [2m❯[22m TraversalContext.visitQueue node_modules/@babel/traverse/lib/context.js:[2m96:16[22m[39m
+[90m [2m❯[22m TraversalContext.visitSingle node_modules/@babel/traverse/lib/context.js:[2m72:19[22m[39m
+[90m [2m❯[22m TraversalContext.visit node_modules/@babel/traverse/lib/context.js:[2m119:19[22m[39m
+[90m [2m❯[22m traverseNode node_modules/@babel/traverse/lib/traverse-node.js:[2m130:17[22m[39m
+[90m [2m❯[22m traverse node_modules/@babel/traverse/lib/index.js:[2m53:34[22m[39m
+[90m [2m❯[22m transformFile node_modules/@babel/core/lib/transformation/index.js:[2m79:29[22m[39m
+[90m [2m❯[22m run node_modules/@babel/core/lib/transformation/index.js:[2m25:12[22m[39m
+[90m [2m❯[22m transform node_modules/@babel/core/lib/transform.js:[2m22:33[22m[39m
+[90m [2m❯[22m evaluateSync node_modules/gensync/index.js:[2m251:28[22m[39m
+[90m [2m❯[22m sync node_modules/gensync/index.js:[2m89:14[22m[39m
+[90m [2m❯[22m stopHiding - secret - don't use this - v1 node_modules/@babel/core/lib/errors/rewrite-stack-trace.js:[2m47:12[22m[39m
+[90m [2m❯[22m transformSync node_modules/@babel/core/lib/transform.js:[2m40:76[22m[39m
+[90m [2m❯[22m transform test/helpers/babelTransform.ts:[2m38:18[22m[39m
+[90m [2m❯[22m Module.transformWithConfig test/helpers/babelTransform.ts:[2m69:10[22m[39m
+[90m [2m❯[22m transformWithConfig src/babel/plugin.configProvider.test.ts:[2m26:10[22m[39m
+[90m [2m❯[22m src/babel/plugin.configProvider.test.ts:[2m568:20[22m[39m
+
+[31m[2m⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[23/27]⎯[22m[39m
+
+[41m[1m FAIL [22m[49m src/babel/plugin.configProvider.test.ts[2m > [22mconfigProvider E2E - import path generation[2m > [22muses __twConfig as the default import name
+[31m[1mError[22m: /mock/project/src/test.tsx: [react-native-tailwind] Failed to write generated config module at /mock/project/.generated.tailwind.config.js: Error: ENOENT: no such file or directory, open '/mock/project/.generated.tailwind.config.js'[39m
+[36m [2m❯[22m writeConfigModule src/babel/utils/configModuleGenerator.ts:[2m110:11[22m[39m
+    [90m108| [39m    fs[33m.[39m[34mwriteFileSync[39m(outputPath[33m,[39m content[33m,[39m [32m"utf8"[39m)[33m;[39m
+    [90m109| [39m  } [35mcatch[39m (error) {
+    [90m110| [39m    [35mthrow[39m [35mnew[39m [33mError[39m(
+    [90m   | [39m          [31m^[39m
+    [90m111| [39m      `[react-native-tailwind] Failed to write generated config module…
+    [90m112| [39m    )[33m;[39m
+[90m [2m❯[22m PluginPass.enter src/babel/plugin.ts:[2m83:17[22m[39m
+[90m [2m❯[22m newFn node_modules/@babel/traverse/lib/visitors.js:[2m168:14[22m[39m
+[90m [2m❯[22m NodePath._call node_modules/@babel/traverse/lib/path/context.js:[2m50:20[22m[39m
+[90m [2m❯[22m NodePath.call node_modules/@babel/traverse/lib/path/context.js:[2m40:18[22m[39m
+[90m [2m❯[22m NodePath.visit node_modules/@babel/traverse/lib/path/context.js:[2m87:31[22m[39m
+[90m [2m❯[22m TraversalContext.visitQueue node_modules/@babel/traverse/lib/context.js:[2m96:16[22m[39m
+[90m [2m❯[22m TraversalContext.visitSingle node_modules/@babel/traverse/lib/context.js:[2m72:19[22m[39m
+[90m [2m❯[22m TraversalContext.visit node_modules/@babel/traverse/lib/context.js:[2m119:19[22m[39m
+[90m [2m❯[22m traverseNode node_modules/@babel/traverse/lib/traverse-node.js:[2m130:17[22m[39m
+[90m [2m❯[22m traverse node_modules/@babel/traverse/lib/index.js:[2m53:34[22m[39m
+[90m [2m❯[22m transformFile node_modules/@babel/core/lib/transformation/index.js:[2m79:29[22m[39m
+[90m [2m❯[22m run node_modules/@babel/core/lib/transformation/index.js:[2m25:12[22m[39m
+[90m [2m❯[22m transform node_modules/@babel/core/lib/transform.js:[2m22:33[22m[39m
+[90m [2m❯[22m evaluateSync node_modules/gensync/index.js:[2m251:28[22m[39m
+[90m [2m❯[22m sync node_modules/gensync/index.js:[2m89:14[22m[39m
+[90m [2m❯[22m stopHiding - secret - don't use this - v1 node_modules/@babel/core/lib/errors/rewrite-stack-trace.js:[2m47:12[22m[39m
+[90m [2m❯[22m transformSync node_modules/@babel/core/lib/transform.js:[2m40:76[22m[39m
+[90m [2m❯[22m transform test/helpers/babelTransform.ts:[2m38:18[22m[39m
+[90m [2m❯[22m Module.transformWithConfig test/helpers/babelTransform.ts:[2m69:10[22m[39m
+[90m [2m❯[22m transformWithConfig src/babel/plugin.configProvider.test.ts:[2m26:10[22m[39m
+[90m [2m❯[22m src/babel/plugin.configProvider.test.ts:[2m585:20[22m[39m
+
+[31m[2m⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[24/27]⎯[22m[39m
+
+[41m[1m FAIL [22m[49m src/babel/plugin.configProvider.test.ts[2m > [22mconfigProvider E2E - real-world scenarios[2m > [22mtransforms a complete card component with multiple theme categories
+[31m[1mError[22m: /mock/project/src/test.tsx: [react-native-tailwind] Failed to write generated config module at /mock/project/.generated.tailwind.config.js: Error: ENOENT: no such file or directory, open '/mock/project/.generated.tailwind.config.js'[39m
+[36m [2m❯[22m writeConfigModule src/babel/utils/configModuleGenerator.ts:[2m110:11[22m[39m
+    [90m108| [39m    fs[33m.[39m[34mwriteFileSync[39m(outputPath[33m,[39m content[33m,[39m [32m"utf8"[39m)[33m;[39m
+    [90m109| [39m  } [35mcatch[39m (error) {
+    [90m110| [39m    [35mthrow[39m [35mnew[39m [33mError[39m(
+    [90m   | [39m          [31m^[39m
+    [90m111| [39m      `[react-native-tailwind] Failed to write generated config module…
+    [90m112| [39m    )[33m;[39m
+[90m [2m❯[22m PluginPass.enter src/babel/plugin.ts:[2m83:17[22m[39m
+[90m [2m❯[22m newFn node_modules/@babel/traverse/lib/visitors.js:[2m168:14[22m[39m
+[90m [2m❯[22m NodePath._call node_modules/@babel/traverse/lib/path/context.js:[2m50:20[22m[39m
+[90m [2m❯[22m NodePath.call node_modules/@babel/traverse/lib/path/context.js:[2m40:18[22m[39m
+[90m [2m❯[22m NodePath.visit node_modules/@babel/traverse/lib/path/context.js:[2m87:31[22m[39m
+[90m [2m❯[22m TraversalContext.visitQueue node_modules/@babel/traverse/lib/context.js:[2m96:16[22m[39m
+[90m [2m❯[22m TraversalContext.visitSingle node_modules/@babel/traverse/lib/context.js:[2m72:19[22m[39m
+[90m [2m❯[22m TraversalContext.visit node_modules/@babel/traverse/lib/context.js:[2m119:19[22m[39m
+[90m [2m❯[22m traverseNode node_modules/@babel/traverse/lib/traverse-node.js:[2m130:17[22m[39m
+[90m [2m❯[22m traverse node_modules/@babel/traverse/lib/index.js:[2m53:34[22m[39m
+[90m [2m❯[22m transformFile node_modules/@babel/core/lib/transformation/index.js:[2m79:29[22m[39m
+[90m [2m❯[22m run node_modules/@babel/core/lib/transformation/index.js:[2m25:12[22m[39m
+[90m [2m❯[22m transform node_modules/@babel/core/lib/transform.js:[2m22:33[22m[39m
+[90m [2m❯[22m evaluateSync node_modules/gensync/index.js:[2m251:28[22m[39m
+[90m [2m❯[22m sync node_modules/gensync/index.js:[2m89:14[22m[39m
+[90m [2m❯[22m stopHiding - secret - don't use this - v1 node_modules/@babel/core/lib/errors/rewrite-stack-trace.js:[2m47:12[22m[39m
+[90m [2m❯[22m transformSync node_modules/@babel/core/lib/transform.js:[2m40:76[22m[39m
+[90m [2m❯[22m transform test/helpers/babelTransform.ts:[2m38:18[22m[39m
+[90m [2m❯[22m Module.transformWithConfig test/helpers/babelTransform.ts:[2m69:10[22m[39m
+[90m [2m❯[22m transformWithConfig src/babel/plugin.configProvider.test.ts:[2m26:10[22m[39m
+[90m [2m❯[22m src/babel/plugin.configProvider.test.ts:[2m614:20[22m[39m
+
+[31m[2m⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[25/27]⎯[22m[39m
+
+[41m[1m FAIL [22m[49m src/babel/plugin.configProvider.test.ts[2m > [22mconfigProvider E2E - real-world scenarios[2m > [22mtransforms a theme-aware component with dark mode and platform modifiers
+[31m[1mError[22m: /mock/project/src/test.tsx: [react-native-tailwind] Failed to write generated config module at /mock/project/.generated.tailwind.config.js: Error: ENOENT: no such file or directory, open '/mock/project/.generated.tailwind.config.js'[39m
+[36m [2m❯[22m writeConfigModule src/babel/utils/configModuleGenerator.ts:[2m110:11[22m[39m
+    [90m108| [39m    fs[33m.[39m[34mwriteFileSync[39m(outputPath[33m,[39m content[33m,[39m [32m"utf8"[39m)[33m;[39m
+    [90m109| [39m  } [35mcatch[39m (error) {
+    [90m110| [39m    [35mthrow[39m [35mnew[39m [33mError[39m(
+    [90m   | [39m          [31m^[39m
+    [90m111| [39m      `[react-native-tailwind] Failed to write generated config module…
+    [90m112| [39m    )[33m;[39m
+[90m [2m❯[22m PluginPass.enter src/babel/plugin.ts:[2m83:17[22m[39m
+[90m [2m❯[22m newFn node_modules/@babel/traverse/lib/visitors.js:[2m168:14[22m[39m
+[90m [2m❯[22m NodePath._call node_modules/@babel/traverse/lib/path/context.js:[2m50:20[22m[39m
+[90m [2m❯[22m NodePath.call node_modules/@babel/traverse/lib/path/context.js:[2m40:18[22m[39m
+[90m [2m❯[22m NodePath.visit node_modules/@babel/traverse/lib/path/context.js:[2m87:31[22m[39m
+[90m [2m❯[22m TraversalContext.visitQueue node_modules/@babel/traverse/lib/context.js:[2m96:16[22m[39m
+[90m [2m❯[22m TraversalContext.visitSingle node_modules/@babel/traverse/lib/context.js:[2m72:19[22m[39m
+[90m [2m❯[22m TraversalContext.visit node_modules/@babel/traverse/lib/context.js:[2m119:19[22m[39m
+[90m [2m❯[22m traverseNode node_modules/@babel/traverse/lib/traverse-node.js:[2m130:17[22m[39m
+[90m [2m❯[22m traverse node_modules/@babel/traverse/lib/index.js:[2m53:34[22m[39m
+[90m [2m❯[22m transformFile node_modules/@babel/core/lib/transformation/index.js:[2m79:29[22m[39m
+[90m [2m❯[22m run node_modules/@babel/core/lib/transformation/index.js:[2m25:12[22m[39m
+[90m [2m❯[22m transform node_modules/@babel/core/lib/transform.js:[2m22:33[22m[39m
+[90m [2m❯[22m evaluateSync node_modules/gensync/index.js:[2m251:28[22m[39m
+[90m [2m❯[22m sync node_modules/gensync/index.js:[2m89:14[22m[39m
+[90m [2m❯[22m stopHiding - secret - don't use this - v1 node_modules/@babel/core/lib/errors/rewrite-stack-trace.js:[2m47:12[22m[39m
+[90m [2m❯[22m transformSync node_modules/@babel/core/lib/transform.js:[2m40:76[22m[39m
+[90m [2m❯[22m transform test/helpers/babelTransform.ts:[2m38:18[22m[39m
+[90m [2m❯[22m Module.transformWithConfig test/helpers/babelTransform.ts:[2m69:10[22m[39m
+[90m [2m❯[22m transformWithConfig src/babel/plugin.configProvider.test.ts:[2m26:10[22m[39m
+[90m [2m❯[22m src/babel/plugin.configProvider.test.ts:[2m648:20[22m[39m
+
+[31m[2m⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[26/27]⎯[22m[39m
+
+[41m[1m FAIL [22m[49m src/babel/plugin.configProvider.test.ts[2m > [22mconfigProvider E2E - real-world scenarios[2m > [22mtransforms conditional className (ternary) with literal values
+[31m[1mError[22m: /mock/project/src/test.tsx: [react-native-tailwind] Failed to write generated config module at /mock/project/.generated.tailwind.config.js: Error: ENOENT: no such file or directory, open '/mock/project/.generated.tailwind.config.js'[39m
+[36m [2m❯[22m writeConfigModule src/babel/utils/configModuleGenerator.ts:[2m110:11[22m[39m
+    [90m108| [39m    fs[33m.[39m[34mwriteFileSync[39m(outputPath[33m,[39m content[33m,[39m [32m"utf8"[39m)[33m;[39m
+    [90m109| [39m  } [35mcatch[39m (error) {
+    [90m110| [39m    [35mthrow[39m [35mnew[39m [33mError[39m(
+    [90m   | [39m          [31m^[39m
+    [90m111| [39m      `[react-native-tailwind] Failed to write generated config module…
+    [90m112| [39m    )[33m;[39m
+[90m [2m❯[22m PluginPass.enter src/babel/plugin.ts:[2m83:17[22m[39m
+[90m [2m❯[22m newFn node_modules/@babel/traverse/lib/visitors.js:[2m168:14[22m[39m
+[90m [2m❯[22m NodePath._call node_modules/@babel/traverse/lib/path/context.js:[2m50:20[22m[39m
+[90m [2m❯[22m NodePath.call node_modules/@babel/traverse/lib/path/context.js:[2m40:18[22m[39m
+[90m [2m❯[22m NodePath.visit node_modules/@babel/traverse/lib/path/context.js:[2m87:31[22m[39m
+[90m [2m❯[22m TraversalContext.visitQueue node_modules/@babel/traverse/lib/context.js:[2m96:16[22m[39m
+[90m [2m❯[22m TraversalContext.visitSingle node_modules/@babel/traverse/lib/context.js:[2m72:19[22m[39m
+[90m [2m❯[22m TraversalContext.visit node_modules/@babel/traverse/lib/context.js:[2m119:19[22m[39m
+[90m [2m❯[22m traverseNode node_modules/@babel/traverse/lib/traverse-node.js:[2m130:17[22m[39m
+[90m [2m❯[22m traverse node_modules/@babel/traverse/lib/index.js:[2m53:34[22m[39m
+[90m [2m❯[22m transformFile node_modules/@babel/core/lib/transformation/index.js:[2m79:29[22m[39m
+[90m [2m❯[22m run node_modules/@babel/core/lib/transformation/index.js:[2m25:12[22m[39m
+[90m [2m❯[22m transform node_modules/@babel/core/lib/transform.js:[2m22:33[22m[39m
+[90m [2m❯[22m evaluateSync node_modules/gensync/index.js:[2m251:28[22m[39m
+[90m [2m❯[22m sync node_modules/gensync/index.js:[2m89:14[22m[39m
+[90m [2m❯[22m stopHiding - secret - don't use this - v1 node_modules/@babel/core/lib/errors/rewrite-stack-trace.js:[2m47:12[22m[39m
+[90m [2m❯[22m transformSync node_modules/@babel/core/lib/transform.js:[2m40:76[22m[39m
+[90m [2m❯[22m transform test/helpers/babelTransform.ts:[2m38:18[22m[39m
+[90m [2m❯[22m Module.transformWithConfig test/helpers/babelTransform.ts:[2m69:10[22m[39m
+[90m [2m❯[22m transformWithConfig src/babel/plugin.configProvider.test.ts:[2m26:10[22m[39m
+[90m [2m❯[22m src/babel/plugin.configProvider.test.ts:[2m683:20[22m[39m
+
+[31m[2m⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[27/27]⎯[22m[39m
+
+
+[2m  Snapshots [22m [1m[33m27 obsolete[39m[22m
+[2m            [22m [90m↳[39m [2msrc/babel/[22m[1mplugin.configProvider[22m[2m.test.ts[22m
+[2m            [22m   [90m·[39m configProvider E2E - basic transforms > transforms border color config refs 1
+[2m            [22m   [90m·[39m configProvider E2E - basic transforms > transforms className with color and spacing config refs 1
+[2m            [22m   [90m·[39m configProvider E2E - basic transforms > transforms className with fontFamily config refs 1
+[2m            [22m   [90m·[39m configProvider E2E - basic transforms > transforms className with fontSize config refs 1
+[2m            [22m   [90m·[39m configProvider E2E - dark/light mode modifiers > transforms combined dark: and light: modifiers 1
+[2m            [22m   [90m·[39m configProvider E2E - dark/light mode modifiers > transforms dark: modifier with config refs and conditional structure 1
+[2m            [22m   [90m·[39m configProvider E2E - dark/light mode modifiers > transforms light: modifier with config refs 1
+[2m            [22m   [90m·[39m configProvider E2E - dark/light mode modifiers > transforms scheme: modifier with config refs in both branches 1
+[2m            [22m   [90m·[39m configProvider E2E - import path generation > generates correct import path from configProvider.importFrom 1
+[2m            [22m   [90m·[39m configProvider E2E - import path generation > uses __twConfig as the default import name 1
+[2m            [22m   [90m·[39m configProvider E2E - mixed refs and literals > keeps arbitrary values as literals 1
+[2m            [22m   [90m·[39m configProvider E2E - mixed refs and literals > keeps non-theme properties as literals 1
+[2m            [22m   [90m·[39m configProvider E2E - mixed refs and literals > keeps opacity-modified values as literals 1
+[2m            [22m   [90m·[39m configProvider E2E - mixed refs and literals > uses config refs for theme values and literals for built-in scales 1
+[2m            [22m   [90m·[39m configProvider E2E - multiple components > transforms mixed className and tw`` in same file 1
+[2m            [22m   [90m·[39m configProvider E2E - multiple components > transforms multiple className attributes in same file 1
+[2m            [22m   [90m·[39m configProvider E2E - multiple components > transforms multiple separate components in same file 1
+[2m            [22m   [90m·[39m configProvider E2E - negative cases > does not inject __twConfig when no theme-resolvable classes are used 1
+[2m            [22m   [90m·[39m configProvider E2E - platform modifiers > transforms android: modifier with config refs 1
+[2m            [22m   [90m·[39m configProvider E2E - platform modifiers > transforms combined ios: and android: modifiers with config refs 1
+[2m            [22m   [90m·[39m configProvider E2E - platform modifiers > transforms ios: modifier with config refs 1
+[2m            [22m   [90m·[39m configProvider E2E - real-world scenarios > transforms a complete card component with multiple theme categories 1
+[2m            [22m   [90m·[39m configProvider E2E - real-world scenarios > transforms a theme-aware component with dark mode and platform modifiers 1
+[2m            [22m   [90m·[39m configProvider E2E - real-world scenarios > transforms conditional className (ternary) with literal values 1
+[2m            [22m   [90m·[39m configProvider E2E - tw template literals > transforms tw`` with config refs 1
+[2m            [22m   [90m·[39m configProvider E2E - tw template literals > transforms tw`` with state modifiers and config refs 1
+[2m            [22m   [90m·[39m configProvider E2E - tw template literals > transforms twStyle() with config refs 1
+
+[2m Test Files [22m [1m[31m1 failed[39m[22m[90m (1)[39m
+[2m      Tests [22m [1m[31m27 failed[39m[22m[2m | [22m[1m[32m2 passed[39m[22m[90m (29)[39m
+[2m   Start at [22m 16:14:24
+[2m   Duration [22m 1.73s[2m (transform 492ms, setup 66ms, import 720ms, tests 334ms, environment 0ms)[22m
+
+error: script "spec" exited with code 1
+error: script "test" exited with code 1

@@ -1,0 +1,17 @@
+TASK 6 QA: __twConfig import injection
+=======================================
+Date: 2026-02-28
+Command: npx vitest run src/babel/plugin/visitors/program.test.ts
+
+RESULT: ✅ PASS
+- 21 tests passed (0 failed)
+- Import injected when configProvider enabled and refs present
+- No import when configProvider disabled
+- No import when configRefRegistry empty
+- Import path computed correctly (relative)
+- Import deduplication works
+
+OUTPUT:
+  ✓ src/babel/plugin/visitors/program.test.ts (21 tests) 200ms
+  Test Files: 1 passed (1)
+  Tests: 21 passed (21)

@@ -1,0 +1,9 @@
+8:import { dirname } from "node:path";
+9:import { findTailwindConfig } from "./config-loader.js";
+18:  generateConfigModule,
+19:  getConfigModulePath,
+20:  writeConfigModule,
+74:            const tailwindConfigPath = findTailwindConfig(dirname(state.file.opts.filename ?? ""));
+76:              const genPath = getConfigModulePath(tailwindConfigPath);
+78:                const content = generateConfigModule(
+83:                writeConfigModule(genPath, content);

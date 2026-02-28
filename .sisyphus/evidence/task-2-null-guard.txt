@@ -1,0 +1,3 @@
+49:    console.warn(
+88:              console.warn(
+89:                "[react-native-tailwind] No tailwind.config.* found. Config provider feature requires a tailwind config file.",

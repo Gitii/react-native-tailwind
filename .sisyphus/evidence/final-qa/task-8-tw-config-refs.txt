@@ -1,0 +1,17 @@
+TASK 8 QA: Config ref registration in tw visitor
+=================================================
+Date: 2026-02-28
+Command: npx vitest run src/babel/plugin/visitors/tw.test.ts
+
+RESULT: ✅ PASS
+- 41 tests passed (0 failed)
+- tw`bg-blue-500` with configProvider → contains __twConfig.theme.colors["blue-500"]
+- twStyle() with configProvider → contains config refs
+- Multiple theme properties → all refs registered
+- Without configProvider → no __twConfig import
+- State modifiers with configProvider → refs for all styles
+
+OUTPUT:
+  ✓ src/babel/plugin/visitors/tw.test.ts (41 tests) 206ms
+  Test Files: 1 passed (1)
+  Tests: 41 passed (41)

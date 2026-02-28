@@ -1,0 +1,30 @@
+BACKWARD COMPATIBILITY TESTS
+=============================
+Date: 2026-02-28
+Method: Direct transform tests via final-qa-integration.test.ts
+
+RESULT: ✅ ALL 4 BACKWARD COMPATIBILITY TESTS PASS
+
+Test 1: No configProvider (no __twConfig import)
+  Input: <View className="bg-blue-500 p-4" /> WITHOUT configProvider
+  ✅ Output does NOT contain __twConfig
+  ✅ Output contains literal hex color (#2b7fff)
+  ✅ Output contains literal spacing value (16)
+  ✅ StyleSheet.create present
+
+Test 2: Arbitrary values stay as literals
+  Input: <View className="bg-[#ff0000] p-[16px]" /> WITH configProvider
+  ✅ Output contains literal "#ff0000"
+  ✅ Output contains literal 16
+  ✅ No config refs for arbitrary values
+
+Test 3: Opacity-modified values stay as literals
+  Input: <View className="bg-blue-500/50" /> WITH configProvider
+  ✅ No __twConfig.theme.colors["blue-500/50"] (no ref for computed)
+  ✅ No __twConfig.theme.colors["blue-500"] (opacity = computed = literal)
+
+Test 4: Built-in scales stay as literals
+  Input: <View className="rounded-lg"><Text className="font-bold" /></View> WITH configProvider
+  ✅ No __twConfig.theme.borderRadius (built-in scale)
+  ✅ No __twConfig.theme.fontWeight (built-in scale)
+  ✅ Literal value 8 for rounded-lg present

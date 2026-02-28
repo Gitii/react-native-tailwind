@@ -1,0 +1,23 @@
+=== Running bun run build ===
+$ bun run build:babel && bun run build:babel-plugin && bun run build:runtime && bun run build:types
+$ babel src --out-dir dist --extensions ".ts,.tsx,.js,.jsx" --copy-files --ignore 'src/babel/**' --ignore '**/*.d.ts'
+Successfully compiled 52 files with Babel (2917ms).
+$ node --experimental-strip-types scripts/bundle-babel-plugin.ts
+✓ Babel plugin bundled successfully
+$ node --experimental-strip-types scripts/bundle-runtime.ts
+✓ Built ESM runtime bundle: dist/runtime.js
+✓ Built CommonJS runtime bundle: dist/runtime.cjs
+$ tsc --project tsconfig.build.json --emitDeclarationOnly && node --experimental-strip-types scripts/post-build-types.ts
+✓ Copied react-native.d.ts to dist/
+
+=== Running bun run check ===
+$ tsc --noEmit
+
+=== Running bun run lint ===
+$ eslint src/
+
+/home/germinii/projects/react-native-tailwind.feat-init-only-config/src/babel/plugin/visitors/className.test.ts
+  343:6  warning  Disabled test - if you want to skip a test temporarily, use .todo() instead  vitest/no-disabled-tests
+
+✖ 1 problem (0 errors, 1 warning)
+

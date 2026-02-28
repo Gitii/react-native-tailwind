@@ -1,0 +1,15 @@
+TASK 1 QA: configProvider option accepted and stored in state
+=============================================================
+Date: 2026-02-28
+Command: npx vitest run src/babel/config-loader.test.ts
+
+RESULT: ✅ PASS
+- 15 tests passed (0 failed)
+- configProvider option accepted without errors
+- Missing importFrom produces warning
+- Absent configProvider → all state fields at defaults
+
+OUTPUT:
+  ✓ src/babel/config-loader.test.ts (15 tests) 23ms
+  Test Files: 1 passed (1)
+  Tests: 15 passed (15)

@@ -1,0 +1,6 @@
+=== Checking for stale configProviderImportFrom in snapshots ===
+✓ ZERO occurrences of configProviderImportFrom found
+
+=== Checking __twConfig imports point to .generated.tailwind.config ===
+22
+✓ All __twConfig imports point to .generated.tailwind.config

@@ -6,6 +6,7 @@ import type { NodePath } from "@babel/core";
 import type * as BabelTypes from "@babel/types";
 import {
   addColorSchemeImport,
+  addConfigImport,
   addI18nManagerImport,
   addPlatformImport,
   addStyleSheetImport,
@@ -111,6 +112,19 @@ export function programExit(
   // This ensures _twStyles is defined before any code that references it
   // Only inject if we actually have styles to inject
   if (state.styleRegistry.size > 0) {
-    injectStylesAtTop(path, state.styleRegistry, state.stylesIdentifier, t);
+    injectStylesAtTop(
+      path,
+      state.styleRegistry,
+      state.stylesIdentifier,
+      t,
+      state.configProviderEnabled ? state.configRefRegistry : undefined,
+    );
+  }
+
+  // Inject __twConfig import if configProvider is enabled and refs were used
+  if (state.configProviderEnabled && state.configRefRegistry.size > 0) {
+    if (state.generatedConfigPath) {
+      addConfigImport(path, state.generatedConfigPath, state.file.opts.filename ?? "", t);
+    }
   }
 }

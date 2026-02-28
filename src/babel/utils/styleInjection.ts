@@ -4,6 +4,7 @@
 
 import type { NodePath } from "@babel/core";
 import type * as BabelTypes from "@babel/types";
+import { dirname, relative, sep } from "node:path";
 import type { StyleObject } from "../../types/core.js";
 
 /**
@@ -475,6 +476,103 @@ export function injectWindowDimensionsHook(
 }
 
 /**
+ * Build a chained config reference expression.
+ *
+ * @example
+ * buildConfigRefExpression(["theme", "colors", "blue-500"], "__twConfig", t)
+ * // -> __twConfig.theme.colors["blue-500"]
+ *
+ * @example
+ * buildConfigRefExpression(["theme", "spacing", "4"], "__twConfig", t)
+ * // -> __twConfig.theme.spacing["4"]
+ */
+export function buildConfigRefExpression(
+  path: string[],
+  configIdentifier: string,
+  t: typeof BabelTypes,
+): BabelTypes.MemberExpression {
+  let expression: BabelTypes.Expression = t.identifier(configIdentifier);
+
+  for (const segment of path) {
+    const needsComputed = segment.includes("-") || /^\d/.test(segment);
+    expression = needsComputed
+      ? t.memberExpression(expression, t.stringLiteral(segment), true)
+      : t.memberExpression(expression, t.identifier(segment));
+  }
+
+  return expression as BabelTypes.MemberExpression;
+}
+
+/**
+ * Add __twConfig import to the file from the generated config module.
+ * Computes a relative path from the current source file to the config module,
+ * using posix separators for cross-platform compatibility.
+ *
+ * @param path - Program path
+ * @param configModulePath - Absolute path to the generated config module
+ * @param currentFilePath - Absolute path of the file being processed
+ * @param t - Babel types
+ */
+export function addConfigImport(
+  path: NodePath<BabelTypes.Program>,
+  configModulePath: string,
+  currentFilePath: string,
+  t: typeof BabelTypes,
+): void {
+  // Compute relative import path
+  const currentDir = dirname(currentFilePath);
+  let relativePath = relative(currentDir, configModulePath);
+
+  // Ensure posix separators (Windows compat)
+  relativePath = relativePath.split(sep).join("/");
+
+  // Ensure ./ prefix for relative imports
+  if (!relativePath.startsWith("./") && !relativePath.startsWith("../")) {
+    relativePath = "./" + relativePath;
+  }
+
+  // Remove .js extension if present
+  if (relativePath.endsWith(".js")) {
+    relativePath = relativePath.slice(0, -3);
+  }
+
+  // Check if import already exists
+  const body = path.node.body;
+  for (const statement of body) {
+    if (t.isImportDeclaration(statement) && statement.source.value === relativePath) {
+      // Check if __twConfig is already imported
+      const hasConfigImport = statement.specifiers.some(
+        (spec) =>
+          t.isImportSpecifier(spec) && t.isIdentifier(spec.imported) && spec.imported.name === "__twConfig",
+      );
+      if (hasConfigImport) return;
+
+      // Add __twConfig to existing import
+      statement.specifiers.push(t.importSpecifier(t.identifier("__twConfig"), t.identifier("__twConfig")));
+      return;
+    }
+  }
+
+  // Create new import declaration
+  const importDeclaration = t.importDeclaration(
+    [t.importSpecifier(t.identifier("__twConfig"), t.identifier("__twConfig"))],
+    t.stringLiteral(relativePath),
+  );
+
+  // Insert after other imports
+  let insertIndex = 0;
+  for (let i = 0; i < body.length; i++) {
+    if (t.isImportDeclaration(body[i])) {
+      insertIndex = i + 1;
+    } else {
+      break;
+    }
+  }
+
+  body.splice(insertIndex, 0, importDeclaration);
+}
+
+/**
  * Inject StyleSheet.create with all collected styles at the top of the file
  * This ensures the styles object is defined before any code that references it
  */
@@ -483,20 +581,26 @@ export function injectStylesAtTop(
   styleRegistry: Map<string, StyleObject>,
   stylesIdentifier: string,
   t: typeof BabelTypes,
+  configRefRegistry?: Map<string, Map<string, string[]>>,
+  configIdentifier = "__twConfig",
 ): void {
   // Build style object properties
   const styleProperties: BabelTypes.ObjectProperty[] = [];
 
   for (const [key, styleObject] of styleRegistry) {
     const properties = Object.entries(styleObject).map(([styleProp, styleValue]) => {
-      let valueNode;
+      let valueNode: BabelTypes.Expression;
 
-      if (typeof styleValue === "number") {
+      const refs = configRefRegistry?.get(key);
+      const refPath = refs?.get(styleProp);
+
+      if (refPath && typeof styleValue !== "object") {
+        valueNode = buildConfigRefExpression(refPath, configIdentifier, t);
+      } else if (typeof styleValue === "number") {
         valueNode = t.numericLiteral(styleValue);
       } else if (typeof styleValue === "string") {
         valueNode = t.stringLiteral(styleValue);
       } else {
-        // Fallback for other types
         valueNode = t.valueToNode(styleValue);
       }
 

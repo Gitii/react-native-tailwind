@@ -1,0 +1,1 @@
+node --check passed for .sisyphus/evidence/task-3-generated.config.js

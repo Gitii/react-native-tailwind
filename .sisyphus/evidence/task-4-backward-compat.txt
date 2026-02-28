@@ -1,0 +1,160 @@
+
+[1m[46m RUN [49m[22m [36mv4.0.18 [39m[90m/home/germinii/projects/react-native-tailwind.feat-init-only-config[39m
+
+ [32m✓[39m src/babel/utils/configModuleGenerator.test.ts [2m([22m[2m10 tests[22m[2m)[22m[32m 64[2mms[22m[39m
+ [32m✓[39m src/babel/utils/styleTransforms.test.ts [2m([22m[2m13 tests[22m[2m)[22m[32m 248[2mms[22m[39m
+ [32m✓[39m src/babel/plugin/visitors/program.test.ts [2m([22m[2m14 tests[22m[2m)[22m[33m 405[2mms[22m[39m
+ [32m✓[39m src/babel/plugin/visitors/className.windowDimensions.test.ts [2m([22m[2m22 tests[22m[2m)[22m[33m 423[2mms[22m[39m
+ [32m✓[39m src/babel/plugin/visitors/tw.test.ts [2m([22m[2m36 tests[22m[2m)[22m[33m 590[2mms[22m[39m
+ [32m✓[39m src/babel/plugin/visitors/className.test.ts [2m([22m[2m66 tests[22m[2m | [22m[33m1 skipped[39m[2m)[22m[33m 718[2mms[22m[39m
+[90mstderr[2m | src/parser/layout.test.ts[2m > [22m[2mparseLayout - flex grow/shrink utilities[2m > [22m[2mshould reject negative values
+[22m[39m[react-native-tailwind] Invalid arbitrary grow/shrink value: [-1]. Only non-negative numbers are supported (e.g., [1.5], [2], [0.5], [.5]).
+[react-native-tailwind] Invalid arbitrary grow/shrink value: [-1]. Only non-negative numbers are supported (e.g., [1.5], [2], [0.5], [.5]).
+[react-native-tailwind] Invalid arbitrary grow/shrink value: [-2]. Only non-negative numbers are supported (e.g., [1.5], [2], [0.5], [.5]).
+[react-native-tailwind] Invalid arbitrary grow/shrink value: [-0.5]. Only non-negative numbers are supported (e.g., [1.5], [2], [0.5], [.5]).
+
+ [32m✓[39m src/parser/layout.test.ts [2m([22m[2m128 tests[22m[2m)[22m[32m 42[2mms[22m[39m
+ [32m✓[39m src/babel/plugin/visitors/imports.test.ts [2m([22m[2m4 tests[22m[2m)[22m[32m 154[2mms[22m[39m
+ [32m✓[39m src/babel/utils/componentSupport.test.ts [2m([22m[2m36 tests[22m[2m)[22m[32m 114[2mms[22m[39m
+[90mstderr[2m | src/parser/colors.test.ts[2m > [22m[2mparseColor - edge cases[2m > [22m[2mshould return null for invalid arbitrary hex values
+[22m[39m[react-native-tailwind] Unsupported arbitrary color value: [#ff]. Only hex colors are supported (e.g., [#ff0000], [#f00], or [#ff0000aa]).
+[react-native-tailwind] Unsupported arbitrary color value: [#ffff]. Only hex colors are supported (e.g., [#ff0000], [#f00], or [#ff0000aa]).
+[react-native-tailwind] Unsupported arbitrary color value: [#fffff]. Only hex colors are supported (e.g., [#ff0000], [#f00], or [#ff0000aa]).
+[react-native-tailwind] Unsupported arbitrary color value: [#fffffff]. Only hex colors are supported (e.g., [#ff0000], [#f00], or [#ff0000aa]).
+[react-native-tailwind] Unsupported arbitrary color value: [#fffffffff]. Only hex colors are supported (e.g., [#ff0000], [#f00], or [#ff0000aa]).
+
+[90mstderr[2m | src/parser/colors.test.ts[2m > [22m[2mparseColor - edge cases[2m > [22m[2mshould return null for non-hex arbitrary values
+[22m[39m[react-native-tailwind] Unsupported arbitrary color value: [#gggggg]. Only hex colors are supported (e.g., [#ff0000], [#f00], or [#ff0000aa]).
+[react-native-tailwind] Unsupported arbitrary color value: [#zzzzzz]. Only hex colors are supported (e.g., [#ff0000], [#f00], or [#ff0000aa]).
+
+[90mstderr[2m | src/parser/colors.test.ts[2m > [22m[2mparseColor - opacity modifiers[2m > [22m[2mshould return null for invalid opacity values
+[22m[39m[react-native-tailwind] Invalid opacity value: 101. Opacity must be between 0 and 100.
+[react-native-tailwind] Invalid opacity value: 150. Opacity must be between 0 and 100.
+
+ [32m✓[39m src/parser/colors.test.ts [2m([22m[2m79 tests[22m[2m)[22m[32m 38[2mms[22m[39m
+[90mstderr[2m | src/parser/transforms.test.ts[2m > [22m[2mparseTransform - transform origin warning[2m > [22m[2mshould return null and warn for origin classes
+[22m[39m[react-native-tailwind] transform-origin is not supported in React Native. Class "origin-center" will be ignored.
+[react-native-tailwind] transform-origin is not supported in React Native. Class "origin-top" will be ignored.
+[react-native-tailwind] transform-origin is not supported in React Native. Class "origin-left" will be ignored.
+
+ [32m✓[39m src/parser/transforms.test.ts [2m([22m[2m67 tests[22m[2m)[22m[32m 32[2mms[22m[39m
+ [32m✓[39m src/test/helpers/babelTransform.test.ts [2m([22m[2m6 tests[22m[2m)[22m[32m 189[2mms[22m[39m
+[90mstderr[2m | src/parser/typography.test.ts[2m > [22m[2mparseTypography - edge cases[2m > [22m[2mshould return null for arbitrary values with unsupported units
+[22m[39m[react-native-tailwind] Unsupported arbitrary font size value: [16rem]. Only px values are supported (e.g., [18px], [13.5px], [.5]).
+[react-native-tailwind] Unsupported arbitrary font size value: [2em]. Only px values are supported (e.g., [18px], [13.5px], [.5]).
+[react-native-tailwind] Unsupported arbitrary line height value: [2rem]. Only px values are supported (e.g., [24px], [21.5px], [.5]).
+[react-native-tailwind] Unsupported arbitrary line height value: [1.5em]. Only px values are supported (e.g., [24px], [21.5px], [.5]).
+
+[90mstderr[2m | src/parser/typography.test.ts[2m > [22m[2mparseTypography - edge cases[2m > [22m[2mshould return null for malformed arbitrary values
+[22m[39m[react-native-tailwind] Unsupported arbitrary font size value: []. Only px values are supported (e.g., [18px], [13.5px], [.5]).
+
+ [32m✓[39m src/parser/typography.test.ts [2m([22m[2m39 tests[22m[2m)[22m[32m 26[2mms[22m[39m
+[90mstderr[2m | src/parser/spacing.test.ts[2m > [22m[2mparseSpacing - edge cases[2m > [22m[2mshould return null for arbitrary values with unsupported units
+[22m[39m[react-native-tailwind] Unsupported arbitrary spacing value: [16rem]. Only px values are supported (e.g., [16px], [16], [4.5px], [4.5]).
+[react-native-tailwind] Unsupported arbitrary spacing value: [2em]. Only px values are supported (e.g., [16px], [16], [4.5px], [4.5]).
+[react-native-tailwind] Unsupported arbitrary spacing value: [50%]. Only px values are supported (e.g., [16px], [16], [4.5px], [4.5]).
+
+[90mstderr[2m | src/parser/spacing.test.ts[2m > [22m[2mparseSpacing - edge cases[2m > [22m[2mshould return null for malformed arbitrary values
+[22m[39m[react-native-tailwind] Unsupported arbitrary spacing value: []. Only px values are supported (e.g., [16px], [16], [4.5px], [4.5]).
+
+ [32m✓[39m src/parser/spacing.test.ts [2m([22m[2m75 tests[22m[2m)[22m[32m 38[2mms[22m[39m
+ [32m✓[39m src/runtime.test.ts [2m([22m[2m36 tests[22m[2m)[22m[32m 31[2mms[22m[39m
+[90mstderr[2m | src/parser/modifiers.test.ts[2m > [22m[2mexpandSchemeModifier[2m > [22m[2mshould use custom suffixes when provided
+[22m[39m[react-native-tailwind] scheme:text-systemGray requires both color variants to exist. Missing: systemGray-darkMode, systemGray-lightMode. This modifier will be ignored.
+
+[90mstderr[2m | src/parser/modifiers.test.ts[2m > [22m[2mexpandSchemeModifier[2m > [22m[2mshould return empty array for non-color classes
+[22m[39m[react-native-tailwind] scheme: modifier only supports color classes (text-*, bg-*, border-*). Found: "m-4". This modifier will be ignored.
+
+[90mstderr[2m | src/parser/modifiers.test.ts[2m > [22m[2mexpandSchemeModifier[2m > [22m[2mshould return empty array when dark color variant is missing
+[22m[39m[react-native-tailwind] scheme:text-missing requires both color variants to exist. Missing: missing-dark. This modifier will be ignored.
+
+[90mstderr[2m | src/parser/modifiers.test.ts[2m > [22m[2mexpandSchemeModifier[2m > [22m[2mshould return empty array when light color variant is missing
+[22m[39m[react-native-tailwind] scheme:text-missing requires both color variants to exist. Missing: missing-light. This modifier will be ignored.
+
+[90mstderr[2m | src/parser/modifiers.test.ts[2m > [22m[2mexpandSchemeModifier[2m > [22m[2mshould return empty array when both color variants are missing
+[22m[39m[react-native-tailwind] scheme:text-missing requires both color variants to exist. Missing: missing-dark, missing-light. This modifier will be ignored.
+
+ [32m✓[39m src/parser/modifiers.test.ts [2m([22m[2m74 tests[22m[2m)[22m[32m 36[2mms[22m[39m
+[90mstderr[2m | src/parser/sizing.test.ts[2m > [22m[2mparseSizing - edge cases[2m > [22m[2mshould return null for arbitrary values with unsupported units
+[22m[39m[react-native-tailwind] Unsupported arbitrary size unit: [16rem]. Only px and % are supported.
+[react-native-tailwind] Unsupported arbitrary size unit: [2em]. Only px and % are supported.
+[react-native-tailwind] Unsupported arbitrary size unit: [50vh]. Only px and % are supported.
+[react-native-tailwind] Unsupported arbitrary size unit: [100vw]. Only px and % are supported.
+
+[90mstderr[2m | src/parser/sizing.test.ts[2m > [22m[2mparseSizing - edge cases[2m > [22m[2mshould return null for malformed arbitrary values
+[22m[39m[react-native-tailwind] Unsupported arbitrary size unit: []. Only px and % are supported.
+
+[90mstderr[2m | src/parser/sizing.test.ts[2m > [22m[2mparseSizing - size (width + height)[2m > [22m[2mshould return null for arbitrary values with unsupported units
+[22m[39m[react-native-tailwind] Unsupported arbitrary size unit: [16rem]. Only px and % are supported.
+[react-native-tailwind] Unsupported arbitrary size unit: [2em]. Only px and % are supported.
+[react-native-tailwind] Unsupported arbitrary size unit: [50vh]. Only px and % are supported.
+
+ [32m✓[39m src/parser/sizing.test.ts [2m([22m[2m61 tests[22m[2m)[22m[32m 29[2mms[22m[39m
+[90mstderr[2m | src/babel/config-loader.test.ts[2m > [22m[2mconfig-loader[2m > [22m[2mloadTailwindConfig[2m > [22m[2mshould cache loaded configs
+[22m[39m[react-native-tailwind] Failed to load config from /project/tailwind.config.js: Error: Cannot find module '/project/tailwind.config.js'
+Require stack:
+- /home/germinii/projects/react-native-tailwind.feat-init-only-config/src/babel/config-loader.ts
+[90m    at Module._resolveFilename (node:internal/modules/cjs/loader:1456:15)[39m
+[90m    at require.resolve (node:internal/modules/helpers:163:19)[39m
+    at Module.loadTailwindConfig [90m(/home/germinii/projects/react-native-tailwind.feat-init-only-config/[39msrc/babel/config-loader.ts:122:34[90m)[39m
+    at [90m/home/germinii/projects/react-native-tailwind.feat-init-only-config/[39msrc/babel/config-loader.test.ts:113:23
+    at [90mfile:///home/germinii/projects/react-native-tailwind.feat-init-only-config/[39mnode_modules/[4m@vitest/runner[24m/dist/index.js:145:11
+    at [90mfile:///home/germinii/projects/react-native-tailwind.feat-init-only-config/[39mnode_modules/[4m@vitest/runner[24m/dist/index.js:915:26
+    at [90mfile:///home/germinii/projects/react-native-tailwind.feat-init-only-config/[39mnode_modules/[4m@vitest/runner[24m/dist/index.js:1243:20
+    at new Promise (<anonymous>)
+    at runWithTimeout [90m(file:///home/germinii/projects/react-native-tailwind.feat-init-only-config/[39mnode_modules/[4m@vitest/runner[24m/dist/index.js:1209:10[90m)[39m
+    at [90mfile:///home/germinii/projects/react-native-tailwind.feat-init-only-config/[39mnode_modules/[4m@vitest/runner[24m/dist/index.js:1653:37 {
+  code: [32m'MODULE_NOT_FOUND'[39m,
+  requireStack: [
+    [32m'/home/germinii/projects/react-native-tailwind.feat-init-only-config/src/babel/config-loader.ts'[39m
+  ]
+}
+
+ [32m✓[39m src/babel/config-loader.test.ts [2m([22m[2m15 tests[22m[2m)[22m[32m 29[2mms[22m[39m
+ [32m✓[39m src/parser/shadows.test.ts [2m([22m[2m35 tests[22m[2m)[22m[32m 22[2mms[22m[39m
+[90mstderr[2m | src/parser/borders.test.ts[2m > [22m[2mparseBorder - edge cases[2m > [22m[2mshould return null for arbitrary values with unsupported units
+[22m[39m[react-native-tailwind] Unsupported arbitrary border width value: [2rem]. Only px values are supported (e.g., [8px] or [8]).
+[react-native-tailwind] Unsupported arbitrary border width value: [1em]. Only px values are supported (e.g., [8px] or [8]).
+[react-native-tailwind] Unsupported arbitrary border radius value: [2rem]. Only px values are supported (e.g., [12px] or [12]).
+[react-native-tailwind] Unsupported arbitrary border radius value: [1em]. Only px values are supported (e.g., [12px] or [12]).
+
+ [32m✓[39m src/parser/borders.test.ts [2m([22m[2m52 tests[22m[2m)[22m[32m 31[2mms[22m[39m
+ [32m✓[39m src/utils/colorUtils.test.ts [2m([22m[2m27 tests[22m[2m)[22m[32m 15[2mms[22m[39m
+[90mstderr[2m | src/parser/placeholder.test.ts[2m > [22m[2mparsePlaceholderClass[2m > [22m[2mshould return null for non-text color classes
+[22m[39m[react-native-tailwind] Only text color utilities are supported in placeholder: modifier. Class "font-bold" will be ignored. React Native only supports placeholderTextColor prop.
+[react-native-tailwind] Only text color utilities are supported in placeholder: modifier. Class "italic" will be ignored. React Native only supports placeholderTextColor prop.
+
+[90mstderr[2m | src/parser/placeholder.test.ts[2m > [22m[2mparsePlaceholderClasses[2m > [22m[2mshould ignore non-color classes and return last valid color
+[22m[39m[react-native-tailwind] Only text color utilities are supported in placeholder: modifier. Class "font-bold" will be ignored. React Native only supports placeholderTextColor prop.
+[react-native-tailwind] Only text color utilities are supported in placeholder: modifier. Class "font-bold" will be ignored. React Native only supports placeholderTextColor prop.
+
+[90mstderr[2m | src/parser/placeholder.test.ts[2m > [22m[2mparsePlaceholderClasses[2m > [22m[2mshould return null if no valid colors found
+[22m[39m[react-native-tailwind] Only text color utilities are supported in placeholder: modifier. Class "font-bold" will be ignored. React Native only supports placeholderTextColor prop.
+[react-native-tailwind] Only text color utilities are supported in placeholder: modifier. Class "italic" will be ignored. React Native only supports placeholderTextColor prop.
+
+ [32m✓[39m src/parser/placeholder.test.ts [2m([22m[2m13 tests[22m[2m)[22m[32m 12[2mms[22m[39m
+[90mstderr[2m | src/parser/outline.test.ts[2m > [22m[2mparseOutline[2m > [22m[2mshould return null for invalid outline values
+[22m[39m[react-native-tailwind] Unsupported arbitrary outline value: [5rem]. Only px values are supported (e.g., [8px] or [8]).
+
+[90mstderr[2m | src/parser/outline.test.ts[2m > [22m[2mparseOutline[2m > [22m[2mshould return null for outline colors (handled by parseColor)
+[22m[39m[react-native-tailwind] Unsupported arbitrary outline value: [#ff0000]. Only px values are supported (e.g., [8px] or [8]).
+
+ [32m✓[39m src/parser/outline.test.ts [2m([22m[2m9 tests[22m[2m)[22m[32m 22[2mms[22m[39m
+[90mstderr[2m | src/parser/aspectRatio.test.ts[2m > [22m[2mparseAspectRatio - edge cases[2m > [22m[2mshould return null for division by zero
+[22m[39m[react-native-tailwind] Invalid aspect ratio: [4/0]. Denominator cannot be zero.
+[react-native-tailwind] Invalid aspect ratio: [16/0]. Denominator cannot be zero.
+
+ [32m✓[39m src/parser/aspectRatio.test.ts [2m([22m[2m28 tests[22m[2m)[22m[32m 27[2mms[22m[39m
+ [32m✓[39m src/utils/modifiers.test.ts [2m([22m[2m38 tests[22m[2m)[22m[32m 15[2mms[22m[39m
+ [32m✓[39m src/babel/utils/attributeMatchers.test.ts [2m([22m[2m27 tests[22m[2m)[22m[32m 16[2mms[22m[39m
+ [32m✓[39m src/utils/flattenColors.test.ts [2m([22m[2m27 tests[22m[2m)[22m[32m 13[2mms[22m[39m
+ [32m✓[39m src/utils/mergeStyles.test.ts [2m([22m[2m14 tests[22m[2m)[22m[32m 7[2mms[22m[39m
+ [32m✓[39m src/utils/styleKey.test.ts [2m([22m[2m23 tests[22m[2m)[22m[32m 9[2mms[22m[39m
+ [32m✓[39m src/stubs/tw.test.ts [2m([22m[2m3 tests[22m[2m)[22m[32m 5[2mms[22m[39m
+ [32m✓[39m src/babel/utils/configRefResolver.test.ts [2m([22m[2m12 tests[22m[2m)[22m[32m 13[2mms[22m[39m
+
+[2m Test Files [22m [1m[32m31 passed[39m[22m[90m (31)[39m
+[2m      Tests [22m [1m[32m1088 passed[39m[22m[2m | [22m[33m1 skipped[39m[90m (1089)[39m
+[2m   Start at [22m 13:29:00
+[2m   Duration [22m 3.45s[2m (transform 2.43s, setup 973ms, import 5.67s, tests 3.41s, environment 6ms)[22m
+

@@ -1,0 +1,28 @@
+EDGE CASE TESTS
+================
+Date: 2026-02-28
+Method: Direct transform tests via final-qa-integration.test.ts
+
+RESULT: ✅ ALL 5 EDGE CASES PASS
+
+1. Empty className
+   Input: <View className="" /> with configProvider
+   ✅ No crash, no __twConfig import
+
+2. Non-theme classes only
+   Input: <View className="flex-1 items-center justify-center" /> with configProvider
+   ✅ No __twConfig import (layout classes are not theme-derived)
+
+3. Multiple same-property colors collapse to last (CSS behavior)
+   Input: <View className="bg-blue-500 bg-gray-100 bg-red-700" /> with configProvider
+   ✅ Only last color (red-700) in output (CSS specificity)
+   ✅ Config ref __twConfig.theme.colors["red-700"] present
+
+4. Multiple spacing values in one component
+   Input: <View className="m-2 p-4 gap-6" /> with configProvider
+   ✅ All three spacing refs present: spacing["2"], spacing["4"], spacing["6"]
+
+5. Mixed theme and non-theme in same className
+   Input: <View className="bg-blue-500 flex-1 p-4 rounded-lg items-center" /> with configProvider
+   ✅ Theme-derived (bg-blue-500, p-4) → config refs
+   ✅ Non-theme (flex-1, rounded-lg, items-center) → literals

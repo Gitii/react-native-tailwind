@@ -1,0 +1,18 @@
+TASK 3 QA: Config module generator tests
+=========================================
+Date: 2026-02-28
+Command: npx vitest run src/babel/utils/configModuleGenerator.test.ts
+
+RESULT: ✅ PASS
+- 10 tests passed (0 failed)
+- Generated config has nested color structure
+- Contains _flattenColors helper function
+- __twConfig exports flattened colors
+- Spacing/fontFamily/fontSize passed through (no flattening)
+- Custom importName reflected in output
+- Idempotent file writing
+
+OUTPUT:
+  ✓ src/babel/utils/configModuleGenerator.test.ts (10 tests) 42ms
+  Test Files: 1 passed (1)
+  Tests: 10 passed (10)

@@ -15,6 +15,8 @@ import {
 import type { SchemeModifierConfig } from "../../types/config.js";
 import type { StyleObject } from "../../types/core.js";
 import { processColorSchemeModifiers } from "./colorSchemeModifierProcessing.js";
+import type { FullResolvedTheme } from "./configRefResolver.js";
+import { resolveConfigRefs } from "./configRefResolver.js";
 import { processDirectionalModifiers } from "./directionalModifierProcessing.js";
 import { processPlatformModifiers } from "./platformModifierProcessing.js";
 import { injectColorSchemeHook } from "./styleInjection.js";
@@ -40,6 +42,22 @@ export interface TwProcessingState {
   // Directional support (for rtl:/ltr: modifiers)
   needsI18nManagerImport: boolean;
   i18nManagerVariableName: string;
+  // Config provider support
+  configProviderEnabled: boolean;
+  configRefRegistry: Map<string, Map<string, string[]>>;
+  fullResolvedTheme: FullResolvedTheme;
+}
+
+/**
+ * Register config refs for a style key if configProvider is enabled.
+ * Must be called immediately after each styleRegistry.set() call.
+ */
+function registerTwConfigRefs(state: TwProcessingState, styleKey: string, className: string): void {
+  if (!state.configProviderEnabled) return;
+  const refs = resolveConfigRefs(className, state.fullResolvedTheme);
+  if (refs.size > 0) {
+    state.configRefRegistry.set(styleKey, refs);
+  }
 }
 
 /**
@@ -97,6 +115,7 @@ export function processTwCall(
 
     const baseStyleKey = generateStyleKey(baseClassName);
     state.styleRegistry.set(baseStyleKey, baseStyleObject);
+    registerTwConfigRefs(state, baseStyleKey, baseClassName);
 
     objectProperties.push(
       t.objectProperty(
@@ -171,6 +190,7 @@ export function processTwCall(
       const baseStyleObject = parseClassName(baseClassName, state.customTheme);
       const baseStyleKey = generateStyleKey(baseClassName);
       state.styleRegistry.set(baseStyleKey, baseStyleObject);
+      registerTwConfigRefs(state, baseStyleKey, baseClassName);
       styleArrayElements.push(
         t.memberExpression(t.identifier(state.stylesIdentifier), t.identifier(baseStyleKey)),
       );
@@ -192,6 +212,7 @@ export function processTwCall(
       const darkStyleObject = parseClassName(darkClassNames, state.customTheme);
       const darkStyleKey = generateStyleKey(`dark_${darkClassNames}`);
       state.styleRegistry.set(darkStyleKey, darkStyleObject);
+      registerTwConfigRefs(state, darkStyleKey, darkClassNames);
 
       objectProperties.push(
         t.objectProperty(
@@ -206,6 +227,7 @@ export function processTwCall(
       const lightStyleObject = parseClassName(lightClassNames, state.customTheme);
       const lightStyleKey = generateStyleKey(`light_${lightClassNames}`);
       state.styleRegistry.set(lightStyleKey, lightStyleObject);
+      registerTwConfigRefs(state, lightStyleKey, lightClassNames);
 
       objectProperties.push(
         t.objectProperty(
@@ -253,6 +275,7 @@ export function processTwCall(
         const baseStyleObject = parseClassName(baseClassName, state.customTheme);
         const baseStyleKey = generateStyleKey(baseClassName);
         state.styleRegistry.set(baseStyleKey, baseStyleObject);
+        registerTwConfigRefs(state, baseStyleKey, baseClassName);
         styleArrayElements.push(
           t.memberExpression(t.identifier(state.stylesIdentifier), t.identifier(baseStyleKey)),
         );
@@ -275,6 +298,7 @@ export function processTwCall(
       const iosStyleObject = parseClassName(iosClassNames, state.customTheme);
       const iosStyleKey = generateStyleKey(`ios_${iosClassNames}`);
       state.styleRegistry.set(iosStyleKey, iosStyleObject);
+      registerTwConfigRefs(state, iosStyleKey, iosClassNames);
 
       objectProperties.push(
         t.objectProperty(
@@ -289,6 +313,7 @@ export function processTwCall(
       const androidStyleObject = parseClassName(androidClassNames, state.customTheme);
       const androidStyleKey = generateStyleKey(`android_${androidClassNames}`);
       state.styleRegistry.set(androidStyleKey, androidStyleObject);
+      registerTwConfigRefs(state, androidStyleKey, androidClassNames);
 
       objectProperties.push(
         t.objectProperty(
@@ -303,6 +328,7 @@ export function processTwCall(
       const webStyleObject = parseClassName(webClassNames, state.customTheme);
       const webStyleKey = generateStyleKey(`web_${webClassNames}`);
       state.styleRegistry.set(webStyleKey, webStyleObject);
+      registerTwConfigRefs(state, webStyleKey, webClassNames);
 
       objectProperties.push(
         t.objectProperty(
@@ -348,6 +374,7 @@ export function processTwCall(
         const baseStyleObject = parseClassName(baseClassName, state.customTheme);
         const baseStyleKey = generateStyleKey(baseClassName);
         state.styleRegistry.set(baseStyleKey, baseStyleObject);
+        registerTwConfigRefs(state, baseStyleKey, baseClassName);
         styleArrayElements.push(
           t.memberExpression(t.identifier(state.stylesIdentifier), t.identifier(baseStyleKey)),
         );
@@ -369,6 +396,7 @@ export function processTwCall(
       const rtlStyleObject = parseClassName(rtlClassNames, state.customTheme);
       const rtlStyleKey = generateStyleKey(`rtl_${rtlClassNames}`);
       state.styleRegistry.set(rtlStyleKey, rtlStyleObject);
+      registerTwConfigRefs(state, rtlStyleKey, rtlClassNames);
 
       objectProperties.push(
         t.objectProperty(
@@ -383,6 +411,7 @@ export function processTwCall(
       const ltrStyleObject = parseClassName(ltrClassNames, state.customTheme);
       const ltrStyleKey = generateStyleKey(`ltr_${ltrClassNames}`);
       state.styleRegistry.set(ltrStyleKey, ltrStyleObject);
+      registerTwConfigRefs(state, ltrStyleKey, ltrClassNames);
 
       objectProperties.push(
         t.objectProperty(
@@ -411,6 +440,7 @@ export function processTwCall(
     const modifierStyleObject = parseClassName(modifierClassNames, state.customTheme);
     const modifierStyleKey = generateStyleKey(`${modifierType}_${modifierClassNames}`);
     state.styleRegistry.set(modifierStyleKey, modifierStyleObject);
+    registerTwConfigRefs(state, modifierStyleKey, modifierClassNames);
 
     // Map modifier type to property name: active -> activeStyle
     const propertyName = `${modifierType}Style`;

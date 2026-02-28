@@ -6,6 +6,8 @@ import type * as BabelTypes from "@babel/types";
 import type { CustomTheme, ModifierType, ParsedModifier } from "../../parser/index.js";
 import type { StyleObject } from "../../types/core.js";
 import { getStatePropertyForModifier } from "./componentSupport.js";
+import type { FullResolvedTheme } from "./configRefResolver.js";
+import { resolveConfigRefs } from "./configRefResolver.js";
 import { hasRuntimeDimensions } from "./windowDimensionsProcessing.js";
 
 /**
@@ -16,6 +18,17 @@ export interface ModifierProcessingState {
   styleRegistry: Map<string, StyleObject>;
   customTheme: CustomTheme;
   stylesIdentifier: string;
+  configProviderEnabled?: boolean;
+  configRefRegistry?: Map<string, Map<string, string[]>>;
+  fullResolvedTheme?: FullResolvedTheme;
+}
+
+function registerConfigRefs(state: ModifierProcessingState, styleKey: string, className: string): void {
+  if (!state.configProviderEnabled || !state.configRefRegistry || !state.fullResolvedTheme) return;
+  const refs = resolveConfigRefs(className, state.fullResolvedTheme);
+  if (refs.size > 0) {
+    state.configRefRegistry.set(styleKey, refs);
+  }
 }
 
 /**
@@ -49,6 +62,7 @@ export function processStaticClassNameWithModifiers(
 
     const baseStyleKey = generateStyleKey(baseClassName);
     state.styleRegistry.set(baseStyleKey, baseStyleObject);
+    registerConfigRefs(state, baseStyleKey, baseClassName);
     baseStyleExpression = t.memberExpression(t.identifier(state.stylesIdentifier), t.identifier(baseStyleKey));
   }
 
@@ -90,6 +104,7 @@ export function processStaticClassNameWithModifiers(
 
     const modifierStyleKey = generateStyleKey(`${modifierType}_${modifierClassNames}`);
     state.styleRegistry.set(modifierStyleKey, modifierStyleObject);
+    registerConfigRefs(state, modifierStyleKey, modifierClassNames);
 
     // Create conditional: pressed && styles._active_bg_blue_700
     const stateProperty = getStatePropertyForModifier(modifierType);

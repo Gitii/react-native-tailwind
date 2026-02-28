@@ -1,0 +1,545 @@
+// Vitest Snapshot v1, https://vitest.dev/guide/snapshot.html
+
+exports[`configProvider E2E - basic transforms > transforms border color config refs 1`] = `
+"import { View, StyleSheet } from 'react-native';
+import { __twConfig } from "../.generated.tailwind.config";
+const _twStyles = StyleSheet.create({
+  _border_border_red_500: {
+    borderWidth: 1,
+    borderColor: __twConfig.theme.colors["red-500"]
+  }
+});
+export function Card() {
+  return /*#__PURE__*/React.createElement(View, {
+    style: _twStyles._border_border_red_500
+  });
+}"
+`;
+
+exports[`configProvider E2E - basic transforms > transforms className with color and spacing config refs 1`] = `
+"import { View, StyleSheet } from 'react-native';
+import { __twConfig } from "../.generated.tailwind.config";
+const _twStyles = StyleSheet.create({
+  _bg_blue_500_p_4: {
+    backgroundColor: __twConfig.theme.colors["blue-500"],
+    padding: __twConfig.theme.spacing["4"]
+  }
+});
+export default function App() {
+  return /*#__PURE__*/React.createElement(View, {
+    style: _twStyles._bg_blue_500_p_4
+  });
+}"
+`;
+
+exports[`configProvider E2E - basic transforms > transforms className with fontFamily config refs 1`] = `
+"import { Text, StyleSheet } from 'react-native';
+import { __twConfig } from "../.generated.tailwind.config";
+const _twStyles = StyleSheet.create({
+  _font_sans: {
+    fontFamily: __twConfig.theme.fontFamily.sans
+  }
+});
+export function Label() {
+  return /*#__PURE__*/React.createElement(Text, {
+    style: _twStyles._font_sans
+  });
+}"
+`;
+
+exports[`configProvider E2E - basic transforms > transforms className with fontSize config refs 1`] = `
+"import { Text, StyleSheet } from 'react-native';
+import { __twConfig } from "../.generated.tailwind.config";
+const _twStyles = StyleSheet.create({
+  _font_bold_text_2xl: {
+    fontSize: __twConfig.theme.fontSize["2xl"],
+    fontWeight: "700"
+  }
+});
+export function Heading() {
+  return /*#__PURE__*/React.createElement(Text, {
+    style: _twStyles._font_bold_text_2xl
+  });
+}"
+`;
+
+exports[`configProvider E2E - dark/light mode modifiers > transforms combined dark: and light: modifiers 1`] = `
+"import { View, StyleSheet, useColorScheme } from 'react-native';
+import { __twConfig } from "../.generated.tailwind.config";
+const _twStyles = StyleSheet.create({
+  _dark_bg_gray_900: {
+    backgroundColor: __twConfig.theme.colors["gray-900"]
+  },
+  _light_bg_white: {
+    backgroundColor: __twConfig.theme.colors.white
+  }
+});
+export function Component() {
+  const _twColorScheme = useColorScheme();
+  return /*#__PURE__*/React.createElement(View, {
+    style: [_twColorScheme === "dark" && _twStyles._dark_bg_gray_900, _twColorScheme === "light" && _twStyles._light_bg_white]
+  });
+}"
+`;
+
+exports[`configProvider E2E - dark/light mode modifiers > transforms dark: modifier with config refs and conditional structure 1`] = `
+"import { View, StyleSheet, useColorScheme } from 'react-native';
+import { __twConfig } from "../.generated.tailwind.config";
+const _twStyles = StyleSheet.create({
+  _bg_white: {
+    backgroundColor: __twConfig.theme.colors.white
+  },
+  _dark_bg_gray_900: {
+    backgroundColor: __twConfig.theme.colors["gray-900"]
+  }
+});
+export function Component() {
+  const _twColorScheme = useColorScheme();
+  return /*#__PURE__*/React.createElement(View, {
+    style: [_twStyles._bg_white, _twColorScheme === "dark" && _twStyles._dark_bg_gray_900]
+  });
+}"
+`;
+
+exports[`configProvider E2E - dark/light mode modifiers > transforms light: modifier with config refs 1`] = `
+"import { Text, StyleSheet, useColorScheme } from 'react-native';
+import { __twConfig } from "../.generated.tailwind.config";
+const _twStyles = StyleSheet.create({
+  _text_gray_900: {
+    color: __twConfig.theme.colors["gray-900"]
+  },
+  _light_text_white: {
+    color: __twConfig.theme.colors.white
+  }
+});
+export function Component() {
+  const _twColorScheme = useColorScheme();
+  return /*#__PURE__*/React.createElement(Text, {
+    style: [_twStyles._text_gray_900, _twColorScheme === "light" && _twStyles._light_text_white]
+  });
+}"
+`;
+
+exports[`configProvider E2E - dark/light mode modifiers > transforms scheme: modifier with config refs in both branches 1`] = `
+"import { View, StyleSheet, useColorScheme } from 'react-native';
+import { __twConfig } from "../.generated.tailwind.config";
+const _twStyles = StyleSheet.create({
+  _dark_bg_primary_dark: {
+    backgroundColor: __twConfig.theme.colors["primary-dark"]
+  },
+  _light_bg_primary_light: {
+    backgroundColor: __twConfig.theme.colors["primary-light"]
+  }
+});
+export function Component() {
+  const _twColorScheme = useColorScheme();
+  return /*#__PURE__*/React.createElement(View, {
+    style: [_twColorScheme === "dark" && _twStyles._dark_bg_primary_dark, _twColorScheme === "light" && _twStyles._light_bg_primary_light]
+  });
+}"
+`;
+
+exports[`configProvider E2E - import path generation > generates correct import path from configProvider.importFrom 1`] = `
+"import { View, StyleSheet } from 'react-native';
+import { __twConfig } from "../.generated.tailwind.config";
+const _twStyles = StyleSheet.create({
+  _bg_blue_500: {
+    backgroundColor: __twConfig.theme.colors["blue-500"]
+  }
+});
+export function Component() {
+  return /*#__PURE__*/React.createElement(View, {
+    style: _twStyles._bg_blue_500
+  });
+}"
+`;
+
+exports[`configProvider E2E - import path generation > uses __twConfig as the default import name 1`] = `
+"import { View, StyleSheet } from 'react-native';
+import { __twConfig } from "../.generated.tailwind.config";
+const _twStyles = StyleSheet.create({
+  _bg_blue_500: {
+    backgroundColor: __twConfig.theme.colors["blue-500"]
+  }
+});
+export function Component() {
+  return /*#__PURE__*/React.createElement(View, {
+    style: _twStyles._bg_blue_500
+  });
+}"
+`;
+
+exports[`configProvider E2E - mixed refs and literals > keeps arbitrary values as literals 1`] = `
+"import { View, StyleSheet } from 'react-native';
+const _twStyles = StyleSheet.create({
+  _bg_ff0000_w_123px_: {
+    backgroundColor: "#ff0000",
+    width: 123
+  }
+});
+export function Component() {
+  return /*#__PURE__*/React.createElement(View, {
+    style: _twStyles._bg_ff0000_w_123px_
+  });
+}"
+`;
+
+exports[`configProvider E2E - mixed refs and literals > keeps non-theme properties as literals 1`] = `
+"import { View, StyleSheet } from 'react-native';
+const _twStyles = StyleSheet.create({
+  _flex_1_overflow_hidden_rounded_lg: {
+    borderRadius: 8,
+    flex: 1,
+    overflow: "hidden"
+  }
+});
+export function Component() {
+  return /*#__PURE__*/React.createElement(View, {
+    style: _twStyles._flex_1_overflow_hidden_rounded_lg
+  });
+}"
+`;
+
+exports[`configProvider E2E - mixed refs and literals > keeps opacity-modified values as literals 1`] = `
+"import { View, StyleSheet } from 'react-native';
+const _twStyles = StyleSheet.create({
+  _bg_blue_500_50: {
+    backgroundColor: "#2B7FFF80"
+  }
+});
+export function Component() {
+  return /*#__PURE__*/React.createElement(View, {
+    style: _twStyles._bg_blue_500_50
+  });
+}"
+`;
+
+exports[`configProvider E2E - mixed refs and literals > uses config refs for theme values and literals for built-in scales 1`] = `
+"import { View, StyleSheet } from 'react-native';
+import { __twConfig } from "../.generated.tailwind.config";
+const _twStyles = StyleSheet.create({
+  _bg_blue_500_p_4_rounded_lg: {
+    backgroundColor: __twConfig.theme.colors["blue-500"],
+    padding: __twConfig.theme.spacing["4"],
+    borderRadius: 8
+  }
+});
+export function Component() {
+  return /*#__PURE__*/React.createElement(View, {
+    style: _twStyles._bg_blue_500_p_4_rounded_lg
+  });
+}"
+`;
+
+exports[`configProvider E2E - multiple components > transforms mixed className and tw\`\` in same file 1`] = `
+"import { View, Text, StyleSheet } from 'react-native';
+import { __twConfig } from "../.generated.tailwind.config";
+const _twStyles = StyleSheet.create({
+  _bg_gray_100_p_4: {
+    backgroundColor: __twConfig.theme.colors["gray-100"],
+    padding: __twConfig.theme.spacing["4"]
+  },
+  _text_blue_500_text_lg: {
+    color: __twConfig.theme.colors["blue-500"],
+    fontSize: __twConfig.theme.fontSize.lg
+  }
+});
+const cardStyle = {
+  style: _twStyles._bg_gray_100_p_4
+};
+export function Card() {
+  return /*#__PURE__*/React.createElement(View, {
+    style: cardStyle.style
+  }, /*#__PURE__*/React.createElement(Text, {
+    style: _twStyles._text_blue_500_text_lg
+  }));
+}"
+`;
+
+exports[`configProvider E2E - multiple components > transforms multiple className attributes in same file 1`] = `
+"import { View, Text, StyleSheet } from 'react-native';
+import { __twConfig } from "../.generated.tailwind.config";
+const _twStyles = StyleSheet.create({
+  _bg_blue_500_p_4: {
+    backgroundColor: __twConfig.theme.colors["blue-500"],
+    padding: __twConfig.theme.spacing["4"]
+  },
+  _text_lg_text_white: {
+    color: __twConfig.theme.colors.white,
+    fontSize: __twConfig.theme.fontSize.lg
+  }
+});
+export function Header() {
+  return /*#__PURE__*/React.createElement(View, {
+    style: _twStyles._bg_blue_500_p_4
+  }, /*#__PURE__*/React.createElement(Text, {
+    style: _twStyles._text_lg_text_white
+  }));
+}"
+`;
+
+exports[`configProvider E2E - multiple components > transforms multiple separate components in same file 1`] = `
+"import { View, Text, StyleSheet } from 'react-native';
+import { __twConfig } from "../.generated.tailwind.config";
+const _twStyles = StyleSheet.create({
+  _bg_red_500_m_2: {
+    backgroundColor: __twConfig.theme.colors["red-500"],
+    margin: __twConfig.theme.spacing["2"]
+  },
+  _p_4_text_green_500: {
+    color: __twConfig.theme.colors["green-500"],
+    padding: __twConfig.theme.spacing["4"]
+  }
+});
+export function ComponentA() {
+  return /*#__PURE__*/React.createElement(View, {
+    style: _twStyles._bg_red_500_m_2
+  });
+}
+export function ComponentB() {
+  return /*#__PURE__*/React.createElement(Text, {
+    style: _twStyles._p_4_text_green_500
+  });
+}"
+`;
+
+exports[`configProvider E2E - negative cases > does not inject __twConfig for tw when configProvider is disabled 1`] = `
+"import { StyleSheet } from "react-native";
+const _twStyles = StyleSheet.create({
+  _bg_blue_500_p_4: {
+    backgroundColor: "#2b7fff",
+    padding: 16
+  }
+});
+const styles = {
+  style: _twStyles._bg_blue_500_p_4
+};"
+`;
+
+exports[`configProvider E2E - negative cases > does not inject __twConfig when configProvider is disabled 1`] = `
+"import { View, StyleSheet } from 'react-native';
+const _twStyles = StyleSheet.create({
+  _bg_blue_500_p_4: {
+    backgroundColor: "#2b7fff",
+    padding: 16
+  }
+});
+export function Component() {
+  return /*#__PURE__*/React.createElement(View, {
+    style: _twStyles._bg_blue_500_p_4
+  });
+}"
+`;
+
+exports[`configProvider E2E - negative cases > does not inject __twConfig when no theme-resolvable classes are used 1`] = `
+"import { View, StyleSheet } from 'react-native';
+const _twStyles = StyleSheet.create({
+  _flex_1_overflow_hidden_rounded_lg: {
+    borderRadius: 8,
+    flex: 1,
+    overflow: "hidden"
+  }
+});
+export function Component() {
+  return /*#__PURE__*/React.createElement(View, {
+    style: _twStyles._flex_1_overflow_hidden_rounded_lg
+  });
+}"
+`;
+
+exports[`configProvider E2E - platform modifiers > transforms android: modifier with config refs 1`] = `
+"import { View, StyleSheet, Platform } from 'react-native';
+import { __twConfig } from "../.generated.tailwind.config";
+const _twStyles = StyleSheet.create({
+  _bg_blue_500: {
+    backgroundColor: __twConfig.theme.colors["blue-500"]
+  },
+  _android_bg_green_500: {
+    backgroundColor: __twConfig.theme.colors["green-500"]
+  }
+});
+export function Component() {
+  return /*#__PURE__*/React.createElement(View, {
+    style: [_twStyles._bg_blue_500, Platform.select({
+      android: _twStyles._android_bg_green_500
+    })]
+  });
+}"
+`;
+
+exports[`configProvider E2E - platform modifiers > transforms combined ios: and android: modifiers with config refs 1`] = `
+"import { View, StyleSheet, Platform } from 'react-native';
+import { __twConfig } from "../.generated.tailwind.config";
+const _twStyles = StyleSheet.create({
+  _ios_p_4: {
+    padding: __twConfig.theme.spacing["4"]
+  },
+  _android_p_2: {
+    padding: __twConfig.theme.spacing["2"]
+  }
+});
+export function Component() {
+  return /*#__PURE__*/React.createElement(View, {
+    style: Platform.select({
+      ios: _twStyles._ios_p_4,
+      android: _twStyles._android_p_2
+    })
+  });
+}"
+`;
+
+exports[`configProvider E2E - platform modifiers > transforms ios: modifier with config refs 1`] = `
+"import { View, StyleSheet, Platform } from 'react-native';
+import { __twConfig } from "../.generated.tailwind.config";
+const _twStyles = StyleSheet.create({
+  _p_4: {
+    padding: __twConfig.theme.spacing["4"]
+  },
+  _ios_p_6: {
+    padding: __twConfig.theme.spacing["6"]
+  }
+});
+export function Component() {
+  return /*#__PURE__*/React.createElement(View, {
+    style: [_twStyles._p_4, Platform.select({
+      ios: _twStyles._ios_p_6
+    })]
+  });
+}"
+`;
+
+exports[`configProvider E2E - real-world scenarios > transforms a complete card component with multiple theme categories 1`] = `
+"import { View, Text, StyleSheet } from 'react-native';
+import { __twConfig } from "../.generated.tailwind.config";
+const _twStyles = StyleSheet.create({
+  _bg_white_border_border_gray_200_m_2_p_4: {
+    backgroundColor: __twConfig.theme.colors.white,
+    padding: __twConfig.theme.spacing["4"],
+    margin: __twConfig.theme.spacing["2"],
+    borderWidth: 1,
+    borderColor: __twConfig.theme.colors["gray-200"]
+  },
+  _font_bold_text_gray_900_text_lg: {
+    fontSize: __twConfig.theme.fontSize.lg,
+    fontWeight: "700",
+    color: __twConfig.theme.colors["gray-900"]
+  },
+  _mt_2_text_gray_500_text_sm: {
+    fontSize: __twConfig.theme.fontSize.sm,
+    color: __twConfig.theme.colors["gray-500"],
+    marginTop: __twConfig.theme.spacing["2"]
+  }
+});
+export function Card({
+  title,
+  body
+}) {
+  return /*#__PURE__*/React.createElement(View, {
+    style: _twStyles._bg_white_border_border_gray_200_m_2_p_4
+  }, /*#__PURE__*/React.createElement(Text, {
+    style: _twStyles._font_bold_text_gray_900_text_lg
+  }, title), /*#__PURE__*/React.createElement(Text, {
+    style: _twStyles._mt_2_text_gray_500_text_sm
+  }, body));
+}"
+`;
+
+exports[`configProvider E2E - real-world scenarios > transforms a theme-aware component with dark mode and platform modifiers 1`] = `
+"import { View, Text, StyleSheet, Platform, useColorScheme } from 'react-native';
+import { __twConfig } from "../.generated.tailwind.config";
+const _twStyles = StyleSheet.create({
+  _bg_white_p_4: {
+    backgroundColor: __twConfig.theme.colors.white,
+    padding: __twConfig.theme.spacing["4"]
+  },
+  _ios_p_6: {
+    padding: __twConfig.theme.spacing["6"]
+  },
+  _dark_bg_gray_900: {
+    backgroundColor: __twConfig.theme.colors["gray-900"]
+  },
+  _text_gray_900_text_lg: {
+    color: __twConfig.theme.colors["gray-900"],
+    fontSize: __twConfig.theme.fontSize.lg
+  },
+  _dark_text_white: {
+    color: __twConfig.theme.colors.white
+  }
+});
+export function ThemedCard() {
+  const _twColorScheme = useColorScheme();
+  return /*#__PURE__*/React.createElement(View, {
+    style: [_twStyles._bg_white_p_4, Platform.select({
+      ios: _twStyles._ios_p_6
+    }), _twColorScheme === "dark" && _twStyles._dark_bg_gray_900]
+  }, /*#__PURE__*/React.createElement(Text, {
+    style: [_twStyles._text_gray_900_text_lg, _twColorScheme === "dark" && _twStyles._dark_text_white]
+  }));
+}"
+`;
+
+exports[`configProvider E2E - real-world scenarios > transforms conditional className (ternary) with literal values 1`] = `
+"import { View, StyleSheet } from 'react-native';
+const _twStyles = StyleSheet.create({
+  _bg_blue_500_p_4: {
+    backgroundColor: "#2b7fff",
+    padding: 16
+  },
+  _bg_gray_200_p_4: {
+    backgroundColor: "#e5e7eb",
+    padding: 16
+  }
+});
+export function Button({
+  isActive
+}) {
+  return /*#__PURE__*/React.createElement(View, {
+    style: isActive ? _twStyles._bg_blue_500_p_4 : _twStyles._bg_gray_200_p_4
+  });
+}"
+`;
+
+exports[`configProvider E2E - tw template literals > transforms tw\`\` with config refs 1`] = `
+"import { StyleSheet } from "react-native";
+import { __twConfig } from "../.generated.tailwind.config";
+const _twStyles = StyleSheet.create({
+  _bg_blue_500_p_4: {
+    backgroundColor: __twConfig.theme.colors["blue-500"],
+    padding: __twConfig.theme.spacing["4"]
+  }
+});
+const styles = {
+  style: _twStyles._bg_blue_500_p_4
+};"
+`;
+
+exports[`configProvider E2E - tw template literals > transforms tw\`\` with state modifiers and config refs 1`] = `
+"import { StyleSheet } from "react-native";
+import { __twConfig } from "../.generated.tailwind.config";
+const _twStyles = StyleSheet.create({
+  _bg_blue_500: {
+    backgroundColor: __twConfig.theme.colors["blue-500"]
+  },
+  _active_bg_blue_700: {
+    backgroundColor: __twConfig.theme.colors["blue-700"]
+  }
+});
+const styles = {
+  style: _twStyles._bg_blue_500,
+  activeStyle: _twStyles._active_bg_blue_700
+};"
+`;
+
+exports[`configProvider E2E - tw template literals > transforms twStyle() with config refs 1`] = `
+"import { StyleSheet } from "react-native";
+import { __twConfig } from "../.generated.tailwind.config";
+const _twStyles = StyleSheet.create({
+  _bg_red_500_m_2: {
+    backgroundColor: __twConfig.theme.colors["red-500"],
+    margin: __twConfig.theme.spacing["2"]
+  }
+});
+const styles = {
+  style: _twStyles._bg_red_500_m_2
+};"
+`;

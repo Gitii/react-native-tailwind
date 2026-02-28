@@ -1,0 +1,6 @@
+=== Checking test assertions for stale provider imports ===
+✓ ZERO stale provider imports in test assertions
+
+=== Checking test assertions for generated config imports ===
+0
+matches found for generated config imports in assertions

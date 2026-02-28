@@ -1,0 +1,18 @@
+TASK 7 QA: Config ref registration in className visitor
+========================================================
+Date: 2026-02-28
+Command: npx vitest run src/babel/plugin/visitors/className.test.ts
+
+RESULT: ✅ PASS
+- 73 passed, 1 skipped (pre-existing)
+- bg-blue-500 with configProvider → output contains __twConfig.theme.colors["blue-500"]
+- p-4 with configProvider → output contains __twConfig.theme.spacing["4"]
+- bg-[#ff0000] with configProvider → literal (NOT ref)
+- bg-blue-500/50 with configProvider → literal (NOT ref)
+- rounded-lg with configProvider → literal 8 (built-in scale)
+- ALL existing className tests still pass
+
+OUTPUT:
+  ✓ src/babel/plugin/visitors/className.test.ts (74 tests | 1 skipped) 429ms
+  Test Files: 1 passed (1)
+  Tests: 73 passed | 1 skipped (74)
