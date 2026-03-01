@@ -40,6 +40,7 @@
     "build:babel-plugin": "node --experimental-strip-types scripts/bundle-babel-plugin.ts",
     "build:runtime": "node --experimental-strip-types scripts/bundle-runtime.ts",
     "build:types": "tsc --project tsconfig.build.json --emitDeclarationOnly && node --experimental-strip-types scripts/post-build-types.ts",
+    "inspect:transform": "node --experimental-strip-types scripts/inspect-transform.ts",
     "install:ios": "cd ios && bundle exec pod install --repo-update && cd ..",
     "clean:ios": "cd ios && bundle exec pod deintegrate && rm -rf build Pods Podfile.lock && cd ..",
     "open:ios": "cd example; npm run open:ios",
