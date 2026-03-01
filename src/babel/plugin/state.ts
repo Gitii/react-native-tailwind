@@ -278,7 +278,7 @@ export function createInitialState(
     // Validate and normalize class-to-prop mapping rules
     const classToPropRules: ComponentClassToPropRule[] = [];
     const classToPropImportMap = new Map<string, Set<string>>();
-    let needsConfigImport = false;
+    const needsConfigImport = false;
 
     if (options?.componentClassToPropMapping) {
         for (const rule of options.componentClassToPropMapping) {
@@ -326,11 +326,6 @@ export function createInitialState(
             }
             for (const component of rule.components) {
                 componentSet.add(component);
-            }
-
-            // Check if any rule uses configProvider (would need __twConfig import)
-            if (configProviderImportFrom) {
-                needsConfigImport = true;
             }
         }
     }
